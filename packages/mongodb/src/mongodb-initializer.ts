@@ -1,8 +1,13 @@
 import * as Mongodb from 'mongodb'
 import { Initializer } from '@nodelith/core'
-import { MongodbConfig } from './mongo-config'
+import { MongodbConfig } from './mongodb-config'
 
-export class MongodbInitializer implements Initializer {
+export type MongodbInitializationResult = {
+  client: Mongodb.MongoClient,
+  database: Mongodb.Db,
+}
+
+export class MongodbInitializer implements Initializer<MongodbInitializationResult> {
   private readonly client: Mongodb.MongoClient
   private readonly database: Mongodb.Db
 
@@ -13,9 +18,12 @@ export class MongodbInitializer implements Initializer {
     this.database = this.client.db(this.mongodbConfig.databaseName)
   }
 
-  public async initialize(): Promise<{ mongodb: Mongodb.Db }> {
+  public async initialize(): Promise<MongodbInitializationResult> {
     await this.client.connect()
-    return { mongodb: this.database }
+    return {
+      client: this.client,
+      database: this.database,
+    }
   }
 
   public async terminate?(): Promise<void> {

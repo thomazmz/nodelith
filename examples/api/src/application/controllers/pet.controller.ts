@@ -1,8 +1,7 @@
 import * as Controller from '@nodelith/controller'
 import * as Http from '@nodelith/http'
 
-import { PetService } from './pet.service'
-import { Pet } from './pet.entity'
+import { Pet, PetService } from '../../domain'
 
 @Controller.Path('/pets')
 export class PetController {

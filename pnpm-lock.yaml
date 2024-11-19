@@ -28,6 +28,9 @@ importers:
       '@nodelith/http':
         specifier: workspace:*
         version: link:../../packages/http
+      '@nodelith/mongodb':
+        specifier: workspace:*
+        version: link:../../packages/mongodb
       '@nodelith/utilities':
         specifier: workspace:*
         version: link:../../packages/utilities

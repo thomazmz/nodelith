@@ -1,0 +1,13 @@
+{
+  "typescript.updateImportsOnFileMove.enabled": "never",
+  "javascript.updateImportsOnFileMove.enabled": "never",
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true
+  },
+  "files.associations": {
+    "*.js": "javascript",
+    "*.ts": "typescript",
+    "*.json": "json"
+  }
+}

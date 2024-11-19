@@ -23,7 +23,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "start": "node dist/application.start.js",
+    "start": "node dist/api.start.js",
     "build": "rimraf ./dist/* && tsc",
     "build:watch": "rimraf ./dist/* && tsc --watch"
   },
@@ -32,9 +32,10 @@
     "@nodelith/container": "workspace:*",
     "@nodelith/controller": "workspace:*",
     "@nodelith/core": "workspace:*",
-    "@nodelith/http": "workspace:*",
-    "@nodelith/utilities": "workspace:*",
     "@nodelith/express": "workspace:*",
+    "@nodelith/http": "workspace:*",
+    "@nodelith/mongodb": "workspace:*",
+    "@nodelith/utilities": "workspace:*",
     "express": "^4.18.2"
   },
   "devDependencies": {

@@ -34,6 +34,14 @@ export class Module extends Core.Initializer {
     this.initializers.push(module)
   }
 
+  public useInitializer(initializer: Types.Constructor<Core.Initializer>): void {
+    const { instance } = new Injection.ConstructorRegistration<Core.Initializer>(initializer, {
+      bundle: this.container.bundle,
+    })
+
+    this.initializers.push(instance)
+  }
+
   public useRegistration(registration: Injection.Registration): void {
     if(this.container.has(registration.token)) {
       throw new Error(`Module can not use registration. Module already contain a registration for "${registration.token.toString()}" token.`)

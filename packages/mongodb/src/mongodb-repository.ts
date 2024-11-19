@@ -2,7 +2,7 @@ import * as Mongodb  from 'mongodb'
 import * as Core from '@nodelith/core'
 import * as Utilities from '@nodelith/utilities'
 
-export class MongoRepository<E extends Core.Entity<any>> implements Core.Repository<E> {
+export class MongodbRepository<E extends Core.Entity<any>> implements Core.Repository<E> {
   protected readonly collection: Mongodb.Collection
 
   constructor(db: Mongodb.Db, collectionName: string) {
