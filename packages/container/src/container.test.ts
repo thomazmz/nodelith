@@ -215,4 +215,101 @@ describe('Container', () => {
       expect(targetFactoryTwoWasCalled).toBe(true)
     })
   })
+
+  describe('bundle', () => {
+    it('Should throw error on attempt to set dependency through bundle object', () => {
+      const container = new Injection.Container()
+
+      expect(() => container.bundle['dependencyToken'] = 'value').toThrow(
+        `Could not set registration "dependencyToken". Registration should not be done through bundle.`
+      )
+    })
+    
+    it('Should throw error on attempt to access invalid registration token', () => {
+      const container = new Injection.Container()
+
+      expect(() => container.bundle['key']).toThrow(
+        `Could not resolve dependency "key". Invalid registration token.`
+      )
+    })
+    
+    it('Should throw error on attempt to set properties through registration bundle values', () => {
+      const container = new Injection.Container()
+
+      const registration = new Injection.FactoryRegistration(targetFactoryOne, { 
+        token: 'dependencyToken'
+      })
+
+      container.push(registration)
+
+      expect(() => container.bundle['dependencyToken']['propertyKey'] = 'value').toThrow(
+        `Could not set dependency property "propertyKey". Dependency properties cannot be set through registration bundle.`
+      )
+    })
+
+    it('Should allows bundle to be merged using object destructuring', () => {
+      const someFactory = () => {
+        return { property: 'someResolvedDependency' }
+      }
+
+      const someRegistration = new Injection.FactoryRegistration(someFactory, { 
+        token: 'someDependency'
+      })
+
+
+      const anotherFactory = () => {
+        return { property: 'anotherResolvedDependency' }
+      }
+
+      const anotherRegistration = new Injection.FactoryRegistration(anotherFactory, { 
+        token: 'anotherDependency'
+      })
+
+      const someContainer = new Injection.Container()
+
+      someContainer.push(
+        someRegistration,
+      )
+
+      const anotherContainer = new Injection.Container()
+
+      anotherContainer.push(
+        anotherRegistration,
+      )
+
+      const mergedBundle = {
+        ...someContainer.bundle,
+        ...anotherContainer.bundle,
+      }
+
+      expect(mergedBundle.someDependency.property).toBe('someResolvedDependency')
+
+      expect(mergedBundle.anotherDependency.property).toBe('anotherResolvedDependency')
+    })
+
+    it('Should return target tokens as bundle keys', () => {
+      const container = new Injection.Container()
+  
+      const registrationOne = new Injection.FactoryRegistration(targetFactoryOne, {
+        token: 'targetOne',
+        bundle: container.bundle,
+      })
+  
+      const registrationTwo = new Injection.FactoryRegistration(targetFactoryDouble, {
+        token: 'targetTwo',
+        bundle: container.bundle,
+      })
+  
+      container.push(
+        registrationOne,
+        registrationTwo,
+      )
+
+      const keys = Object.keys(container.bundle)
+
+      expect(keys.length).toBe(2)
+      expect(keys.includes('targetOne')).toBe(true)
+      expect(keys.includes('targetTwo')).toBe(true)
+    })
+  })
 })
