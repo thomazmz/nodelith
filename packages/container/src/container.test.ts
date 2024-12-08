@@ -3,38 +3,31 @@ import * as Injection from './index'
 
 describe('Container', () => {
 
-  let defaultResolverWasCalled = false
   let targetFactoryOneWasCalled = false
   let targetFactoryTwoWasCalled = false
   let targetFactoryDoubleWasCalled = false
 
   beforeEach(() => {
-    defaultResolverWasCalled = false
     targetFactoryOneWasCalled = false
     targetFactoryTwoWasCalled = false
     targetFactoryDoubleWasCalled = false
   })
 
-  const defaultResolver: Injection.Resolver = (target, ...args) => {
-    defaultResolverWasCalled = true
-    return target(...args)
-  }
-
-  const targetFactoryOne: Injection.Target = ({ targetTwo }) => {
+  const targetFactoryOne: Types.Factory = ({ targetTwo }) => {
     const call = () => 'targetOne::call'
     const callDependency = () => targetTwo.call()
     targetFactoryOneWasCalled = true
     return { call, callDependency }
   }
 
-  const targetFactoryTwo: Injection.Target = ({ targetOne }) => {
+  const targetFactoryTwo: Types.Factory = ({ targetOne }) => {
     const call = () => 'targetTwo::call'
     const callDependency = () => targetOne.call()
     targetFactoryTwoWasCalled = true
     return { call, callDependency }
   }
 
-  const targetFactoryDouble: Injection.Target = () => {
+  const targetFactoryDouble: Types.Factory = () => {
     const call = () => 'targetDouble::call'
     targetFactoryDoubleWasCalled = true
     return { call }
@@ -47,7 +40,6 @@ describe('Container', () => {
     const registrationOne = new Injection.FactoryRegistration(targetFactoryOne, {
       token: 'targetOne',
       bundle: container.bundle,
-      resolver: defaultResolver,
     })
 
     container.push(registrationOne)
@@ -63,12 +55,6 @@ describe('Container', () => {
         `Could not resolve dependency "key". Invalid registration token.`
       )
     })
-    
-    it('Should throw error on attempt to set properties through registration bundle values', () => {
-      expect(() => container.bundle['targetOne']['key'] = 'value').toThrow(
-        `Could not set dependency property "key". Dependency properties cannot be set through registration bundle.`
-      )
-    })
   })
 
   describe('resolution', () => {
@@ -78,13 +64,11 @@ describe('Container', () => {
       const registrationOne = new Injection.FactoryRegistration(targetFactoryOne, {
         token: 'targetOne',
         bundle: container.bundle,
-        resolver: defaultResolver,
       })
   
       const registrationTwo = new Injection.FactoryRegistration(targetFactoryDouble, {
         token: 'targetTwo',
         bundle: container.bundle,
-        resolver: defaultResolver,
       })
   
       container.push(
@@ -109,13 +93,11 @@ describe('Container', () => {
       const registrationOne = new Injection.FactoryRegistration(targetFactoryOne, {
         token: 'targetOne',
         bundle: container.bundle,
-        resolver: defaultResolver,
       })
   
       const registrationTwo = new Injection.FactoryRegistration(targetFactoryTwo, {
         token: 'targetTwo',
         bundle: container.bundle,
-        resolver: defaultResolver,
       })
   
       container.push(
@@ -142,7 +124,6 @@ describe('Container', () => {
       const registrationOne = new Injection.FactoryRegistration(targetFactoryOne, {
         token: 'targetOne',
         bundle: container.bundle,
-        resolver: defaultResolver,
       })
   
       const registrationTwo = new Injection.FactoryRegistration((dependencies) => {
@@ -152,7 +133,6 @@ describe('Container', () => {
       }, {
         token: 'targetTwo',
         bundle: container.bundle,
-        resolver: defaultResolver,
       })
   
       container.push(
@@ -179,13 +159,11 @@ describe('Container', () => {
       const registrationOne = new Injection.FactoryRegistration(targetFactoryOne, {
         token: 'targetOne',
         bundle: container.bundle,
-        resolver: defaultResolver,
       })
       
       const registrationTwo = new Injection.FactoryRegistration(targetFactoryTwo, {
         token: 'targetTwo',
         bundle: container.bundle,
-        resolver: defaultResolver,
       })
   
       container.push(
@@ -193,24 +171,20 @@ describe('Container', () => {
         registrationTwo,
       )
   
-      expect(defaultResolverWasCalled).toBe(false)
       expect(targetFactoryOneWasCalled).toBe(false)
       expect(targetFactoryTwoWasCalled).toBe(false)
   
       container.bundle.targetOne
       container.bundle.targetOne
   
-      expect(defaultResolverWasCalled).toBe(false)
       expect(targetFactoryOneWasCalled).toBe(false)
       expect(targetFactoryTwoWasCalled).toBe(false)
   
       container.bundle.targetOne.call
-      expect(defaultResolverWasCalled).toBe(true)
       expect(targetFactoryOneWasCalled).toBe(true)
       expect(targetFactoryTwoWasCalled).toBe(false)
       
       container.bundle.targetTwo.call
-      expect(defaultResolverWasCalled).toBe(true)
       expect(targetFactoryOneWasCalled).toBe(true)
       expect(targetFactoryTwoWasCalled).toBe(true)
     })
@@ -230,20 +204,6 @@ describe('Container', () => {
 
       expect(() => container.bundle['key']).toThrow(
         `Could not resolve dependency "key". Invalid registration token.`
-      )
-    })
-    
-    it('Should throw error on attempt to set properties through registration bundle values', () => {
-      const container = new Injection.Container()
-
-      const registration = new Injection.FactoryRegistration(targetFactoryOne, { 
-        token: 'dependencyToken'
-      })
-
-      container.push(registration)
-
-      expect(() => container.bundle['dependencyToken']['propertyKey'] = 'value').toThrow(
-        `Could not set dependency property "propertyKey". Dependency properties cannot be set through registration bundle.`
       )
     })
 
