@@ -55,11 +55,16 @@ export class Module extends Core.Initializer {
     if(this.container.has(token)) {
       throw new Error(`Could not complete value registration. Module already contain a registration for "${token.toString()}" token.`)
     }
+    const registration = new Injection.ValueRegistration(value, { token })
+    this.container.push(registration)
+  }
 
-    const registration = new Injection.ValueRegistration(value, {
-      token,
-    })
+  public registerResolver(token: Injection.Token, resolver: Types.Resolver): void {
+    if(this.container.has(token)) {
+      throw new Error(`Could not complete resolver registration. Module already contain a registration for "${token.toString()}" token.`)
+    }
 
+    const registration = new Injection.ResolverRegistration(resolver, { token, bundle: this.container.bundle })
     this.container.push(registration)
   }
 
@@ -68,11 +73,7 @@ export class Module extends Core.Initializer {
       throw new Error(`Could not complete factory registration. Module already contain a registration for "${token.toString()}" token.`)
     }
 
-    const registration = new Injection.FactoryRegistration(factory, {
-      bundle: this.container.bundle,
-      token,
-    })
-
+    const registration = new Injection.FactoryRegistration(factory, { token, bundle: this.container.bundle })
     this.container.push(registration)
   }
 
@@ -81,11 +82,7 @@ export class Module extends Core.Initializer {
       throw new Error(`Could not complete constructor registration. Module already contain a registration for "${token.toString()}" token.`)
     }
 
-    const registration = new Injection.ConstructorRegistration(constructor, {
-      bundle: this.container.bundle,
-      token,
-    })
-
+    const registration = new Injection.ConstructorRegistration(constructor, { token, bundle: this.container.bundle })
     this.container.push(registration)
   }
 

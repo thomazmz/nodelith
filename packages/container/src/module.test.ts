@@ -1,3 +1,4 @@
+import * as Types from '@nodelith/types'
 import { Module } from './module'
 
 describe('Module', () => {
@@ -58,13 +59,63 @@ describe('Module', () => {
   }
 
   describe('register', () => {
-    const module = new Module()
-    module.registerConstructor('someClassInstance', SomeClass)
-    module.registerConstructor('anotherClassInstance', AnotherClass)
-
     it('Should throw error when registration key is already in used', () => {
+      const module = new Module()
+      module.registerConstructor('someClassInstance', SomeClass)
+      module.registerConstructor('anotherClassInstance', AnotherClass)
+  
       expect(() => module.registerConstructor('someClassInstance', SomeClass)).toThrow()
-    })  
+    })
+
+    it('Should register constructor registration', () => {
+      const module = new Module()
+
+      class SomeClass {
+        public readonly value: string = 'someValue'
+      }
+
+      module.registerConstructor('someToken', SomeClass);
+      expect(module.registrations.length).toBe(1)
+      expect(module.registrations[0]?.token).toEqual('someToken')
+      expect(module.registrations[0]?.resolution.value).toEqual('someValue')
+    })
+
+    it('Should register resolver registration', () => {
+      const module = new Module()
+
+      const someResolver: Types.Resolver = () => {
+        return 'someValue'
+      }
+
+      module.registerResolver('someToken', someResolver);
+      expect(module.registrations.length).toBe(1)
+      expect(module.registrations[0]?.token).toEqual('someToken')
+      expect(module.registrations[0]?.resolution).toEqual('someValue')
+    })
+
+    it('Should register factory registration', () => {
+      const module = new Module()
+
+      const someFactory: Types.Factory = () => {
+        return { value: 'someValue' }
+      }
+
+      module.registerFactory('someToken', someFactory);
+      expect(module.registrations.length).toBe(1)
+      expect(module.registrations[0]?.token).toEqual('someToken')
+      expect(module.registrations[0]?.resolution.value).toEqual('someValue')
+    })
+
+    it('Should register value registration', () => {
+      const module = new Module()
+
+      const someValue = 'someValue'
+
+      module.registerValue('someToken', someValue)
+      expect(module.registrations.length).toBe(1)
+      expect(module.registrations[0]?.token).toEqual('someToken')
+      expect(module.registrations[0]?.resolution).toEqual('someValue')
+    })
   })
 
   describe('resolveToken', () => {
