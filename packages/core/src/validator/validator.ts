@@ -1,14 +1,14 @@
-import { Value } from '../value'
+import * as Types from '@nodelith/types'
 import { ValidationFunction } from './validation-function'
 
 /*
  * Validates an unknown value against a schema.
  */
-export abstract class Validator<V extends Value = Value> {
+export abstract class Validator<V extends Types.Value = Types.Value> {
 
   public abstract validate(
-    ...args: Parameters<ValidationFunction<Value>>
-  ): ReturnType<ValidationFunction<Value>>
+    ...args: Parameters<ValidationFunction<Types.Value>>
+  ): ReturnType<ValidationFunction<Types.Value>>
   
 
   /**

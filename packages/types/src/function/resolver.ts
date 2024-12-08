@@ -1,5 +1,3 @@
-import { Function } from './function'
+import * as Types from '@nodelith/types'
 
-export type ResolverResult = string | number | bigint | boolean | undefined | null | object
-
-export type Resolver<T extends ResolverResult = ResolverResult> = Function<T>
+export type Resolver<T extends Types.Value = Types.Value> = Types.Function<T>

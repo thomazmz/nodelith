@@ -1,4 +1,4 @@
-import { Entity, EntityProperties, EntityPropertiesPartial, EntityPropertiesToUpdate } from '../entity'
+import { Entity, EntityProperties, EntityPropertiesToUpdate } from '../entity'
 
 export interface Repository<E extends Entity<any>> {
   /**
@@ -33,7 +33,7 @@ export interface Repository<E extends Entity<any>> {
   createOne(attributes: EntityProperties<E>): Promise<E>
 
   /**
-   * @description Creates multiple entity instancess assigning them an unique id and the createdAt/updatedAt timestamps.
+   * @description Creates multiple entity instances assigning them an unique id and the createdAt/updatedAt timestamps.
    * @param {EntityProperties<E>[]} attributes The attributes that will be used to create the entity instances.
    * @returns {Promise<E[]>} Returns an array of created instances.
    * @throws {RepositoryError} Throws a RepositoryError in case of failure.
