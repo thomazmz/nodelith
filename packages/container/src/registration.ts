@@ -19,7 +19,7 @@ export interface Registration<R = any> {
   readonly token: RegistrationToken,
   readonly resolution: R,
   clone: Function<Registration<R>, [{ bundle?:  RegistrationBundle }]>
-  resolve: Function<R>,
+  resolve: Function<R, [{ bundle?:  RegistrationBundle }]>,
 }
 
 export class StaticRegistration<Resolution = any> implements Registration<Resolution> {
@@ -92,7 +92,7 @@ export class FactoryRegistration<Object extends ReturnType<Factory>> implements 
     });
   }
 
-  public clone(bundle: RegistrationBundle): FactoryRegistration<Object> {
+  public clone(bundle?: RegistrationBundle): FactoryRegistration<Object> {
     const mergedBundle = {
       ...this.bundle,
       ...bundle,
@@ -106,12 +106,15 @@ export class FactoryRegistration<Object extends ReturnType<Factory>> implements 
     })
   }
 
-  public resolve(): Object {
+  public resolve(bundle?: RegistrationBundle): Object {
     if(this.singleton) {
       return this.singleton
     }
-    
-    const parameters = [this.bundle]
+
+    const parameters = [{
+      ...this.bundle,
+      ...bundle,
+    }]
 
     if(this.lifetime === 'singleton') {
       return this.singleton = this.createProxy(...parameters)
@@ -171,7 +174,7 @@ export class ConstructorRegistration<Instance extends InstanceType<Constructor>>
     });
   }
 
-  public clone(bundle: RegistrationBundle): ConstructorRegistration<Instance> {
+  public clone(bundle?: RegistrationBundle): ConstructorRegistration<Instance> {
     const mergedBundle = {
       ...this.bundle,
       ...bundle,
@@ -185,12 +188,15 @@ export class ConstructorRegistration<Instance extends InstanceType<Constructor>>
     })
   }
 
-  public resolve(): Instance {
+  public resolve(bundle?: RegistrationBundle): Instance {
     if(this.singleton) {
       return this.singleton
     }
 
-    const parameters = [this.bundle]
+    const parameters = [{
+      ...this.bundle,
+      ...bundle,
+    }]
 
     if(this.lifetime === 'singleton') {
       return this.singleton = this.createProxy(...parameters)
@@ -231,7 +237,7 @@ export class ResolverRegistration<Value extends ReturnType<Resolver>> implements
     this.injection = options?.injection ?? ResolverRegistration.DEFAULT_INJECTION
   }
 
-  public clone(bundle: RegistrationBundle): ResolverRegistration<Value> {
+  public clone(bundle?: RegistrationBundle): ResolverRegistration<Value> {
     const mergedBundle = {
       ...this.bundle,
       ...bundle,
@@ -245,12 +251,15 @@ export class ResolverRegistration<Value extends ReturnType<Resolver>> implements
     })
   }
 
-  public resolve(): Value {
+  public resolve(bundle?: RegistrationBundle): Value {
     if(this.singleton) {
       return this.singleton
     }
 
-    const parameters = [this.bundle]
+    const parameters = [{
+      ...this.bundle,
+      ...bundle,
+    }]
 
     if(this.lifetime === 'singleton') {
       return this.singleton = this.target(...parameters)
