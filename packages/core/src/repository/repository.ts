@@ -51,7 +51,7 @@ export interface Repository<E extends Entity<any>> {
 
   /**
    * @description Updates multiple entity instances given an array of ids and a partial entity representation.
-   * @param {E['id'][]} ids An array of ids that matches the instances to be updaetd.
+   * @param {E['id'][]} ids An array of ids that matches the instances to be updated.
    * @param {EntityPropertiesPartial<E>} attributes An object with the attributes and values to be updated.
    * @returns {Promise<E[]>} Returns the updated entities.
    * @throws {RepositoryError} Throws a RepositoryError in case of failure.
