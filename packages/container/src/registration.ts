@@ -1,171 +1,265 @@
-import * as Types from '@nodelith/types'
-import * as Injection from './index'
+import {
+  Constructor,
+  Resolver,
+  Factory,
+  Function,
+} from '@nodelith/types'
 
-export interface Registration<Resolution = any> {
-  token: Injection.Token,
-  resolution: Resolution,
+export type RegistrationToken = string | symbol | number
+
+export type RegistrationBundle = Record<RegistrationToken, any>
+
+export type RegistrationAccess = 'public' | 'private'
+
+export type RegistrationLifetime = 'transient' | 'singleton'
+
+export type RegistrationInjection = 'spread' | 'bundle'
+
+export interface Registration<R = any> {
+  readonly token: RegistrationToken,
+  readonly resolution: R,
+  clone: Function<Registration<R>, [{ bundle?:  RegistrationBundle }]>
+  resolve: Function<R>,
 }
 
-export abstract class TargetRegistration<Resolution, Target extends Types.Constructor | Types.Resolver | Types.Factory> implements Registration<Resolution> {  
-  protected static readonly DEFAULT_INJECTION_MODE: Injection.Injection = 'spread'
-  protected static readonly DEFAULT_INJECTION_LIFETIME: Injection.Lifetime = 'singleton'
-  protected static readonly DEFAULT_INITIALIZATION_MODE: Injection.Initialization = 'lazy'
+export class StaticRegistration<Resolution = any> implements Registration<Resolution> {
 
-  protected readonly target: Target
-  protected readonly bundle: Injection.Bundle
-  protected readonly lifetime: Injection.Lifetime
-  protected readonly injection: Injection.Injection
-  protected readonly initialization: Injection.Initialization
+  public readonly token: RegistrationToken;
 
-  public readonly token: Injection.Token
-  
-  private singleton?: Resolution
+  public readonly resolution: Resolution
 
-  public constructor(target: Target, options?: {
-    token?: Injection.Token | undefined
-    bundle?: Injection.Bundle | undefined
-    lifetime?: Injection.Lifetime | undefined
-    injection?: Injection.Injection | undefined
-    initialization?: Injection.Initialization | undefined
-  }) {
-    this.target = target
+  public constructor(staticResolution: Resolution, options?: {
+    token?: RegistrationToken
+  })  {
     this.token = options?.token ?? Symbol()
-    this.bundle = options?.bundle ?? {}
-    this.lifetime = options?.lifetime ?? TargetRegistration.DEFAULT_INJECTION_LIFETIME
-    this.injection = options?.injection ?? TargetRegistration.DEFAULT_INJECTION_MODE
-    this.initialization = options?.initialization ?? TargetRegistration.DEFAULT_INITIALIZATION_MODE
+    this.resolution = staticResolution
   }
 
-  private get proxy(): Resolution {
-    let proxyResolution: Resolution
-
-    return new Proxy({} as any, {
-      set: (_target, property) => {
-        throw new Error(`Could not set dependency property "${property.toString()}". Dependency properties can not be set through registration result.`)
-      },
-      get: (_target, property) => {
-        if(!proxyResolution) {
-          proxyResolution = this.resolve(...this.arguments)
-        }
- 
-        return proxyResolution[property]
-      },
+  public clone(): StaticRegistration<Resolution> {
+    return new StaticRegistration(this.resolution, {
+      token: this.token,
     })
   }
 
-  private get arguments(): any[] {
-    if(this.injection === 'bundle') {
-      return [this.bundle]
-    }
+  public resolve(): Resolution {
+    return this.resolution
+  }
+}
 
-    return [this.bundle]
+export class FactoryRegistration<Object extends ReturnType<Factory>> implements Registration<Object> {
+  protected static readonly DEFAULT_LIFETIME: RegistrationLifetime = 'singleton'
+  protected static readonly DEFAULT_INJECTION: RegistrationInjection = 'spread'
+
+  public readonly token: RegistrationToken;
+
+  protected readonly bundle: RegistrationBundle
+  protected readonly lifetime: RegistrationLifetime
+  protected readonly injection: RegistrationInjection
+
+  protected readonly target: Factory<Object>
+
+  private singleton?: Object
+
+  public constructor(target: Factory<Object>, options?: {
+    token?: RegistrationToken
+    bundle?: RegistrationBundle
+    lifetime?: RegistrationLifetime
+    injection?: RegistrationInjection
+  })  {
+    this.target = target
+    this.token = options?.token ?? Symbol()
+    this.bundle = options?.bundle ?? {}
+    this.lifetime = options?.lifetime ?? FactoryRegistration.DEFAULT_LIFETIME
+    this.injection = options?.injection ?? FactoryRegistration.DEFAULT_INJECTION
   }
 
-  public get resolution(): Resolution {
+  private createProxy(...parameters: any[]) {
+    let instance: Object | undefined;
+
+    return new Proxy({} as Object, {
+      set: (_target, property) => {
+        throw new Error(
+          `Cannot set property "${property.toString()}". Object properties are read-only and cannot be set.`
+        );
+      },
+      get: (_target, property) => {
+        if (!instance) {
+          instance = this.target(...parameters);
+        }
+  
+        return instance[property];
+      }
+    });
+  }
+
+  public clone(bundle: RegistrationBundle): FactoryRegistration<Object> {
+    const mergedBundle = {
+      ...this.bundle,
+      ...bundle,
+    }
+
+    return new FactoryRegistration(this.target, {
+      token: this.token,
+      bundle: mergedBundle,
+      lifetime: this.lifetime,
+      injection: this.injection,
+    })
+  }
+
+  public resolve(): Object {
+    if(this.singleton) {
+      return this.singleton
+    }
+    
+    const parameters = [this.bundle]
+
+    if(this.lifetime === 'singleton') {
+      return this.singleton = this.createProxy(...parameters)
+    }
+
+    return this.createProxy(...parameters)
+  }
+
+  public get resolution() {
+    return this.resolve()
+  }
+}
+
+export class ConstructorRegistration<Instance extends InstanceType<Constructor>> implements Registration<Instance> {
+  protected static readonly DEFAULT_LIFETIME: RegistrationLifetime = 'singleton'
+  protected static readonly DEFAULT_INJECTION: RegistrationInjection = 'spread'
+
+  public readonly token: RegistrationToken;
+
+  protected readonly bundle: RegistrationBundle
+  protected readonly lifetime: RegistrationLifetime
+  protected readonly injection: RegistrationInjection
+
+  protected readonly target: Constructor<Instance>
+
+  private singleton?: Instance
+
+  public constructor(target: Constructor<Instance>, options?: {
+    token?: RegistrationToken
+    bundle?: RegistrationBundle
+    lifetime?: RegistrationLifetime
+    injection?: RegistrationInjection
+  })  {
+    this.target = target
+    this.token = options?.token ?? Symbol()
+    this.bundle = options?.bundle ?? {}
+    this.lifetime = options?.lifetime ?? ConstructorRegistration.DEFAULT_LIFETIME
+    this.injection = options?.injection ?? ConstructorRegistration.DEFAULT_INJECTION
+  }
+
+  private createProxy(...parameters: any[]) {
+    let instance: Instance | undefined;
+
+    return new Proxy({} as Instance, {
+      set: (_target, property) => {
+        throw new Error(
+          `Cannot set property "${property.toString()}". Instance properties are read-only and cannot be set.`
+        );
+      },
+      get: (_target, property) => {
+        if (!instance) {
+          instance = new this.target(...parameters);
+        }
+  
+        return instance[property];
+      }
+    });
+  }
+
+  public clone(bundle: RegistrationBundle): ConstructorRegistration<Instance> {
+    const mergedBundle = {
+      ...this.bundle,
+      ...bundle,
+    }
+
+    return new ConstructorRegistration(this.target, {
+      token: this.token,
+      bundle: mergedBundle,
+      lifetime: this.lifetime,
+      injection: this.injection,
+    })
+  }
+
+  public resolve(): Instance {
     if(this.singleton) {
       return this.singleton
     }
 
-    if(this.initialization === 'lazy' && this.lifetime === 'transient') {
-      return this.proxy
+    const parameters = [this.bundle]
+
+    if(this.lifetime === 'singleton') {
+      return this.singleton = this.createProxy(...parameters)
     }
 
-    if(this.initialization === 'lazy' && this.lifetime === 'singleton') {
-      return this.singleton = this.proxy
-    }
-
-    if(this.initialization === 'eager' && this.lifetime === 'transient') {
-      return this.resolve(...this.arguments)
-    }
-
-    if(this.initialization === 'eager' && this.lifetime === 'singleton') {
-      return this.singleton = this.resolve(...this.arguments)
-    }
-
-    throw new Error('TODO')
-  }
-
-  protected abstract resolve(...args: any): Resolution
-}
-
-export class ValueRegistration<Value> implements Registration<Value> {
-  private readonly value: Value
-  
-  public readonly token: Injection.Token
-
-  public constructor(value: Value, options?: {
-    token?: Injection.Token
-  }) {
-    this.value = value
-    this.token = options?.token ?? Symbol()
+    return this.createProxy(...parameters)
   }
 
   public get resolution() {
-    return this.value
+    return this.resolve()
   }
 }
 
-export class ResolverRegistration<R extends ReturnType<Types.Resolver>> extends TargetRegistration<R, Types.Resolver<R>> {
-  public constructor(resolver: Types.Resolver<R>, options?: {
-    token?: Injection.Token
-    bundle?: Injection.Bundle
-    lifetime?: Injection.Lifetime
-    injection?: Injection.Injection
-  }) {
-    super(resolver, {
-      token: options?.token,
-      bundle: options?.bundle,
-      lifetime: options?.lifetime,
-      injection: options?.injection,
-      initialization: 'eager',
+export class ResolverRegistration<Value extends ReturnType<Resolver>> implements Registration<Value> {
+  protected static readonly DEFAULT_LIFETIME: RegistrationLifetime = 'singleton'
+  protected static readonly DEFAULT_INJECTION: RegistrationInjection = 'spread'
+
+  public readonly token: RegistrationToken;
+
+  protected readonly bundle: RegistrationBundle
+  protected readonly lifetime: RegistrationLifetime
+  protected readonly injection: RegistrationInjection
+
+  protected readonly target: Resolver<Value>
+
+  private singleton?: Value
+
+  public constructor(target: Resolver<Value>, options?: {
+    token?: RegistrationToken
+    bundle?: RegistrationBundle
+    lifetime?: RegistrationLifetime
+    injection?: RegistrationInjection
+  })  {
+    this.target = target
+    this.token = options?.token ?? Symbol()
+    this.bundle = options?.bundle ?? {}
+    this.lifetime = options?.lifetime ?? ResolverRegistration.DEFAULT_LIFETIME
+    this.injection = options?.injection ?? ResolverRegistration.DEFAULT_INJECTION
+  }
+
+  public clone(bundle: RegistrationBundle): ResolverRegistration<Value> {
+    const mergedBundle = {
+      ...this.bundle,
+      ...bundle,
+    }
+
+    return new ResolverRegistration(this.target, {
+      token: this.token,
+      bundle: mergedBundle,
+      lifetime: this.lifetime,
+      injection: this.injection,
     })
   }
 
-  protected resolve(...args: any) {
-    return this.target(...args)
-  }
-}
+  public resolve(): Value {
+    if(this.singleton) {
+      return this.singleton
+    }
 
-export class FactoryRegistration<R extends Types.FactoryResult> extends TargetRegistration<R, Types.Factory<R>> {
-  public constructor(factory: Types.Factory<R>, options?: {
-    token?: Injection.Token
-    bundle?: Injection.Bundle
-    lifetime?: Injection.Lifetime
-    injection?: Injection.Injection
-    initialization?: Injection.Initialization
-  }) {
-    super(factory, {
-      token: options?.token,
-      bundle: options?.bundle,
-      lifetime: options?.lifetime,
-      injection: options?.injection,
-      initialization: options?.initialization,
-    })
+    const parameters = [this.bundle]
+
+    if(this.lifetime === 'singleton') {
+      return this.singleton = this.target(...parameters)
+    }
+
+    return this.target(...parameters)
   }
 
-  protected resolve(...args: any) {
-    return this.target(...args)
-  }
-}
-
-export class ConstructorRegistration<R extends Types.ConstructorResult> extends TargetRegistration<R,  Types.Constructor<R>> {
-  public constructor(constructor: Types.Constructor<R>, options?: {
-    token?: Injection.Token
-    bundle?: Injection.Bundle
-    lifetime?: Injection.Lifetime
-    injection?: Injection.Injection
-    initialization?: Injection.Initialization
-  }) {
-    super(constructor, {
-      token: options?.token,
-      bundle: options?.bundle,
-      lifetime: options?.lifetime,
-      injection: options?.injection,
-      initialization: options?.initialization,
-    })
-  }
-
-  protected resolve(...args: any) {
-    return new this.target(...args)
+  get resolution() { 
+    return this.resolve()
   }
 }

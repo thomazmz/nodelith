@@ -1,3 +1,3 @@
-import * as Types from '@nodelith/types'
+import { Function } from './function'
 
-export type Callback<Args extends any[] = any[]> = Types.Function<void, Args>
+export type Callback<Args extends any[] = any[]> = Function<void, Args>

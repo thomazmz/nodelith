@@ -1,5 +1,14 @@
-import * as Types from '@nodelith/types'
-import * as Injection from './index'
+import {
+  Factory,
+} from '@nodelith/types'
+
+import { 
+  Container
+} from 'container'
+
+import {
+  FactoryRegistration
+} from 'registration'
 
 describe('Container', () => {
 
@@ -13,21 +22,21 @@ describe('Container', () => {
     targetFactoryDoubleWasCalled = false
   })
 
-  const targetFactoryOne: Types.Factory = ({ targetTwo }) => {
+  const targetFactoryOne: Factory = ({ targetTwo }) => {
     const call = () => 'targetOne::call'
     const callDependency = () => targetTwo.call()
     targetFactoryOneWasCalled = true
     return { call, callDependency }
   }
 
-  const targetFactoryTwo: Types.Factory = ({ targetOne }) => {
+  const targetFactoryTwo: Factory = ({ targetOne }) => {
     const call = () => 'targetTwo::call'
     const callDependency = () => targetOne.call()
     targetFactoryTwoWasCalled = true
     return { call, callDependency }
   }
 
-  const targetFactoryDouble: Types.Factory = () => {
+  const targetFactoryDouble: Factory = () => {
     const call = () => 'targetDouble::call'
     targetFactoryDoubleWasCalled = true
     return { call }
@@ -35,9 +44,9 @@ describe('Container', () => {
 
   describe('registration', () => {
 
-    const container = new Injection.Container()
+    const container = new Container()
   
-    const registrationOne = new Injection.FactoryRegistration(targetFactoryOne, {
+    const registrationOne = new FactoryRegistration(targetFactoryOne, {
       token: 'targetOne',
       bundle: container.bundle,
     })
@@ -59,14 +68,14 @@ describe('Container', () => {
 
   describe('resolution', () => {
     it('Should resolve acyclic dependency graph', () => {
-      const container = new Injection.Container()
+      const container = new Container()
   
-      const registrationOne = new Injection.FactoryRegistration(targetFactoryOne, {
+      const registrationOne = new FactoryRegistration(targetFactoryOne, {
         token: 'targetOne',
         bundle: container.bundle,
       })
   
-      const registrationTwo = new Injection.FactoryRegistration(targetFactoryDouble, {
+      const registrationTwo = new FactoryRegistration(targetFactoryDouble, {
         token: 'targetTwo',
         bundle: container.bundle,
       })
@@ -88,14 +97,14 @@ describe('Container', () => {
     })
   
     it('Should resolve cyclic dependency graph when dependency properties are not accessed during instance initialization', () => {
-      const container = new Injection.Container()
+      const container = new Container()
   
-      const registrationOne = new Injection.FactoryRegistration(targetFactoryOne, {
+      const registrationOne = new FactoryRegistration(targetFactoryOne, {
         token: 'targetOne',
         bundle: container.bundle,
       })
   
-      const registrationTwo = new Injection.FactoryRegistration(targetFactoryTwo, {
+      const registrationTwo = new FactoryRegistration(targetFactoryTwo, {
         token: 'targetTwo',
         bundle: container.bundle,
       })
@@ -119,14 +128,14 @@ describe('Container', () => {
     })
   
     it('Should resolve cyclic dependency graph when dependency properties are accessed in single direction', () => {
-      const container = new Injection.Container()
+      const container = new Container()
   
-      const registrationOne = new Injection.FactoryRegistration(targetFactoryOne, {
+      const registrationOne = new FactoryRegistration(targetFactoryOne, {
         token: 'targetOne',
         bundle: container.bundle,
       })
   
-      const registrationTwo = new Injection.FactoryRegistration((dependencies) => {
+      const registrationTwo = new FactoryRegistration((dependencies) => {
         const targetOneCallResultDuringResolution = dependencies.targetOne.call()
         expect(targetOneCallResultDuringResolution).toBe('targetOne::call')
         return targetFactoryTwo(dependencies)
@@ -154,14 +163,14 @@ describe('Container', () => {
     })
   
     it('Should lazily resolve dependency targets only when dependency properties are accessed', () => {
-      const container = new Injection.Container()
+      const container = new Container()
 
-      const registrationOne = new Injection.FactoryRegistration(targetFactoryOne, {
+      const registrationOne = new FactoryRegistration(targetFactoryOne, {
         token: 'targetOne',
         bundle: container.bundle,
       })
       
-      const registrationTwo = new Injection.FactoryRegistration(targetFactoryTwo, {
+      const registrationTwo = new FactoryRegistration(targetFactoryTwo, {
         token: 'targetTwo',
         bundle: container.bundle,
       })
@@ -192,7 +201,7 @@ describe('Container', () => {
 
   describe('bundle', () => {
     it('Should throw error on attempt to set dependency through bundle object', () => {
-      const container = new Injection.Container()
+      const container = new Container()
 
       expect(() => container.bundle['dependencyToken'] = 'value').toThrow(
         `Could not set registration "dependencyToken". Registration should not be done through bundle.`
@@ -200,7 +209,7 @@ describe('Container', () => {
     })
     
     it('Should throw error on attempt to access invalid registration token', () => {
-      const container = new Injection.Container()
+      const container = new Container()
 
       expect(() => container.bundle['key']).toThrow(
         `Could not resolve dependency "key". Invalid registration token.`
@@ -212,7 +221,7 @@ describe('Container', () => {
         return { property: 'someResolvedDependency' }
       }
 
-      const someRegistration = new Injection.FactoryRegistration(someFactory, { 
+      const someRegistration = new FactoryRegistration(someFactory, { 
         token: 'someDependency'
       })
 
@@ -221,17 +230,17 @@ describe('Container', () => {
         return { property: 'anotherResolvedDependency' }
       }
 
-      const anotherRegistration = new Injection.FactoryRegistration(anotherFactory, { 
+      const anotherRegistration = new FactoryRegistration(anotherFactory, { 
         token: 'anotherDependency'
       })
 
-      const someContainer = new Injection.Container()
+      const someContainer = new Container()
 
       someContainer.push(
         someRegistration,
       )
 
-      const anotherContainer = new Injection.Container()
+      const anotherContainer = new Container()
 
       anotherContainer.push(
         anotherRegistration,
@@ -248,14 +257,14 @@ describe('Container', () => {
     })
 
     it('Should return target tokens as bundle keys', () => {
-      const container = new Injection.Container()
+      const container = new Container()
   
-      const registrationOne = new Injection.FactoryRegistration(targetFactoryOne, {
+      const registrationOne = new FactoryRegistration(targetFactoryOne, {
         token: 'targetOne',
         bundle: container.bundle,
       })
   
-      const registrationTwo = new Injection.FactoryRegistration(targetFactoryDouble, {
+      const registrationTwo = new FactoryRegistration(targetFactoryDouble, {
         token: 'targetTwo',
         bundle: container.bundle,
       })

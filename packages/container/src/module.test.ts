@@ -1,5 +1,11 @@
-import * as Types from '@nodelith/types'
-import { Module } from './module'
+import {
+  Resolver,
+  Factory,
+} from '@nodelith/types'
+
+import { 
+  Module
+} from './module'
 
 describe('Module', () => {
   interface GenericInterface {
@@ -83,7 +89,7 @@ describe('Module', () => {
     it('Should register resolver registration', () => {
       const module = new Module()
 
-      const someResolver: Types.Resolver = () => {
+      const someResolver: Resolver = () => {
         return 'someValue'
       }
 
@@ -96,7 +102,7 @@ describe('Module', () => {
     it('Should register factory registration', () => {
       const module = new Module()
 
-      const someFactory: Types.Factory = () => {
+      const someFactory: Factory = () => {
         return { value: 'someValue' }
       }
 
@@ -111,21 +117,21 @@ describe('Module', () => {
 
       const someValue = 'someValue'
 
-      module.registerValue('someToken', someValue)
+      module.registerStatic('someToken', someValue)
       expect(module.registrations.length).toBe(1)
       expect(module.registrations[0]?.token).toEqual('someToken')
       expect(module.registrations[0]?.resolution).toEqual('someValue')
     })
   })
 
-  describe('resolveToken', () => {
+  describe('provide', () => {
     it('Should throw error when registration key does not exist', () => {
       const module = new Module()
 
       module.registerConstructor('someClassInstance', SomeClass)
       module.registerConstructor('anotherClassInstance', AnotherClass)
 
-      expect(() => module.resolveToken('invalidKey')).toThrow()
+      expect(() => module.provide('invalidKey')).toThrow()
     })
     
     it('Should correctly call resolved class instances injected under resolved primary instance', () => {
@@ -134,7 +140,7 @@ describe('Module', () => {
       module.registerConstructor('someClassInstance', SomeClass)
       module.registerConstructor('anotherClassInstance', AnotherClass)
 
-      const someClassInstance = module.resolveToken<SomeClass>('someClassInstance')
+      const someClassInstance = module.provide<SomeClass>('someClassInstance')
 
       expect(someClassInstance.call()).toEqual('SomeClass::call')
       expect(someClassInstance.callAnother()).toEqual('AnotherClass::call')
@@ -146,7 +152,7 @@ describe('Module', () => {
       module.registerConstructor('someClassInstance', SomeClass)
       module.registerConstructor('anotherClassInstance', AnotherClass)
 
-      const anotherClassInstance = module.resolveToken<AnotherClass>('anotherClassInstance')
+      const anotherClassInstance = module.provide<AnotherClass>('anotherClassInstance')
 
       expect(anotherClassInstance.call()).toEqual('AnotherClass::call')
       expect(anotherClassInstance.callSome()).toEqual('SomeClass::call')
@@ -158,7 +164,7 @@ describe('Module', () => {
       module.registerFactory('someFactoryInstance', someFactory)
       module.registerFactory('anotherFactoryInstance', anotherFactory)
 
-      const someFactoryInstance = module.resolveToken<ReturnType<typeof someFactory>>('someFactoryInstance')
+      const someFactoryInstance = module.provide<ReturnType<typeof someFactory>>('someFactoryInstance')
 
       expect(someFactoryInstance.call()).toEqual('someFactory::call')
       expect(someFactoryInstance.callAnother()).toEqual('anotherFactory::call')
@@ -170,7 +176,7 @@ describe('Module', () => {
       module.registerFactory('someFactoryInstance', someFactory)
       module.registerFactory('anotherFactoryInstance', anotherFactory)
 
-      const anotherFactoryInstance = module.resolveToken<ReturnType<typeof someFactory>>('anotherFactoryInstance')
+      const anotherFactoryInstance = module.provide<ReturnType<typeof someFactory>>('anotherFactoryInstance')
 
       expect(anotherFactoryInstance.call()).toEqual('anotherFactory::call')
       expect(anotherFactoryInstance.callSome()).toEqual('someFactory::call')
@@ -194,7 +200,7 @@ describe('Module', () => {
       module.registerFactory('someFactoryInstance', someFactory)
       module.registerFactory('anotherFactoryInstance', anotherFactory)
   
-      const stub = module.resolveFactory(stubFactory)
+      const stub = module.provideFactory(stubFactory)
   
       expect(stub.callSome()).toBe('someFactory::call')
       expect(stub.callAnother()).toBe('anotherFactory::call')
@@ -227,8 +233,7 @@ describe('Module', () => {
   
       module.registerConstructor('someClassInstance', SomeClass)
       module.registerConstructor('anotherClassInstance', AnotherClass)
-  
-      const stub = module.resolveConstructor(StubClass)
+      const stub = module.provideConstructor(StubClass)
   
       expect(stub.callSome()).toBe('SomeClass::call')
       expect(stub.callAnother()).toBe('AnotherClass::call')

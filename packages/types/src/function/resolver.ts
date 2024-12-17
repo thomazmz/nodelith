@@ -1,3 +1,4 @@
-import * as Types from '@nodelith/types'
+import { Value } from '../value'
+import { Function } from './function'
 
-export type Resolver<T extends Types.Value = Types.Value> = Types.Function<T>
+export type Resolver<T extends Value = Value> = Function<T>

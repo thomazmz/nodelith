@@ -1,25 +1,29 @@
-import * as Injection from './index'
+import { 
+  Registration,
+  RegistrationToken,
+  RegistrationBundle,
+} from './registration'
 
-export class Container<B extends Injection.Bundle = any> {
-  private readonly dependencyMap: Map<Injection.Token, Injection.Registration> = new Map()
+export class Container<B extends RegistrationBundle = any> {
+  private readonly dependencyMap: Map<RegistrationToken, Registration> = new Map()
   
   public readonly bundle: B
 
-  public get registrations(): Injection.Registration[] {
+  public get registrations(): Registration[] {
     return Array.from(this.dependencyMap.values())
   }
 
-  public push(...registrations: Injection.Registration[]): void {
+  public push(...registrations: Registration[]): void {
     for (const registration of registrations) {
       this.dependencyMap.set(registration.token, registration)
     }
   }
 
-  public has(token: Injection.Token): boolean {
+  public has(token: RegistrationToken): boolean {
     return this.dependencyMap.has(token)
   }
 
-  public get(token: Injection.Token): Injection.Registration | undefined {
+  public get(token: RegistrationToken): Registration | undefined {
     return this.dependencyMap.get(token)
   }
 
@@ -28,7 +32,7 @@ export class Container<B extends Injection.Bundle = any> {
       ownKeys(target) {
         return Array.from(target.keys());
       },
-      getOwnPropertyDescriptor(dependencyMap: Map<Injection.Token, Injection.Registration>, token: Injection.Token) {
+      getOwnPropertyDescriptor(dependencyMap: Map<RegistrationToken, Registration>, token: RegistrationToken) {
         if (dependencyMap.has(token)) {
           return {
             value: Reflect.get(dependencyMap, token),
@@ -38,10 +42,10 @@ export class Container<B extends Injection.Bundle = any> {
         }
         return undefined;
       },
-      set(_dependencyMap: Map<Injection.Token, Injection.Registration>, token: Injection.Token) {
+      set(_dependencyMap: Map<RegistrationToken, Registration>, token: RegistrationToken) {
         throw new Error(`Could not set registration "${token.toString()}". Registration should not be done through bundle.`)
       },
-      get(map: Map<Injection.Token, Injection.Registration>, token: Injection.Token) {
+      get(map: Map<RegistrationToken, Registration>, token: RegistrationToken) {
         if(!map.has(token)) {
           throw new Error(`Could not resolve dependency "${token.toString()}". Invalid registration token.`)
         }
