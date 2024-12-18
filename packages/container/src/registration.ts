@@ -18,8 +18,8 @@ export type RegistrationInjection = 'spread' | 'bundle'
 export interface Registration<R = any> {
   readonly token: RegistrationToken,
   readonly resolution: R,
+  resolve: Function<R>,
   clone: Function<Registration<R>, [{ bundle?:  RegistrationBundle }]>
-  resolve: Function<R, [{ bundle?:  RegistrationBundle }]>,
 }
 
 export class StaticRegistration<Resolution = any> implements Registration<Resolution> {
@@ -79,7 +79,7 @@ export class FactoryRegistration<Object extends ReturnType<Factory>> implements 
     return new Proxy({} as Object, {
       set: (_target, property) => {
         throw new Error(
-          `Cannot set property "${property.toString()}". Object properties are read-only and cannot be set.`
+          `Could not set property "${property.toString()}". Properties can not be set through registration.`
         );
       },
       get: (_target, property) => {
@@ -94,8 +94,8 @@ export class FactoryRegistration<Object extends ReturnType<Factory>> implements 
 
   public clone(bundle?: RegistrationBundle): FactoryRegistration<Object> {
     const mergedBundle = {
-      ...this.bundle,
       ...bundle,
+      ...this.bundle,
     }
 
     return new FactoryRegistration(this.target, {
@@ -106,15 +106,12 @@ export class FactoryRegistration<Object extends ReturnType<Factory>> implements 
     })
   }
 
-  public resolve(bundle?: RegistrationBundle): Object {
+  public resolve(bundle: RegistrationBundle = {}): Object {
     if(this.singleton) {
       return this.singleton
     }
 
-    const parameters = [{
-      ...this.bundle,
-      ...bundle,
-    }]
+    const parameters = [this.bundle]
 
     if(this.lifetime === 'singleton') {
       return this.singleton = this.createProxy(...parameters)
@@ -161,7 +158,7 @@ export class ConstructorRegistration<Instance extends InstanceType<Constructor>>
     return new Proxy({} as Instance, {
       set: (_target, property) => {
         throw new Error(
-          `Cannot set property "${property.toString()}". Instance properties are read-only and cannot be set.`
+          `Could not set property "${property.toString()}". Properties can not be set through registration.`
         );
       },
       get: (_target, property) => {
@@ -176,8 +173,8 @@ export class ConstructorRegistration<Instance extends InstanceType<Constructor>>
 
   public clone(bundle?: RegistrationBundle): ConstructorRegistration<Instance> {
     const mergedBundle = {
-      ...this.bundle,
       ...bundle,
+      ...this.bundle,
     }
 
     return new ConstructorRegistration(this.target, {
@@ -188,21 +185,16 @@ export class ConstructorRegistration<Instance extends InstanceType<Constructor>>
     })
   }
 
-  public resolve(bundle?: RegistrationBundle): Instance {
+  public resolve(): Instance {
     if(this.singleton) {
       return this.singleton
     }
 
-    const parameters = [{
-      ...this.bundle,
-      ...bundle,
-    }]
-
     if(this.lifetime === 'singleton') {
-      return this.singleton = this.createProxy(...parameters)
+      return this.singleton = this.createProxy(this.bundle)
     }
 
-    return this.createProxy(...parameters)
+    return this.createProxy(this.bundle)
   }
 
   public get resolution() {
@@ -238,34 +230,24 @@ export class ResolverRegistration<Value extends ReturnType<Resolver>> implements
   }
 
   public clone(bundle?: RegistrationBundle): ResolverRegistration<Value> {
-    const mergedBundle = {
-      ...this.bundle,
-      ...bundle,
-    }
-
     return new ResolverRegistration(this.target, {
       token: this.token,
-      bundle: mergedBundle,
+      bundle: this.bundle,
       lifetime: this.lifetime,
       injection: this.injection,
     })
   }
 
-  public resolve(bundle?: RegistrationBundle): Value {
+  public resolve(): Value {
     if(this.singleton) {
       return this.singleton
     }
 
-    const parameters = [{
-      ...this.bundle,
-      ...bundle,
-    }]
-
     if(this.lifetime === 'singleton') {
-      return this.singleton = this.target(...parameters)
+      return this.singleton = this.target(this.bundle)
     }
 
-    return this.target(...parameters)
+    return this.target(this.bundle)
   }
 
   get resolution() { 

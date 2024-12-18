@@ -4,11 +4,11 @@ import {
 
 import { 
   Container
-} from 'container'
+} from './container'
 
 import {
   FactoryRegistration
-} from 'registration'
+} from './registration'
 
 describe('Container', () => {
 
@@ -43,7 +43,6 @@ describe('Container', () => {
   }
 
   describe('registration', () => {
-
     const container = new Container()
   
     const registrationOne = new FactoryRegistration(targetFactoryOne, {
@@ -94,6 +93,8 @@ describe('Container', () => {
       const targetOneCallDependencyResult = container.bundle.targetOne.callDependency()
   
       expect(targetOneCallDependencyResult).toBe('targetDouble::call')
+
+      expect(true).toBe(true)
     })
   
     it('Should resolve cyclic dependency graph when dependency properties are not accessed during instance initialization', () => {
@@ -218,7 +219,7 @@ describe('Container', () => {
 
     it('Should allows bundle to be merged using object destructuring', () => {
       const someFactory = () => {
-        return { property: 'someResolvedDependency' }
+                return { property: 'someResolvedDependency' }
       }
 
       const someRegistration = new FactoryRegistration(someFactory, { 
@@ -227,7 +228,7 @@ describe('Container', () => {
 
 
       const anotherFactory = () => {
-        return { property: 'anotherResolvedDependency' }
+                return { property: 'anotherResolvedDependency' }
       }
 
       const anotherRegistration = new FactoryRegistration(anotherFactory, { 

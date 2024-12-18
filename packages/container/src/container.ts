@@ -29,8 +29,8 @@ export class Container<B extends RegistrationBundle = any> {
 
   public constructor() {
     this.bundle = new Proxy(this.dependencyMap as any, {
-      ownKeys(target) {
-        return Array.from(target.keys());
+      ownKeys(dependencyMap) {
+        return Array.from(dependencyMap.keys());
       },
       getOwnPropertyDescriptor(dependencyMap: Map<RegistrationToken, Registration>, token: RegistrationToken) {
         if (dependencyMap.has(token)) {
@@ -45,12 +45,12 @@ export class Container<B extends RegistrationBundle = any> {
       set(_dependencyMap: Map<RegistrationToken, Registration>, token: RegistrationToken) {
         throw new Error(`Could not set registration "${token.toString()}". Registration should not be done through bundle.`)
       },
-      get(map: Map<RegistrationToken, Registration>, token: RegistrationToken) {
-        if(!map.has(token)) {
+      get(dependencyMap: Map<RegistrationToken, Registration>, token: RegistrationToken) {
+        if(!dependencyMap.has(token)) {
           throw new Error(`Could not resolve dependency "${token.toString()}". Invalid registration token.`)
         }
-    
-        const registration = map.get(token)
+
+        const registration = dependencyMap.get(token)
     
         if(!registration) {
           throw new Error(`Could not resolve dependency "${token.toString()}". Missing registration object.`)

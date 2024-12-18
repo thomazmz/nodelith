@@ -239,4 +239,30 @@ describe('Module', () => {
       expect(stub.callAnother()).toBe('AnotherClass::call')
     })
   })
+
+  describe('useModule', () => {
+    it('Should be able to provide any public registration registered on the used module', () => {
+      const someModule = new Module()
+      someModule.registerFactory('a', () => { return { value: 'a' }})
+      someModule.registerFactory('b', () => { return { value: 'b' }})
+
+      const anotherModule = new Module()
+      anotherModule.registerFactory('c', () => { return { value: 'c' }})
+      anotherModule.registerFactory('d', () => { return { value: 'd' }})
+
+      someModule.useModule(anotherModule)
+
+      const resolution_a = someModule.provide('a')
+      expect(resolution_a.value).toEqual('a')
+
+      const resolution_b = someModule.provide('b')
+      expect(resolution_b.value).toEqual('b')
+
+      const resolution_c = someModule.provide('c')
+      expect(resolution_c.value).toEqual('c')
+
+      const resolution_d = someModule.provide('d')
+      expect(resolution_d.value).toEqual('d')
+    })
+  })
 })

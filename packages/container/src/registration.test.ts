@@ -27,7 +27,44 @@ describe('Registration', () => {
   
       expect(resolution_0).toBe(resolution_1)
     })
-  })  
+  }) 
+
+  describe('ResolverRegistration', () => {
+    type ResolverReturn = {
+      value: string
+    }
+
+    it('Should not postpone resolution', () => {
+      
+      let targetWasCalled = false
+  
+      const resolver: Resolver<ResolverReturn> = () => {
+        targetWasCalled = true
+        return { value: 'resolved_value' }
+      }
+  
+      const registration = new ResolverRegistration(resolver)
+      expect(targetWasCalled).toBe(false)
+  
+      registration.resolution
+      expect(targetWasCalled).toBe(true)
+  
+      registration.resolution.value
+      expect(targetWasCalled).toBe(true)
+    })
+  
+    it('Should always resolve to the same result', () => {
+      const resolver: Resolver<ResolverReturn> = () => {
+        return { value: 'resolved_value' }
+      }
+  
+      const registration = new ResolverRegistration(resolver)
+      const resolution_1 = registration.resolution
+      const resolution_2 = registration.resolution
+  
+      expect(resolution_1).toBe(resolution_2)
+    })
+  }) 
 
   describe('FactoryRegistration', () => {
     it('Should postpone resolution', () => {
@@ -94,50 +131,12 @@ describe('Registration', () => {
       }
 
       const registration = new FactoryRegistration(factory)
-
+      
       expect(() => {
         registration.resolution['propertyKey'] = 'value'
       }).toThrow(
-        `Could not set dependency property "propertyKey". Dependency properties can not be set through registration result.`
+        `Could not set property "propertyKey". Properties can not be set through registration.`
       )
-    })
-  })
-
-  describe('ResolverRegistration', () => {
-
-    type ResolverReturn = {
-      value: string
-    }
-
-    it('Should not postpone resolution', () => {
-      
-      let targetWasCalled = false
-  
-      const resolver: Resolver<ResolverReturn> = () => {
-        targetWasCalled = true
-        return { value: 'resolved_value' }
-      }
-  
-      const registration = new ResolverRegistration(resolver)
-      expect(targetWasCalled).toBe(false)
-  
-      registration.resolution
-      expect(targetWasCalled).toBe(false)
-  
-      registration.resolution.value
-      expect(targetWasCalled).toBe(true)
-    })
-  
-    it('Should always resolve to the same result', () => {
-      const resolver: Resolver<ResolverReturn> = () => {
-        return { value: 'resolved_value' }
-      }
-  
-      const registration = new ResolverRegistration(resolver)
-      const resolution_1 = registration.resolution
-      const resolution_2 = registration.resolution
-  
-      expect(resolution_1).toBe(resolution_2)
     })
   })
 
@@ -201,7 +200,7 @@ describe('Registration', () => {
       expect(() => {
         registration.resolution['propertyKey'] = 'value'
       }).toThrow(
-        `Could not set dependency property "propertyKey". Dependency properties can not be set through registration result.`
+        `Could not set property "propertyKey". Properties can not be set through registration.`
       )
       
     })

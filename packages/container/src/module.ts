@@ -44,16 +44,29 @@ export class Module {
     }
   }
 
-  public registerStatic<R = any>(token: RegistrationToken, resolution: R): void {
-    const registration = new StaticRegistration(resolution, { token })
-    this.registerRegistration(token, registration)
+  public useModule(module: Module): void {
+    this.container.push(...module.registrations.map(registration => {
+      return registration.clone(this.container.bundle)
+    }))
   }
 
-  public registerRegistration<R = any>(token: RegistrationToken, registration: Registration<R>): void {
+  public useRegistration<R = any>(registration: Registration<R>): void {
+    const { token } = registration
+
     if(this.container.has(token)) {
       throw new Error(`Could not complete registration. Module already contain a registration under "${token.toString()}".`)
     }
 
+    const registrationClone = registration.clone(this.container.bundle);
+    this.container.push(registrationClone)
+  }
+
+  public registerStatic<R = any>(token: RegistrationToken, resolution: R): void {
+    if(this.container.has(token)) {
+      throw new Error(`Could not complete static registration. Module already contain a registration under "${token.toString()}".`)
+    }
+
+    const registration = new StaticRegistration(resolution, { token })
     this.container.push(registration)
   }
 
@@ -61,6 +74,10 @@ export class Module {
     lifetime: RegistrationLifetime,
     injection: RegistrationInjection,
   }): void {
+    if(this.container.has(token)) {
+      throw new Error(`Could not complete resolver registration. Module already contain a registration under "${token.toString()}".`)
+    }
+
     const registration = new ResolverRegistration(resolver, { 
       token, 
       bundle: this.container.bundle,
@@ -68,13 +85,17 @@ export class Module {
       injection: options?.injection ?? this.injection,
     })
 
-    this.registerRegistration(token, registration)
+    this.container.push(registration)
   }
 
   public registerFactory<R extends ReturnType<Types.Factory>>(token: RegistrationToken, factory: Types.Factory<R>, options?: {
     lifetime: RegistrationLifetime,
     injection: RegistrationInjection,
   }): void {
+    if(this.container.has(token)) {
+      throw new Error(`Could not complete factory registration. Module already contain a registration under "${token.toString()}".`)
+    }
+
     const registration = new FactoryRegistration(factory, {
       token, 
       bundle: this.container.bundle,
@@ -82,13 +103,17 @@ export class Module {
       injection: options?.injection ?? this.injection,
     })
 
-    this.registerRegistration(token, registration)
+    this.container.push(registration)
   }
 
   public registerConstructor<R extends InstanceType<Types.Constructor>>(token: RegistrationToken, constructor: Types.Constructor<R>, options?: {
     lifetime: RegistrationLifetime,
     injection: RegistrationInjection,
   }): void {
+    if(this.container.has(token)) {
+      throw new Error(`Could not complete constructor registration. Module already contain a registration under "${token.toString()}".`)
+    }
+
     const registration = new ConstructorRegistration(constructor, { 
       token, 
       bundle: this.container.bundle,
@@ -96,10 +121,10 @@ export class Module {
       injection: options?.injection ?? this.injection,
     })
 
-    this.registerRegistration(token, registration)
+    this.container.push(registration)
   }
 
-  public provide<R>(token: RegistrationToken): R {
+  public provide<R = any>(token: RegistrationToken): R {
     if(!this.container.has(token)) {
       throw new Error(`Failed while provisioning dependency. Module does not contain a registration for "${token.toString()}" token.`)
     }
