@@ -5,7 +5,7 @@ describe('Module', () => {
     call(): string
   }
 
-  class SomeClass implements GenericInterface {
+  class SomeClassWithBundle implements GenericInterface {
     private readonly anotherClassInstance: GenericInterface
   
     public constructor(bundle: {
@@ -22,7 +22,7 @@ describe('Module', () => {
     }
   }
 
-  class AnotherClass implements GenericInterface {
+  class AnotherClassWithBundle implements GenericInterface {
     private readonly someClassInstance: GenericInterface
   
     public constructor(bundle: {
@@ -39,8 +39,38 @@ describe('Module', () => {
     }
   }
 
-  const someFactory = (bundle: {
-    anotherFactoryInstance: ReturnType<typeof anotherFactory>
+  class SomeClassWithSpread implements GenericInterface {
+    private readonly anotherClassInstance: GenericInterface
+  
+    public constructor(anotherClassInstance: GenericInterface) {
+      this.anotherClassInstance = anotherClassInstance
+    }
+
+    public call() {
+      return 'SomeClass::call'
+    }
+    public callAnother() {
+      return this.anotherClassInstance.call()
+    }
+  }
+
+  class AnotherClassWithSpread implements GenericInterface {
+    private readonly someClassInstance: GenericInterface
+  
+    public constructor(someClassInstance: GenericInterface) {
+      this.someClassInstance = someClassInstance
+    }
+
+    public call() {
+      return 'AnotherClass::call'
+    }
+    public callSome() {
+      return this.someClassInstance.call()
+    }
+  }
+
+  const someFactoryWithBundle = (bundle: {
+    anotherFactoryInstance: ReturnType<typeof anotherFactoryWithBundle>
   }) => {
     return {
       call() { return 'someFactory::call' },
@@ -48,8 +78,8 @@ describe('Module', () => {
     }
   }
 
-  const anotherFactory = (bundle: {
-    someFactoryInstance: ReturnType<typeof someFactory>
+  const anotherFactoryWithBundle = (bundle: {
+    someFactoryInstance: ReturnType<typeof someFactoryWithBundle>
   }) => {
     return {
       call() { return 'anotherFactory::call' },
@@ -57,13 +87,27 @@ describe('Module', () => {
     }
   }
 
+  const someFactoryWithSpread = (anotherFactoryInstance: ReturnType<typeof anotherFactoryWithSpread>) => {
+    return {
+      call() { return 'someFactory::call' },
+      callAnother() { return anotherFactoryInstance.call() },
+    }
+  }
+
+  const anotherFactoryWithSpread = (someFactoryInstance: ReturnType<typeof someFactoryWithSpread>) => {
+    return {
+      call() { return 'anotherFactory::call' },
+      callSome() { return someFactoryInstance.call() },
+    }
+  }
+
   describe('register', () => {
     const module = new Module()
-    module.registerConstructor('someClassInstance', SomeClass)
-    module.registerConstructor('anotherClassInstance', AnotherClass)
+    module.registerConstructor('someClassInstance', SomeClassWithBundle)
+    module.registerConstructor('anotherClassInstance', AnotherClassWithBundle)
 
     it('Should throw error when registration key is already in used', () => {
-      expect(() => module.registerConstructor('someClassInstance', SomeClass)).toThrow()
+      expect(() => module.registerConstructor('someClassInstance', SomeClassWithBundle)).toThrow()
     })  
   })
 
@@ -71,55 +115,55 @@ describe('Module', () => {
     it('Should throw error when registration key does not exist', () => {
       const module = new Module()
 
-      module.registerConstructor('someClassInstance', SomeClass)
-      module.registerConstructor('anotherClassInstance', AnotherClass)
+      module.registerConstructor('someClassInstance', SomeClassWithBundle)
+      module.registerConstructor('anotherClassInstance', AnotherClassWithBundle)
 
       expect(() => module.resolveToken('invalidKey')).toThrow()
     })
     
     it('Should correctly call resolved class instances injected under resolved primary instance', () => {
-      const module = new Module()
+      const module = new Module({ mode: 'bundle' })
 
-      module.registerConstructor('someClassInstance', SomeClass)
-      module.registerConstructor('anotherClassInstance', AnotherClass)
+      module.registerConstructor('someClassInstance', SomeClassWithBundle)
+      module.registerConstructor('anotherClassInstance', AnotherClassWithBundle)
 
-      const someClassInstance = module.resolveToken<SomeClass>('someClassInstance')
+      const someClassInstance = module.resolveToken<SomeClassWithBundle>('someClassInstance')
 
       expect(someClassInstance.call()).toEqual('SomeClass::call')
       expect(someClassInstance.callAnother()).toEqual('AnotherClass::call')
     })
   
     it('Should correctly call resolved class instances injected under resolved secondary instance', () => {
-      const module = new Module()
+      const module = new Module({ mode: 'bundle' })
 
-      module.registerConstructor('someClassInstance', SomeClass)
-      module.registerConstructor('anotherClassInstance', AnotherClass)
+      module.registerConstructor('someClassInstance', SomeClassWithBundle)
+      module.registerConstructor('anotherClassInstance', AnotherClassWithBundle)
 
-      const anotherClassInstance = module.resolveToken<AnotherClass>('anotherClassInstance')
+      const anotherClassInstance = module.resolveToken<AnotherClassWithBundle>('anotherClassInstance')
 
       expect(anotherClassInstance.call()).toEqual('AnotherClass::call')
       expect(anotherClassInstance.callSome()).toEqual('SomeClass::call')
     })
 
     it('Should correctly call resolved factory instances injected under resolved primary instance', () => {
-      const module = new Module()
+      const module = new Module({ mode: 'bundle' })
 
-      module.registerFactory('someFactoryInstance', someFactory)
-      module.registerFactory('anotherFactoryInstance', anotherFactory)
+      module.registerFactory('someFactoryInstance', someFactoryWithBundle)
+      module.registerFactory('anotherFactoryInstance', anotherFactoryWithBundle)
 
-      const someFactoryInstance = module.resolveToken<ReturnType<typeof someFactory>>('someFactoryInstance')
+      const someFactoryInstance = module.resolveToken<ReturnType<typeof someFactoryWithBundle>>('someFactoryInstance')
 
       expect(someFactoryInstance.call()).toEqual('someFactory::call')
       expect(someFactoryInstance.callAnother()).toEqual('anotherFactory::call')
     })
   
     it('Should correctly call resolved factory instances injected under resolved secondary instance', () => {
-      const module = new Module()
+      const module = new Module({ mode: 'bundle' })
 
-      module.registerFactory('someFactoryInstance', someFactory)
-      module.registerFactory('anotherFactoryInstance', anotherFactory)
+      module.registerFactory('someFactoryInstance', someFactoryWithBundle)
+      module.registerFactory('anotherFactoryInstance', anotherFactoryWithBundle)
 
-      const anotherFactoryInstance = module.resolveToken<ReturnType<typeof someFactory>>('anotherFactoryInstance')
+      const anotherFactoryInstance = module.resolveToken<ReturnType<typeof someFactoryWithBundle>>('anotherFactoryInstance')
 
       expect(anotherFactoryInstance.call()).toEqual('anotherFactory::call')
       expect(anotherFactoryInstance.callSome()).toEqual('someFactory::call')
@@ -127,9 +171,9 @@ describe('Module', () => {
   })
 
   describe('resolveFactory', () => {
-    const stubFactory = (bundle: {
-      someFactoryInstance: ReturnType<typeof someFactory>,
-      anotherFactoryInstance: ReturnType<typeof anotherFactory>
+    const stubFactoryWithBundle = (bundle: {
+      someFactoryInstance: ReturnType<typeof someFactoryWithBundle>,
+      anotherFactoryInstance: ReturnType<typeof anotherFactoryWithBundle>
     }) => {
       return {
         callSome() { return bundle.someFactoryInstance.call() },
@@ -137,13 +181,47 @@ describe('Module', () => {
       }
     }
 
-    it('should resolve factory', () => {
+    const stubFactoryWithSpread = (
+      someFactoryInstance: ReturnType<typeof someFactoryWithSpread>,
+      anotherFactoryInstance: ReturnType<typeof anotherFactoryWithSpread>
+    ) => {
+      return {
+        callSome() { return someFactoryInstance.call() },
+        callAnother() { return anotherFactoryInstance.call() },
+      }
+    }
+
+    it('should resolve factory using using injection mode spread by default', () => {
       const module = new Module()
   
-      module.registerFactory('someFactoryInstance', someFactory)
-      module.registerFactory('anotherFactoryInstance', anotherFactory)
+      module.registerFactory('someFactoryInstance', someFactoryWithSpread)
+      module.registerFactory('anotherFactoryInstance', anotherFactoryWithSpread)
   
-      const stub = module.resolveFactory(stubFactory)
+      const stub = module.resolveFactory(stubFactoryWithSpread)
+  
+      expect(stub.callSome()).toBe('someFactory::call')
+      expect(stub.callAnother()).toBe('anotherFactory::call')
+    })
+
+    it('should resolve factory using injection mode bundle explicitly', () => {
+      const module = new Module({ mode: 'bundle' })
+  
+      module.registerFactory('someFactoryInstance', someFactoryWithBundle)
+      module.registerFactory('anotherFactoryInstance', anotherFactoryWithBundle)
+  
+      const stub = module.resolveFactory(stubFactoryWithBundle)
+  
+      expect(stub.callSome()).toBe('someFactory::call')
+      expect(stub.callAnother()).toBe('anotherFactory::call')
+    })
+
+    it('should resolve factory using using injection mode spread explicitly', () => {
+      const module = new Module({ mode: 'spread' })
+  
+      module.registerFactory('someFactoryInstance', someFactoryWithSpread)
+      module.registerFactory('anotherFactoryInstance', anotherFactoryWithSpread)
+  
+      const stub = module.resolveFactory(stubFactoryWithSpread)
   
       expect(stub.callSome()).toBe('someFactory::call')
       expect(stub.callAnother()).toBe('anotherFactory::call')
@@ -151,14 +229,35 @@ describe('Module', () => {
   })
 
   describe('resolveClass', () => {
-    class StubClass {
-      private readonly someClassInstance: SomeClass
-      private readonly anotherClassInstance: AnotherClass
+    class StubClassWithSpread {
+      private readonly someClassInstance: SomeClassWithBundle
+      private readonly anotherClassInstance: AnotherClassWithBundle
+    
+      public constructor(
+        someClassInstance: SomeClassWithBundle,
+        anotherClassInstance: AnotherClassWithBundle
+      ) {
+        this.someClassInstance = someClassInstance
+        this.anotherClassInstance = anotherClassInstance
+      }
+  
+      public callSome() {
+        return this.someClassInstance.call()
+      }
+      public callAnother() {
+        return this.anotherClassInstance.call()
+      }
+    }
+
+    class StubClassWithBundle {
+      private readonly someClassInstance: SomeClassWithBundle
+      private readonly anotherClassInstance: AnotherClassWithBundle
     
       public constructor(bundle: {
-        someClassInstance: SomeClass,
-        anotherClassInstance: AnotherClass
-      }) {
+        someClassInstance: SomeClassWithBundle,
+        anotherClassInstance: AnotherClassWithBundle
+      }
+      ) {
         this.someClassInstance = bundle.someClassInstance
         this.anotherClassInstance = bundle.anotherClassInstance
       }
@@ -171,13 +270,37 @@ describe('Module', () => {
       }
     }
 
-    it('should resolve class', () => {
+    it('should resolve class using injection mode spread by default', () => {
       const module = new Module()
   
-      module.registerConstructor('someClassInstance', SomeClass)
-      module.registerConstructor('anotherClassInstance', AnotherClass)
+      module.registerConstructor('someClassInstance', SomeClassWithSpread)
+      module.registerConstructor('anotherClassInstance', AnotherClassWithSpread)
   
-      const stub = module.resolveConstructor(StubClass)
+      const stub = module.resolveConstructor(StubClassWithSpread)
+  
+      expect(stub.callSome()).toBe('SomeClass::call')
+      expect(stub.callAnother()).toBe('AnotherClass::call')
+    })
+
+    it('should resolve class using injection mode bundle explicitly', () => {
+      const module = new Module({ mode: 'bundle' })
+  
+      module.registerConstructor('someClassInstance', SomeClassWithBundle)
+      module.registerConstructor('anotherClassInstance', AnotherClassWithBundle)
+  
+      const stub = module.resolveConstructor(StubClassWithBundle)
+  
+      expect(stub.callSome()).toBe('SomeClass::call')
+      expect(stub.callAnother()).toBe('AnotherClass::call')
+    })
+
+    it('should resolve class using injection mode spread explicitly', () => {
+      const module = new Module({ mode: 'spread' })
+  
+      module.registerConstructor('someClassInstance', SomeClassWithSpread)
+      module.registerConstructor('anotherClassInstance', AnotherClassWithSpread)
+  
+      const stub = module.resolveConstructor(StubClassWithSpread)
   
       expect(stub.callSome()).toBe('SomeClass::call')
       expect(stub.callAnother()).toBe('AnotherClass::call')

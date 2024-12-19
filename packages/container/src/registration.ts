@@ -1,6 +1,7 @@
 
 import * as Injection from './index'
 import * as Types from '@nodelith/types'
+import * as Utilities from '@nodelith/utilities'
 
 export abstract class Registration<InstanceType = any> {
   public static readonly DEFAULT_LIFETIME: Injection.Lifetime = 'transient'
@@ -55,8 +56,14 @@ export abstract class Registration<InstanceType = any> {
   }
 
   private resolve() {
-    const args = [this.bundle]
-    return this.resolver(this.target, ...args)
+    if(this.mode === 'bundle') {
+      return this.resolver(this.target, this.bundle)
+    }
+
+    const args = Utilities.FunctionUtils.extractArguments(this.target)
+    return this.resolver(this.target, ...args.map((argument) => {
+      return this.bundle[argument]
+    }))
   }
 }
 

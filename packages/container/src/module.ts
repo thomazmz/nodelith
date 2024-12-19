@@ -3,8 +3,13 @@ import * as Types from '@nodelith/types'
 import * as Injection from './index'
 
 export class Module extends Core.Initializer {
+  public static readonly DEFAULT_ACCESS: Injection.Access = 'public'
 
-  private readonly mode?: Injection.Mode
+  public static readonly DEFAULT_LIFETIME: Injection.Lifetime = 'transient'
+  
+  public static readonly DEFAULT_MODE: Injection.Mode = 'spread'
+
+  private readonly mode: Injection.Mode
   
   private readonly access?: Injection.Access
   
@@ -13,6 +18,17 @@ export class Module extends Core.Initializer {
   private readonly initializers: Array<Core.Initializer> = []
   
   private readonly container = new Injection.Container()
+
+  public constructor(options?: {
+    access?: Injection.Access,
+    lifetime?: Injection.Lifetime,
+    mode?: Injection.Mode
+  }) {
+    super()
+    this.mode = options?.mode ?? Module.DEFAULT_MODE
+    this.access = options?.access ?? Module.DEFAULT_ACCESS
+    this.lifetime = options?.lifetime ?? Module.DEFAULT_LIFETIME
+  }
 
   public get registrations() {
     return this.container.registrations.filter((registration) => {
@@ -63,6 +79,7 @@ export class Module extends Core.Initializer {
     const registration = new Injection.FactoryRegistration(factory, {
       bundle: this.container.bundle,
       token,
+      mode: this.mode
     })
 
     this.container.push(registration)
@@ -76,6 +93,7 @@ export class Module extends Core.Initializer {
     const registration = new Injection.ConstructorRegistration<Core.Initializer>(constructor, {
       bundle: this.container.bundle,
       token,
+      mode: this.mode
     })
 
     if(Core.Initializer.isExtendedBy(constructor)) {
@@ -95,7 +113,8 @@ export class Module extends Core.Initializer {
 
   public resolveFactory<I = any, F extends Types.Factory<I> = Types.Factory<I>>(factory: F): I {
     const { instance } = new Injection.FactoryRegistration<I>(factory, {
-      bundle: this.container.bundle
+      bundle: this.container.bundle,
+      mode: this.mode
     })
 
     return instance
@@ -103,7 +122,8 @@ export class Module extends Core.Initializer {
 
   public resolveConstructor<I = any, C extends Types.Constructor<I> = Types.Constructor<I>>(constructor: C): I {
     const { instance } = new Injection.ConstructorRegistration<I>(constructor, {
-      bundle: this.container.bundle
+      bundle: this.container.bundle,
+      mode: this.mode
     })
 
     return instance
