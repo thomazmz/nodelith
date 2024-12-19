@@ -5,7 +5,9 @@ import {
   Function,
 } from '@nodelith/types'
 
-export type RegistrationToken = string | symbol | number
+import * as Injection from './index'
+import * as Types from '@nodelith/types'
+import * as Utilities from '@nodelith/utilities'
 
 export type RegistrationBundle = Record<RegistrationToken, any>
 
@@ -114,29 +116,15 @@ export class FactoryRegistration<Instance extends ReturnType<Factory>> implement
     return this.resolveProxy(bundle)
   }
 
-  private resolveProxy(bundle?: RegistrationBundle) {
-    let instance: Instance | undefined;
+  private resolve() {
+    if(this.mode === 'bundle') {
+      return this.resolver(this.target, this.bundle)
+    }
 
-    return new Proxy({} as Instance, {
-      set: (_target, property) => {
-        throw new Error(
-          `Could not set property "${property.toString()}". Properties can not be set through registration.`
-        );
-      },
-      get: (_target, property) => {
-
-        const parameters = [{
-          ...bundle,
-          ...this.bundle
-        }]
-    
-        if (!instance) {
-          instance = this.target(...parameters);
-        }
-  
-        return instance[property];
-      }
-    });
+    const args = Utilities.FunctionUtils.extractArguments(this.target)
+    return this.resolver(this.target, ...args.map((argument) => {
+      return this.bundle[argument]
+    }))
   }
 }
 
