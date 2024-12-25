@@ -29,6 +29,6 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "target": "ES6",
-    "types": ["jest", "node"],
+    "types": ["jest", "node"]
   }
 }

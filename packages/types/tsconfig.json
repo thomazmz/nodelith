@@ -29,9 +29,6 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "target": "ES6",
-    "types": ["jest", "node"],
-    "paths": {
-      "@nodelith/types": ["./index"]
-    }
+    "types": ["jest", "node"]
   }
 }
