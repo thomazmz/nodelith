@@ -156,25 +156,6 @@ export class ConstructorRegistration<Instance extends InstanceType<Constructor>>
     this.injection = options?.injection ?? ConstructorRegistration.DEFAULT_INJECTION
   }
 
-  private createProxy(...parameters: any[]) {
-    let instance: Instance | undefined;
-
-    return new Proxy({} as Instance, {
-      set: (_target, property) => {
-        throw new Error(
-          `Could not set property "${property.toString()}". Properties can not be set through registration.`
-        );
-      },
-      get: (_target, property) => {
-        if (!instance) {
-          instance = new this.target(...parameters);
-        }
-  
-        return instance[property];
-      }
-    });
-  }
-
   public clone(bundle?: RegistrationBundle): ConstructorRegistration<Instance> {
     const mergedBundle = {
       ...bundle,
@@ -189,25 +170,45 @@ export class ConstructorRegistration<Instance extends InstanceType<Constructor>>
     })
   }
 
-  public resolve(bundle?: RegistrationBundle): Instance {
+  public get resolution() {
+    return this.resolve()
+  }
+
+  public resolve(bundle: RegistrationBundle = {}): Instance {
     if(this.singleton) {
       return this.singleton
     }
 
-    const parameters = [{
-      ...bundle,
-      ...this.bundle
-    }]
-
     if(this.lifetime === 'singleton') {
-      return this.singleton = this.createProxy(...parameters)
+      return this.singleton = this.resolveProxy(bundle)
     }
 
-    return this.createProxy(...parameters)
+    return this.resolveProxy(bundle)
   }
 
-  public get resolution() {
-    return this.resolve()
+  protected resolveProxy(bundle?: RegistrationBundle) {
+    let instance: Instance | undefined;
+
+    return new Proxy({} as Instance, {
+      set: (_target, property) => {
+        throw new Error(
+          `Could not set property "${property.toString()}". Properties can not be set through registration.`
+        );
+      },
+      get: (_target, property) => {
+
+        const parameters = [{
+          ...bundle,
+          ...this.bundle
+        }]
+    
+        if (!instance) {
+          instance = new this.target(...parameters);
+        }
+  
+        return instance[property];
+      }
+    });
   }
 }
 
