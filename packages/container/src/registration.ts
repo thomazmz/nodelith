@@ -17,7 +17,7 @@ export type RegistrationInjection = 'spread' | 'bundle'
 
 export interface Registration<R = any> {
   readonly token: RegistrationToken
-  resolve(bundle?: RegistrationBundle): R
+  provide(bundle?: RegistrationBundle): R
   clone(bundle?: RegistrationBundle): Registration<R>
 }
 
@@ -40,7 +40,7 @@ export class StaticRegistration<Resolution = any> implements Registration<Resolu
     })
   }
 
-  public resolve(): Resolution {
+  public provide(): Resolution {
     return this.resolution
   }
 }
@@ -49,14 +49,14 @@ export class FactoryRegistration<Instance extends ReturnType<Factory>> implement
   protected static readonly DEFAULT_LIFETIME: RegistrationLifetime = 'singleton'
   protected static readonly DEFAULT_INJECTION: RegistrationInjection = 'spread'
 
-  public static resolve<Instance extends ReturnType<Factory>>(target: Factory<Instance>, options?: {
+  public static provide<Instance extends ReturnType<Factory>>(target: Factory<Instance>, options?: {
     token?: RegistrationToken
     bundle?: RegistrationBundle
     lifetime?: RegistrationLifetime
     injection?: RegistrationInjection
   }) {
     const registration = new FactoryRegistration(target, options)
-    return registration.resolve()
+    return registration.provide()
   }
 
   public readonly token: RegistrationToken;
@@ -97,10 +97,10 @@ export class FactoryRegistration<Instance extends ReturnType<Factory>> implement
   }
 
   public get resolution() {
-    return this.resolve()
+    return this.provide()
   }
 
-  public resolve(bundle: RegistrationBundle = {}): Instance {
+  public provide(bundle: RegistrationBundle = {}): Instance {
     if(this.singleton) {
       return this.singleton
     }
@@ -142,14 +142,14 @@ export class ConstructorRegistration<Instance extends InstanceType<Constructor>>
   protected static readonly DEFAULT_LIFETIME: RegistrationLifetime = 'singleton'
   protected static readonly DEFAULT_INJECTION: RegistrationInjection = 'spread'
 
-  public static resolve<Instance extends InstanceType<Constructor>>(target: Constructor<Instance>, options?: {
+  public static provide<Instance extends InstanceType<Constructor>>(target: Constructor<Instance>, options?: {
     token?: RegistrationToken
     bundle?: RegistrationBundle
     lifetime?: RegistrationLifetime
     injection?: RegistrationInjection
   }) {
     const registration = new ConstructorRegistration(target, options)
-    return registration.resolve()
+    return registration.provide()
   }
 
   public readonly token: RegistrationToken;
@@ -189,7 +189,7 @@ export class ConstructorRegistration<Instance extends InstanceType<Constructor>>
     })
   }
 
-  public resolve(bundle: RegistrationBundle = {}): Instance {
+  public provide(bundle: RegistrationBundle = {}): Instance {
     if(this.singleton) {
       return this.singleton
     }
@@ -231,14 +231,14 @@ export class ResolverRegistration<Value extends ReturnType<Resolver>> implements
   protected static readonly DEFAULT_LIFETIME: RegistrationLifetime = 'singleton'
   protected static readonly DEFAULT_INJECTION: RegistrationInjection = 'spread'
 
-  public static resolve<Value extends ReturnType<Resolver>>(target: Resolver<Value>, options?: {
+  public static provide<Value extends ReturnType<Resolver>>(target: Resolver<Value>, options?: {
     token?: RegistrationToken
     bundle?: RegistrationBundle
     lifetime?: RegistrationLifetime
     injection?: RegistrationInjection
   }) {
     const registration = new ResolverRegistration(target, options)
-    return registration.resolve()
+    return registration.provide()
   }
 
   public readonly token: RegistrationToken;
@@ -273,7 +273,7 @@ export class ResolverRegistration<Value extends ReturnType<Resolver>> implements
     })
   }
 
-  public resolve(): Value {
+  public provide(): Value {
     if(this.singleton) {
       return this.singleton
     }

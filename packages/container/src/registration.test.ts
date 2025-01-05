@@ -46,10 +46,10 @@ describe('Registration', () => {
       const registration = new ResolverRegistration(resolver)
       expect(targetWasCalled).toBe(false)
   
-      registration.resolve()
+      registration.provide()
       expect(targetWasCalled).toBe(true)
   
-      registration.resolve().value
+      registration.provide().value
       expect(targetWasCalled).toBe(true)
     })
   
@@ -59,8 +59,8 @@ describe('Registration', () => {
       }
   
       const registration = new ResolverRegistration(resolver)
-      const resolution_1 = registration.resolve()
-      const resolution_2 = registration.resolve()
+      const resolution_1 = registration.provide()
+      const resolution_2 = registration.provide()
   
       expect(resolution_1).toBe(resolution_2)
     })
@@ -82,10 +82,10 @@ describe('Registration', () => {
       const registration = new FactoryRegistration(factory)
       expect(targetWasCalled).toBe(false)
 
-      registration.resolve()
+      registration.provide()
       expect(targetWasCalled).toBe(false)
 
-      registration.resolve().value
+      registration.provide().value
       expect(targetWasCalled).toBe(true)
     })
 
@@ -95,8 +95,8 @@ describe('Registration', () => {
       }
 
       const registration = new FactoryRegistration(factory)
-      const resolution_1 = registration.resolve()
-      const resolution_2 = registration.resolve()
+      const resolution_1 = registration.provide()
+      const resolution_2 = registration.provide()
 
       expect(resolution_1).toBe(resolution_2)
     })
@@ -107,8 +107,8 @@ describe('Registration', () => {
       }
 
       const registration = new FactoryRegistration(factory, { lifetime: 'singleton' })
-      const resolution_1 = registration.resolve()
-      const resolution_2 = registration.resolve()
+      const resolution_1 = registration.provide()
+      const resolution_2 = registration.provide()
 
       expect(resolution_1).toBe(resolution_2)
     })
@@ -155,10 +155,10 @@ describe('Registration', () => {
       const registration = new ConstructorRegistration(Constructor)
       expect(targetWasCalled).toBe(false)
   
-      registration.resolve()
+      registration.provide()
       expect(targetWasCalled).toBe(false)
   
-      registration.resolve().value
+      registration.provide().value
       expect(targetWasCalled).toBe(true)
     })
   
@@ -166,8 +166,8 @@ describe('Registration', () => {
       class Constructor {}
   
       const registration = new ConstructorRegistration(Constructor)
-      const resolution_1 = registration.resolve()
-      const resolution_2 = registration.resolve()
+      const resolution_1 = registration.provide()
+      const resolution_2 = registration.provide()
   
       expect(resolution_1).toBe(resolution_2)
     })
@@ -176,8 +176,8 @@ describe('Registration', () => {
       class Constructor {}
   
       const registration = new ConstructorRegistration(Constructor, { lifetime: 'singleton' })
-      const resolution_1 = registration.resolve()
-      const resolution_2 = registration.resolve()
+      const resolution_1 = registration.provide()
+      const resolution_2 = registration.provide()
   
       expect(resolution_1).toBe(resolution_2)
     })
@@ -186,8 +186,8 @@ describe('Registration', () => {
       class Constructor {}
   
       const registration = new ConstructorRegistration(Constructor, { lifetime: 'transient',})
-      const resolution_1 = registration.resolve()
-      const resolution_2 = registration.resolve()
+      const resolution_1 = registration.provide()
+      const resolution_2 = registration.provide()
   
       expect(resolution_1).not.toBe(resolution_2)
     })
@@ -198,7 +198,7 @@ describe('Registration', () => {
       const registration = new ConstructorRegistration(Constructor)
   
       expect(() => {
-        registration.resolve()['propertyKey'] = 'value'
+        registration.provide()['propertyKey'] = 'value'
       }).toThrow(
         `Could not set property "propertyKey". Properties can not be set through registration.`
       )

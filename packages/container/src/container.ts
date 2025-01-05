@@ -56,7 +56,7 @@ export class Container<B extends RegistrationBundle = any> {
           throw new Error(`Could not resolve dependency "${token.toString()}". Missing registration object.`)
         }
 
-        return registration.resolve()
+        return registration.provide()
       },
     })
   }
