@@ -83,7 +83,7 @@ describe('Module', () => {
       module.registerConstructor('someToken', SomeClass);
       expect(module.registrations.length).toBe(1)
       expect(module.registrations[0]?.token).toEqual('someToken')
-      expect(module.registrations[0]?.resolution.value).toEqual('someValue')
+      expect(module.registrations[0]?.resolve().value).toEqual('someValue')
     })
 
     it('Should register resolver registration', () => {
@@ -96,7 +96,7 @@ describe('Module', () => {
       module.registerResolver('someToken', someResolver);
       expect(module.registrations.length).toBe(1)
       expect(module.registrations[0]?.token).toEqual('someToken')
-      expect(module.registrations[0]?.resolution).toEqual('someValue')
+      expect(module.registrations[0]?.resolve()).toEqual('someValue')
     })
 
     it('Should register factory registration', () => {
@@ -109,7 +109,7 @@ describe('Module', () => {
       module.registerFactory('someToken', someFactory);
       expect(module.registrations.length).toBe(1)
       expect(module.registrations[0]?.token).toEqual('someToken')
-      expect(module.registrations[0]?.resolution.value).toEqual('someValue')
+      expect(module.registrations[0]?.resolve().value).toEqual('someValue')
     })
 
     it('Should register value registration', () => {
@@ -120,7 +120,7 @@ describe('Module', () => {
       module.registerStatic('someToken', someValue)
       expect(module.registrations.length).toBe(1)
       expect(module.registrations[0]?.token).toEqual('someToken')
-      expect(module.registrations[0]?.resolution).toEqual('someValue')
+      expect(module.registrations[0]?.resolve()).toEqual('someValue')
     })
   })
 

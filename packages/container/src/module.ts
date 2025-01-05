@@ -133,27 +133,21 @@ export class Module {
   }
 
   public provideResolver<R extends ReturnType<Types.Resolver> = ReturnType<Types.Resolver>>(resolver: Types.Resolver<R>): R {
-    const { resolution } = new ResolverRegistration<R>(resolver, {
+    return ResolverRegistration.resolve(resolver, {
       bundle: this.container.bundle
     })
-
-    return resolution
   }
 
   public provideFactory<R extends ReturnType<Types.Factory> = ReturnType<Types.Factory>>(factory: Types.Factory<R>): R {
-    const { resolution } = new FactoryRegistration<R>(factory, {
+    return FactoryRegistration.resolve(factory, {
       bundle: this.container.bundle
     })
-
-    return resolution
   }
 
   public provideConstructor<R extends InstanceType<Types.Constructor> = InstanceType<Types.Constructor>>(constructor: Types.Constructor<R>): R {
-    const { resolution } = new ConstructorRegistration<R>(constructor, {
+    return ConstructorRegistration.resolve(constructor, {
       bundle: this.container.bundle
     })
-
-    return resolution
   }
 }
 
