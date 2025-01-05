@@ -16,10 +16,10 @@ export type RegistrationLifetime = 'transient' | 'singleton'
 export type RegistrationInjection = 'spread' | 'bundle'
 
 export interface Registration<R = any> {
-  readonly token: RegistrationToken,
-  readonly resolution: R,
-  resolve: Function<R>,
-  clone: Function<Registration<R>, [{ bundle?:  RegistrationBundle }]>
+  readonly resolution: R
+  readonly token: RegistrationToken
+  resolve(bundle?: RegistrationBundle): R
+  clone(bundle?: RegistrationBundle): Registration<R>
 }
 
 export class StaticRegistration<Resolution = any> implements Registration<Resolution> {
@@ -46,7 +46,7 @@ export class StaticRegistration<Resolution = any> implements Registration<Resolu
   }
 }
 
-export class FactoryRegistration<Object extends ReturnType<Factory>> implements Registration<Object> {
+export class FactoryRegistration<Instance extends ReturnType<Factory>> implements Registration<Instance> {
   protected static readonly DEFAULT_LIFETIME: RegistrationLifetime = 'singleton'
   protected static readonly DEFAULT_INJECTION: RegistrationInjection = 'spread'
 
@@ -56,11 +56,11 @@ export class FactoryRegistration<Object extends ReturnType<Factory>> implements 
   protected readonly lifetime: RegistrationLifetime
   protected readonly injection: RegistrationInjection
 
-  protected readonly target: Factory<Object>
+  protected readonly target: Factory<Instance>
 
-  private singleton?: Object
+  private singleton?: Instance
 
-  public constructor(target: Factory<Object>, options?: {
+  public constructor(target: Factory<Instance>, options?: {
     token?: RegistrationToken
     bundle?: RegistrationBundle
     lifetime?: RegistrationLifetime
@@ -73,26 +73,7 @@ export class FactoryRegistration<Object extends ReturnType<Factory>> implements 
     this.injection = options?.injection ?? FactoryRegistration.DEFAULT_INJECTION
   }
 
-  private createProxy(...parameters: any[]) {
-    let instance: Object | undefined;
-
-    return new Proxy({} as Object, {
-      set: (_target, property) => {
-        throw new Error(
-          `Could not set property "${property.toString()}". Properties can not be set through registration.`
-        );
-      },
-      get: (_target, property) => {
-        if (!instance) {
-          instance = this.target(...parameters);
-        }
-  
-        return instance[property];
-      }
-    });
-  }
-
-  public clone(bundle?: RegistrationBundle): FactoryRegistration<Object> {
+  public clone(bundle?: RegistrationBundle): FactoryRegistration<Instance> {
     const mergedBundle = {
       ...bundle,
       ...this.bundle,
@@ -106,22 +87,45 @@ export class FactoryRegistration<Object extends ReturnType<Factory>> implements 
     })
   }
 
-  public resolve(bundle: RegistrationBundle = {}): Object {
+  public get resolution() {
+    return this.resolve()
+  }
+
+  public resolve(bundle: RegistrationBundle = {}): Instance {
     if(this.singleton) {
       return this.singleton
     }
 
-    const parameters = [this.bundle]
-
     if(this.lifetime === 'singleton') {
-      return this.singleton = this.createProxy(...parameters)
+      return this.singleton = this.resolveProxy(bundle)
     }
 
-    return this.createProxy(...parameters)
+    return this.resolveProxy(bundle)
   }
 
-  public get resolution() {
-    return this.resolve()
+  private resolveProxy(bundle?: RegistrationBundle) {
+    let instance: Instance | undefined;
+
+    return new Proxy({} as Instance, {
+      set: (_target, property) => {
+        throw new Error(
+          `Could not set property "${property.toString()}". Properties can not be set through registration.`
+        );
+      },
+      get: (_target, property) => {
+
+        const parameters = [{
+          ...bundle,
+          ...this.bundle
+        }]
+    
+        if (!instance) {
+          instance = this.target(...parameters);
+        }
+  
+        return instance[property];
+      }
+    });
   }
 }
 
@@ -185,16 +189,21 @@ export class ConstructorRegistration<Instance extends InstanceType<Constructor>>
     })
   }
 
-  public resolve(): Instance {
+  public resolve(bundle?: RegistrationBundle): Instance {
     if(this.singleton) {
       return this.singleton
     }
 
+    const parameters = [{
+      ...bundle,
+      ...this.bundle
+    }]
+
     if(this.lifetime === 'singleton') {
-      return this.singleton = this.createProxy(this.bundle)
+      return this.singleton = this.createProxy(...parameters)
     }
 
-    return this.createProxy(this.bundle)
+    return this.createProxy(...parameters)
   }
 
   public get resolution() {
