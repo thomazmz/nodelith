@@ -24,7 +24,7 @@ export class Module {
 
   private readonly initializers: Array<Core.Initializer> = []
   
-  private readonly container = new Container()
+  protected readonly container = new Container()
 
   public constructor(options?: {
     lifetime?: RegistrationLifetime
@@ -34,10 +34,6 @@ export class Module {
     this.injection = options?.injection ?? 'spread'
   }
 
-  get registrations() {
-    return this.container.registrations
-  }
-
   public async initialize(): Promise<void> {
     for await (const initializer of this.initializers) {
       await initializer.initialize()
@@ -45,11 +41,9 @@ export class Module {
   }
 
   public useModule(module: Module): void {
-    this.container.push(...module.registrations.map(registration => {
-      return registration.clone(this.container.bundle)
-    }))
+    this.container.push(...module.container.extractScopedRegistrations())
   }
-
+  
   public useRegistration<R = any>(registration: Registration<R>): void {
     const { token } = registration
 
@@ -57,8 +51,7 @@ export class Module {
       throw new Error(`Could not complete registration. Module already contain a registration under "${token.toString()}".`)
     }
 
-    const registrationClone = registration.clone(this.container.bundle);
-    this.container.push(registrationClone)
+    this.container.push(registration)
   }
 
   public registerStatic<R = any>(token: RegistrationToken, resolution: R): void {
@@ -80,7 +73,6 @@ export class Module {
 
     const registration = new ResolverRegistration(resolver, { 
       token, 
-      bundle: this.container.bundle,
       lifetime: options?.lifetime ?? this.lifetime,
       injection: options?.injection ?? this.injection,
     })
@@ -98,7 +90,6 @@ export class Module {
 
     const registration = new FactoryRegistration(factory, {
       token, 
-      bundle: this.container.bundle,
       lifetime: options?.lifetime ?? this.lifetime,
       injection: options?.injection ?? this.injection,
     })
@@ -116,7 +107,6 @@ export class Module {
 
     const registration = new ConstructorRegistration(constructor, { 
       token, 
-      bundle: this.container.bundle,
       lifetime: options?.lifetime ?? this.lifetime,
       injection: options?.injection ?? this.injection,
     })
@@ -132,22 +122,30 @@ export class Module {
     return this.container.bundle[token]
   }
 
-  public provideResolver<R extends ReturnType<Types.Resolver> = ReturnType<Types.Resolver>>(resolver: Types.Resolver<R>): R {
+  public provideResolver<R extends ReturnType<Types.Resolver> = ReturnType<Types.Resolver>>(resolver: Types.Resolver<R>, options?: {
+    injection: RegistrationInjection,
+  }): R {
     return ResolverRegistration.provide(resolver, {
-      bundle: this.container.bundle
+      injection: options?.injection ?? this.injection,
+      bundle: this.container.bundle,
     })
   }
 
-  public provideFactory<R extends ReturnType<Types.Factory> = ReturnType<Types.Factory>>(factory: Types.Factory<R>): R {
+  public provideFactory<R extends ReturnType<Types.Factory> = ReturnType<Types.Factory>>(factory: Types.Factory<R>, options?: {
+    injection: RegistrationInjection,
+  }): R {
     return FactoryRegistration.provide(factory, {
-      bundle: this.container.bundle
+      injection: options?.injection ?? this.injection,
+      bundle: this.container.bundle,
     })
   }
 
-  public provideConstructor<R extends InstanceType<Types.Constructor> = InstanceType<Types.Constructor>>(constructor: Types.Constructor<R>): R {
+  public provideConstructor<R extends InstanceType<Types.Constructor> = InstanceType<Types.Constructor>>(constructor: Types.Constructor<R>, options?: {
+    injection: RegistrationInjection,
+  }): R {
     return ConstructorRegistration.provide(constructor, {
+      injection: options?.injection ?? this.injection, 
       bundle: this.container.bundle
     })
   }
 }
-

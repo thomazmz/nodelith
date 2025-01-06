@@ -50,12 +50,14 @@ export class FactoryRegistration<Instance extends ReturnType<Factory>> implement
   protected static readonly DEFAULT_INJECTION: RegistrationInjection = 'spread'
 
   public static provide<Instance extends ReturnType<Factory>>(target: Factory<Instance>, options?: {
-    token?: RegistrationToken
     bundle?: RegistrationBundle
-    lifetime?: RegistrationLifetime
     injection?: RegistrationInjection
   }) {
-    const registration = new FactoryRegistration(target, options)
+    const registration = new FactoryRegistration(target, {
+      injection: options?.injection ?? this.DEFAULT_INJECTION,
+      bundle: options?.bundle ?? {},
+    })
+
     return registration.provide()
   }
 
@@ -143,12 +145,14 @@ export class ConstructorRegistration<Instance extends InstanceType<Constructor>>
   protected static readonly DEFAULT_INJECTION: RegistrationInjection = 'spread'
 
   public static provide<Instance extends InstanceType<Constructor>>(target: Constructor<Instance>, options?: {
-    token?: RegistrationToken
     bundle?: RegistrationBundle
-    lifetime?: RegistrationLifetime
     injection?: RegistrationInjection
   }) {
-    const registration = new ConstructorRegistration(target, options)
+    const registration = new ConstructorRegistration(target, {
+      injection: options?.injection ?? this.DEFAULT_INJECTION,
+      bundle: options?.bundle ?? {},
+    })
+
     return registration.provide()
   }
 
@@ -232,12 +236,14 @@ export class ResolverRegistration<Value extends ReturnType<Resolver>> implements
   protected static readonly DEFAULT_INJECTION: RegistrationInjection = 'spread'
 
   public static provide<Value extends ReturnType<Resolver>>(target: Resolver<Value>, options?: {
-    token?: RegistrationToken
     bundle?: RegistrationBundle
-    lifetime?: RegistrationLifetime
     injection?: RegistrationInjection
   }) {
-    const registration = new ResolverRegistration(target, options)
+    const registration = new ResolverRegistration(target, {
+      injection: options?.injection ?? this.DEFAULT_INJECTION,
+      bundle: options?.bundle ?? {},
+    })
+
     return registration.provide()
   }
 
