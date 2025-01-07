@@ -102,11 +102,9 @@ describe('Module', () => {
   }
 
   describe('register', () => {
-    const module = new Module()
-    module.registerConstructor('someClassInstance', SomeClassWithBundle)
-    module.registerConstructor('anotherClassInstance', AnotherClassWithBundle)
-
-    it('Should throw error when registration key is already in used', () => {
+    it('Should throw error when registration key is already in use', () => {
+      const module = new Module()
+      module.registerConstructor('someClassInstance', SomeClassWithBundle)
       expect(() => module.registerConstructor('someClassInstance', SomeClassWithBundle)).toThrow()
     })  
   })
@@ -114,35 +112,74 @@ describe('Module', () => {
   describe('resolveToken', () => {
     it('Should throw error when registration key does not exist', () => {
       const module = new Module()
-
       module.registerConstructor('someClassInstance', SomeClassWithBundle)
-      module.registerConstructor('anotherClassInstance', AnotherClassWithBundle)
-
       expect(() => module.resolveToken('invalidKey')).toThrow()
     })
     
     it('Should correctly call resolved class instances injected under resolved primary instance', () => {
-      const module = new Module({ mode: 'bundle' })
+      const bundleModule = new Module({ mode: 'bundle' })
 
-      module.registerConstructor('someClassInstance', SomeClassWithBundle)
-      module.registerConstructor('anotherClassInstance', AnotherClassWithBundle)
+      bundleModule.registerConstructor('someClassInstance', SomeClassWithBundle)
+      bundleModule.registerConstructor('anotherClassInstance', AnotherClassWithBundle)
 
-      const someClassInstance = module.resolveToken<SomeClassWithBundle>('someClassInstance')
+      const someClassInstanceWithBundle = bundleModule.resolveToken<SomeClassWithBundle>('someClassInstance')
 
-      expect(someClassInstance.call()).toEqual('SomeClass::call')
-      expect(someClassInstance.callAnother()).toEqual('AnotherClass::call')
+      expect(someClassInstanceWithBundle.call()).toEqual('SomeClass::call')
+      expect(someClassInstanceWithBundle.callAnother()).toEqual('AnotherClass::call')
+
+      const spreadModule = new Module({ mode: 'spread' })
+
+      spreadModule.registerConstructor('someClassInstance', SomeClassWithSpread)
+      spreadModule.registerConstructor('anotherClassInstance', AnotherClassWithSpread)
+
+      const someClassInstanceWithSpread = bundleModule.resolveToken<SomeClassWithSpread>('someClassInstance')
+
+      expect(someClassInstanceWithSpread.call()).toEqual('SomeClass::call')
+      expect(someClassInstanceWithSpread.callAnother()).toEqual('AnotherClass::call')
+    })
+    
+    it('Should correctly call resolved class instances injected under resolved primary instance', () => {
+      const bundleModule = new Module({ mode: 'bundle' })
+
+      bundleModule.registerConstructor('someClassInstance', SomeClassWithBundle)
+      bundleModule.registerConstructor('anotherClassInstance', AnotherClassWithBundle)
+
+      const someClassInstanceWithBundle = bundleModule.resolveToken<SomeClassWithBundle>('someClassInstance')
+
+      expect(someClassInstanceWithBundle.call()).toEqual('SomeClass::call')
+      expect(someClassInstanceWithBundle.callAnother()).toEqual('AnotherClass::call')
+
+      const spreadModule = new Module({ mode: 'spread' })
+
+      spreadModule.registerConstructor('someClassInstance', SomeClassWithSpread)
+      spreadModule.registerConstructor('anotherClassInstance', AnotherClassWithSpread)
+
+      const someClassInstanceWithSpread = spreadModule.resolveToken<SomeClassWithBundle>('someClassInstance')
+
+      expect(someClassInstanceWithSpread.call()).toEqual('SomeClass::call')
+      expect(someClassInstanceWithSpread.callAnother()).toEqual('AnotherClass::call')
     })
   
     it('Should correctly call resolved class instances injected under resolved secondary instance', () => {
-      const module = new Module({ mode: 'bundle' })
+      const bundleModule = new Module({ mode: 'bundle' })
 
-      module.registerConstructor('someClassInstance', SomeClassWithBundle)
-      module.registerConstructor('anotherClassInstance', AnotherClassWithBundle)
+      bundleModule.registerConstructor('someClassInstance', SomeClassWithBundle)
+      bundleModule.registerConstructor('anotherClassInstance', AnotherClassWithBundle)
 
-      const anotherClassInstance = module.resolveToken<AnotherClassWithBundle>('anotherClassInstance')
+      const anotherClassInstanceWithBundle = bundleModule.resolveToken<AnotherClassWithBundle>('anotherClassInstance')
 
-      expect(anotherClassInstance.call()).toEqual('AnotherClass::call')
-      expect(anotherClassInstance.callSome()).toEqual('SomeClass::call')
+      expect(anotherClassInstanceWithBundle.call()).toEqual('AnotherClass::call')
+      expect(anotherClassInstanceWithBundle.callSome()).toEqual('SomeClass::call')
+
+      const spreadModule = new Module({ mode: 'spread' })
+
+      spreadModule.registerConstructor('someClassInstance', SomeClassWithSpread)
+      spreadModule.registerConstructor('anotherClassInstance', AnotherClassWithSpread)
+
+      const anotherClassInstanceWithSpread = spreadModule.resolveToken<AnotherClassWithBundle>('anotherClassInstance')
+
+      expect(anotherClassInstanceWithSpread.call()).toEqual('AnotherClass::call')
+      expect(anotherClassInstanceWithSpread.callSome()).toEqual('SomeClass::call')
     })
 
     it('Should correctly call resolved factory instances injected under resolved primary instance', () => {
@@ -151,19 +188,39 @@ describe('Module', () => {
       module.registerFactory('someFactoryInstance', someFactoryWithBundle)
       module.registerFactory('anotherFactoryInstance', anotherFactoryWithBundle)
 
-      const someFactoryInstance = module.resolveToken<ReturnType<typeof someFactoryWithBundle>>('someFactoryInstance')
+      const someFactoryInstanceWithBundle = module.resolveToken<ReturnType<typeof someFactoryWithBundle>>('someFactoryInstance')
 
-      expect(someFactoryInstance.call()).toEqual('someFactory::call')
-      expect(someFactoryInstance.callAnother()).toEqual('anotherFactory::call')
+      expect(someFactoryInstanceWithBundle.call()).toEqual('someFactory::call')
+      expect(someFactoryInstanceWithBundle.callAnother()).toEqual('anotherFactory::call')
+
+      const spreadModule = new Module({ mode: 'spread' })
+
+      spreadModule.registerFactory('someFactoryInstance', someFactoryWithSpread)
+      spreadModule.registerFactory('anotherFactoryInstance', anotherFactoryWithSpread)
+
+      const someFactoryInstanceWithSpread = spreadModule.resolveToken<ReturnType<typeof someFactoryWithBundle>>('someFactoryInstance')
+
+      expect(someFactoryInstanceWithSpread.call()).toEqual('someFactory::call')
+      expect(someFactoryInstanceWithSpread.callAnother()).toEqual('anotherFactory::call')
     })
   
     it('Should correctly call resolved factory instances injected under resolved secondary instance', () => {
-      const module = new Module({ mode: 'bundle' })
+      const moduleWithBundle = new Module({ mode: 'bundle' })
 
-      module.registerFactory('someFactoryInstance', someFactoryWithBundle)
-      module.registerFactory('anotherFactoryInstance', anotherFactoryWithBundle)
+      moduleWithBundle.registerFactory('someFactoryInstance', someFactoryWithBundle)
+      moduleWithBundle.registerFactory('anotherFactoryInstance', anotherFactoryWithBundle)
 
-      const anotherFactoryInstance = module.resolveToken<ReturnType<typeof someFactoryWithBundle>>('anotherFactoryInstance')
+      const anotherFactoryInstanceWithBundle = moduleWithBundle.resolveToken<ReturnType<typeof someFactoryWithBundle>>('anotherFactoryInstance')
+
+      expect(anotherFactoryInstanceWithBundle.call()).toEqual('anotherFactory::call')
+      expect(anotherFactoryInstanceWithBundle.callSome()).toEqual('someFactory::call')
+
+      const moduleWithSpread = new Module({ mode: 'spread' })
+
+      moduleWithSpread.registerFactory('someFactoryInstance', someFactoryWithSpread)
+      moduleWithSpread.registerFactory('anotherFactoryInstance', anotherFactoryWithSpread)
+
+      const anotherFactoryInstance = moduleWithSpread.resolveToken<ReturnType<typeof someFactoryWithSpread>>('anotherFactoryInstance')
 
       expect(anotherFactoryInstance.call()).toEqual('anotherFactory::call')
       expect(anotherFactoryInstance.callSome()).toEqual('someFactory::call')
