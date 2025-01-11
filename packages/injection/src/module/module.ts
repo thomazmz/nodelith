@@ -1,10 +1,10 @@
 import * as Core from '@nodelith/core'
 import * as Types from '@nodelith/types'
 
-import { Mode } from './mode'
-import { Token } from './token'
-import { Options } from './options' 
-import { Registration } from './registration'
+import { Mode } from '../mode'
+import { Token } from '../token'
+import { Options } from '../options' 
+import { Registration } from '../registration'
 
 export class Module {
 

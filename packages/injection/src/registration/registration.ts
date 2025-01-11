@@ -1,5 +1,5 @@
-import { Token } from'./token'
-import { Bundle } from './bundle'
+import { Token } from'../token'
+import { Bundle } from '../bundle'
 
 export interface Registration<R = any> {
   readonly token: Token

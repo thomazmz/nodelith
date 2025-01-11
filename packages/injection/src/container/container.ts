@@ -1,6 +1,6 @@
-import { Token } from './token'
-import { Bundle } from './bundle'
-import { Registration } from './registration'
+import { Token } from '../token'
+import { Bundle } from '../bundle'
+import { Registration } from '../registration'
 
 export class Container<B extends Bundle = any> {
   readonly bundle: Readonly<B>
