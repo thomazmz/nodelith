@@ -6,7 +6,7 @@ const functionArgumentListRegex = new RegExp(
 
 const functionArgumentIdentifiersRegex = new RegExp(/([^\s,]+)/g)
 
-export function extractArguments(fn: Function): string[] {
+export function extractArguments(fn: Function<any, any[]>): string[] {
   const functionString = fn.toString().replace(functionArgumentListRegex, '')
 
   const argumentDeclarationFirstIndex = functionString.indexOf('(') + 1
