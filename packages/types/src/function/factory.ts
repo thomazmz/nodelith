@@ -1,3 +1,3 @@
 import { Function } from './function'
 
-export type Factory<R extends object = object> = Function<R>
+export type Factory<R extends object = object, P extends Array<any> = []> = Function<R, P>

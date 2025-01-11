@@ -1,4 +1,4 @@
 import { Value } from '../value'
 import { Function } from './function'
 
-export type Resolver<T extends Value = Value> = Function<T>
+export type Resolver<R extends Value = Value, P extends Array<any> = []> = Function<R, P>
