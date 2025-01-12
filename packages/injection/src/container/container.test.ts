@@ -125,4 +125,36 @@ describe('Container', () => {
       ]))
     })
   })
+
+  describe('bundle', () => {
+    it('should throw error when trying to set bundle property', () => {
+      const container = new Container() as any
+
+      expect(() => {
+        container.bundle.anyRegistration = createStubRegistration({ token: 'anyRegistration' })
+      }).toThrow('Could not set registration "anyRegistration". Registration should not be done through bundle.')
+
+      expect(() => {
+        container.bundle['anyRegistration'] = createStubRegistration({ token: 'anyRegistration' })
+      }).toThrow('Could not set registration "anyRegistration". Registration should not be done through bundle.')
+    })
+
+    it('should return undefined when accessing nonexistent registration', () => {
+      const container = new Container()
+      expect(container.bundle.stubRegistration).toBe(undefined)
+      expect(container.bundle['stubRegistration']).toBe(undefined)
+    })
+
+    it('should return resolved registration when accessing existent registration', () => {
+      const container = new Container()
+      const stubRegistration = createStubRegistration({
+        token: 'stubRegistration',
+        resolution: 'resolutionString',
+      })
+
+      container.push(stubRegistration)
+      expect(container.bundle.stubRegistration).toBe('resolutionString')
+      expect(container.bundle['stubRegistration']).toBe('resolutionString')
+    })
+  })
 })

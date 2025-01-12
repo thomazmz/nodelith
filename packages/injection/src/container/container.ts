@@ -2,7 +2,7 @@ import { Token } from '../token'
 import { Bundle } from '../bundle'
 import { Registration } from '../registration'
 
-export class Container<B extends Bundle = any> {
+export class Container<B extends Bundle = Bundle> {
   private readonly map: Map<Token, Registration> = new Map()
 
   readonly bundle: Readonly<B>
@@ -12,13 +12,20 @@ export class Container<B extends Bundle = any> {
   }
 
   public constructor() {
-    this.bundle = {} as B
+    this.bundle = new Proxy({} as B, {
+      get: (target: B, token: Token) => {
+        return this.map.get(token)?.resolve(this.bundle)
+      },
+      set: (target: B, token: Token) => {
+        throw new Error(`Could not set registration "${token.toString()}". Registration should not be done through bundle.`)
+      },
+    })
   }
 
   public has(token: Token ): boolean  {
     return this.map.has(token)
   }
-  
+
   public push(...registrations: Registration[]): void {
     for (const registration of registrations) {
       this.map.set(registration.token, registration)
