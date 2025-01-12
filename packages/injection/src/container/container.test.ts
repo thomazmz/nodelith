@@ -1,24 +1,26 @@
+import { Function } from '@nodelith/types'
+
+import { Registration } from '../registration'
 import { Container } from './container'
+import { Bundle } from '../bundle'
 
 describe('Container', () => {
-  function createStubRegistration(properties?: {
-    token?: string
-    resolution?: string
-  }) {
+  function createRegistration(token: string, fn?: Function<any, [Bundle]>): Registration {
+    const resolve = fn
+      ? (bundle: Bundle) => fn(bundle)
+      : () => 'resolution'
+
     return {
-      token: properties?.token ?? 'defaultToken',
-      resolve: () => properties?.resolution ?? 'resolutionString',
-      clone: () => createStubRegistration({
-        token: properties?.token ?? 'defaultToken',
-        resolution: properties?.resolution ?? 'resolutionString',
-      }),
+      token,
+      resolve,
+      clone: () => createRegistration(token, fn),
     }
   }
 
   describe('has', () => {
     it('should return "true" when token is already used', () => {
       const container = new Container()
-      const stubRegistration_0 = createStubRegistration({ token: 'stubRegistration' })
+      const stubRegistration_0 = createRegistration('stubRegistration')
 
       container.push(stubRegistration_0)
       expect(container.has('stubRegistration')).toBe(true)
@@ -33,8 +35,8 @@ describe('Container', () => {
   describe('push', () => {
     it('should push registrations as part of the container', () => {
       const container = new Container()
-      const stubRegistration_0 = createStubRegistration({ token: 'stubRegistration_0' })
-      const stubRegistration_1 = createStubRegistration({ token: 'stubRegistration_1' })
+      const stubRegistration_0 = createRegistration('stubRegistration_0')
+      const stubRegistration_1 = createRegistration('stubRegistration_1')
 
       container.push(
         stubRegistration_0,
@@ -51,8 +53,8 @@ describe('Container', () => {
     it('should override registration token', () => {
       const container = new Container()
 
-      const stubRegistration_0 = createStubRegistration({ token: 'stubToken', resolution: 'resolution_0' })
-      const stubRegistration_1 = createStubRegistration({ token: 'stubToken', resolution: 'resolution_1' })
+      const stubRegistration_0 = createRegistration('stubToken', () => 'resolution_0' )
+      const stubRegistration_1 = createRegistration('stubToken', () => 'resolution_1' )
       
       container.push(stubRegistration_0)
 
@@ -71,8 +73,8 @@ describe('Container', () => {
   describe('unpack', () => {
     it('should return undefined when unpacking unregistered token', () => {
       const container = new Container()
-      const stubRegistration_0 = createStubRegistration({ token: 'stubRegistration_0' })
-      const stubRegistration_1 = createStubRegistration({ token: 'stubRegistration_1' })
+      const stubRegistration_0 = createRegistration('stubRegistration_0')
+      const stubRegistration_1 = createRegistration('stubRegistration_1')
 
       container.push(
         stubRegistration_0,
@@ -86,8 +88,8 @@ describe('Container', () => {
 
     it('should return registration clone based on token', () => {
       const container = new Container()
-      const stubRegistration_0 = createStubRegistration({ token: 'stubRegistration_0' })
-      const stubRegistration_1 = createStubRegistration({ token: 'stubRegistration_1' })
+      const stubRegistration_0 = createRegistration('stubRegistration_0')
+      const stubRegistration_1 = createRegistration('stubRegistration_1')
 
       container.push(
         stubRegistration_0,
@@ -106,8 +108,8 @@ describe('Container', () => {
 
     it('should return registration clones for all registrations', () => {
       const container = new Container()
-      const stubRegistration_0 = createStubRegistration({ token: 'stubRegistration_0', resolution: 'resolution_0' })
-      const stubRegistration_1 = createStubRegistration({ token: 'stubRegistration_1', resolution: 'resolution_1' })
+      const stubRegistration_0 = createRegistration('stubRegistration_0', () => 'resolution_0')
+      const stubRegistration_1 = createRegistration('stubRegistration_1', () => 'resolution_1')
 
       container.push(
         stubRegistration_0,
@@ -129,10 +131,7 @@ describe('Container', () => {
   describe('resolve', () => {
     it('should return resolved registration when an existent token is passed', () => {
       const container = new Container()
-      const stubRegistration = createStubRegistration({
-        token: 'stubRegistration',
-        resolution: 'resolutionString',
-      })
+      const stubRegistration = createRegistration('stubRegistration', () => 'resolutionString')
 
       container.push(stubRegistration)
       expect(container.resolve('stubRegistration')).toBe('resolutionString')
@@ -149,11 +148,11 @@ describe('Container', () => {
       const container = new Container() as any
 
       expect(() => {
-        container.bundle.anyRegistration = createStubRegistration({ token: 'anyRegistration' })
+        container.bundle.anyRegistration = createRegistration('anyRegistration')
       }).toThrow('Could not set registration "anyRegistration". Registration should not be done through bundle.')
 
       expect(() => {
-        container.bundle['anyRegistration'] = createStubRegistration({ token: 'anyRegistration' })
+        container.bundle['anyRegistration'] = createRegistration('anyRegistration')
       }).toThrow('Could not set registration "anyRegistration". Registration should not be done through bundle.')
     })
 
@@ -165,10 +164,7 @@ describe('Container', () => {
 
     it('should return resolved registration when accessing existent registration', () => {
       const container = new Container()
-      const stubRegistration = createStubRegistration({
-        token: 'stubRegistration',
-        resolution: 'resolutionString',
-      })
+      const stubRegistration = createRegistration('stubRegistration', () => 'resolutionString')
 
       container.push(stubRegistration)
       expect(container.bundle.stubRegistration).toBe('resolutionString')
@@ -178,13 +174,8 @@ describe('Container', () => {
     it('should return registered keys when manipulating bundle', () => {
       const container = new Container()
 
-      const stubRegistration_0 = createStubRegistration({
-        token: 'stubRegistration_0',
-      })
-
-      const stubRegistration_1 = createStubRegistration({
-        token: 'stubRegistration_1',
-      })
+      const stubRegistration_0 = createRegistration('stubRegistration_0')
+      const stubRegistration_1 = createRegistration('stubRegistration_1')
 
       container.push(
         stubRegistration_0,
@@ -200,8 +191,8 @@ describe('Container', () => {
     it('should return configurable property descriptors when manipulating bundle',() => {
       const container = new Container()
 
-      const stubRegistration_0 = createStubRegistration({ token: 'stubRegistration_0', resolution: 'stubRegistration_0' })
-      const stubRegistration_1 = createStubRegistration({ token: 'stubRegistration_1', resolution: 'stubRegistration_1' })
+      const stubRegistration_0 = createRegistration('stubRegistration_0', () => 'stubRegistration_0')
+      const stubRegistration_1 = createRegistration('stubRegistration_1', () => 'stubRegistration_1')
 
       container.push(
         stubRegistration_0,
@@ -218,8 +209,8 @@ describe('Container', () => {
     it('should return enumerable property descriptors when manipulating bundle',() => {
       const container = new Container()
 
-      const stubRegistration_0 = createStubRegistration({ token: 'stubRegistration_0', resolution: 'stubRegistration_0' })
-      const stubRegistration_1 = createStubRegistration({ token: 'stubRegistration_1', resolution: 'stubRegistration_1' })
+      const stubRegistration_0 = createRegistration('stubRegistration_0', () => 'stubRegistration_0')
+      const stubRegistration_1 = createRegistration('stubRegistration_1', () => 'stubRegistration_1')
 
       container.push(
         stubRegistration_0,
