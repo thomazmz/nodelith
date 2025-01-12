@@ -32,6 +32,10 @@ export class Container<B extends Bundle = Bundle> {
     }
   }
 
+  public resolve(token: Token) {
+    return this.map.get(token)?.resolve(this.bundle)
+  }
+
   public unpack(): Registration[]
 
   public unpack(token: string): Registration | undefined

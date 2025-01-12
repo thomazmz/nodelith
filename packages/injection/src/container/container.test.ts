@@ -126,6 +126,24 @@ describe('Container', () => {
     })
   })
 
+  describe('resolve', () => {
+    it('should return resolved registration when an existent token is passed', () => {
+      const container = new Container()
+      const stubRegistration = createStubRegistration({
+        token: 'stubRegistration',
+        resolution: 'resolutionString',
+      })
+
+      container.push(stubRegistration)
+      expect(container.resolve('stubRegistration')).toBe('resolutionString')
+    })
+
+    it('should return undefined when an nonexistent token is passed', () => {
+      const container = new Container()
+      expect(container.resolve('stubRegistration')).toBe(undefined)
+    })
+  })
+
   describe('bundle', () => {
     it('should throw error when trying to set bundle property', () => {
       const container = new Container() as any
