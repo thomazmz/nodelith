@@ -54,6 +54,10 @@ export class Module {
     }
 
     if('factory' in options) {
+      if(typeof options.factory !== 'function') {
+        throw new Error(`Could not register "${token.toString()}". Provided factory should be of type "function".`)
+      }
+
       return this.registerFactory(token, options.factory, {
         mode: options?.mode,
         lifetime: options?.lifetime,
@@ -61,6 +65,10 @@ export class Module {
     }
 
     if('resolver' in options) {
+      if(typeof options.resolver !== 'function') {
+        throw new Error(`Could not register "${token.toString()}". Provided resolver should be of type "function".`)
+      }
+
       return this.registerResolver(token, options.resolver, {
         mode: options?.mode,
         lifetime: options?.lifetime,
@@ -68,13 +76,17 @@ export class Module {
     }
 
     if('constructor' in options) {
+      if(typeof options.constructor !== 'function') {
+        throw new Error(`Could not register "${token.toString()}". Provided constructor should be of type "function".`)
+      }
+
       return this.registerConstructor(token, options.constructor, {
         mode: options?.mode,
         lifetime: options?.lifetime,
       })
     }
 
-    throw new Error(`Could not register ${token.toString()}. Given options are missing a valid registration target.`)
+    throw new Error(`Could not register "${token.toString()}". Given options are missing a valid registration target.`)
   }
 
   public registerStatic<R>(token: Token, resolution: R): Registration<R> {
