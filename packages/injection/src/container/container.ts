@@ -8,7 +8,7 @@ export class Container<B extends Bundle = any> {
   readonly bundle: Readonly<B>
 
   public get registrations() {
-    return Array.from(this.map.values())
+    return 
   }
 
   public constructor() {
@@ -25,11 +25,18 @@ export class Container<B extends Bundle = any> {
     }
   }
 
-  public get(token: Token): Registration | undefined {
-    throw new Error('Method not implemented')
-  }
-  
-  public set(token: Token, builder: { build(bundle: Bundle): Registration }): Registration {
-    throw new Error('Method not implemented')
+  public unpack(): Registration[]
+
+  public unpack(token: string): Registration | undefined
+
+  public unpack(token?: string): Registration[] | Registration | undefined {
+    if(token) {
+      return this.map.get(token)?.clone()
+    }
+
+    return Array.from(this.map.values()).map((registration) => {
+      return registration.clone()
+    })
   }
 }
+ 
