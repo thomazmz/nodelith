@@ -7,6 +7,10 @@ export class Container<B extends Bundle = any> {
 
   readonly bundle: Readonly<B>
 
+  public get registrations() {
+    return Array.from(this.map.values())
+  }
+
   public constructor() {
     this.bundle = {} as B
   }
