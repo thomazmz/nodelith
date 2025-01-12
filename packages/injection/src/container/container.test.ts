@@ -5,15 +5,11 @@ import { Container } from './container'
 import { Bundle } from '../bundle'
 
 describe('Container', () => {
-  function createRegistration(token: string, fn?: Function<any, [Bundle]>): Registration {
-    const resolve = fn
-      ? (bundle: Bundle) => fn(bundle)
-      : () => 'resolution'
-
+  function createRegistration(token: string, target?: Function<any, [Bundle]>): Registration {
     return {
       token,
-      resolve,
-      clone: () => createRegistration(token, fn),
+      clone: () => createRegistration(token, target),
+      resolve: target ? (bundle: Bundle) => target(bundle) : () => 'resolution',
     }
   }
 
@@ -222,6 +218,74 @@ describe('Container', () => {
       expect(Object.keys(descriptors).length).toBe(2)
       expect(descriptors[stubRegistration_0.token]?.enumerable).toBe(true)
       expect(descriptors[stubRegistration_1.token]?.enumerable).toBe(true)
+    })
+  })
+
+  describe('resolution',() => {
+    it('should resolve cyclic dependency graph', () => {
+      const container = new Container()
+
+      const targetFactory_0 = (dependencies: Bundle) => {
+        return {
+          call: () => 'called_target_0',
+          callDependency: () => dependencies.target_1.call(),
+        }
+      }
+    
+      const targetFactory_1 = (dependencies: Bundle) => {
+        return {
+          call: () => 'called_target_1',
+          callDependency: () => dependencies.target_0.call(),
+        }
+      }
+  
+      container.push(
+        createRegistration('target_0', targetFactory_0),
+        createRegistration('target_1', targetFactory_1),
+      )
+
+      expect(container.bundle.target_0.call()).toBe('called_target_0')
+      expect(container.bundle.target_1.call()).toBe('called_target_1')
+
+      expect(container.bundle.target_0.callDependency()).toBe('called_target_1')
+      expect(container.bundle.target_1.callDependency()).toBe('called_target_0')
+    })
+
+    it('should resolve acyclic dependency graph', () => {
+      const container = new Container()
+
+      const targetFactory_0 = () => {
+        return { 
+          call: () => 'called_target_0' 
+        }
+      }
+    
+      const targetFactory_1 = () => {
+        return { 
+          call: () => 'called_target_1' 
+        }
+      }
+
+      const targetFactory_2  = (dependencies: Bundle) => {
+        return { 
+          call: () => 'called_target_2',
+          callTarget_0: () => dependencies.target_0.call(),
+          callTarget_1: () => dependencies.target_1.call(),
+        }
+      }
+  
+      container.push(
+        createRegistration('target_0', targetFactory_0),
+        createRegistration('target_1', targetFactory_1),
+        createRegistration('target_2', targetFactory_2),
+      )
+
+      expect(container.bundle.target_2.callTarget_0()).toBe('called_target_0')
+      expect(container.bundle.target_2.callTarget_1()).toBe('called_target_1')
+
+      expect(container.bundle.target_2.call()).toBe('called_target_2')
+      expect(container.bundle.target_1.call()).toBe('called_target_1')
+      expect(container.bundle.target_0.call()).toBe('called_target_0')
     })
   })
 })
