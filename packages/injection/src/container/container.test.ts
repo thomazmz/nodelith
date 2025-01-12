@@ -1,4 +1,3 @@
-import exp from 'constants'
 import { Container } from './container'
 
 describe('Container', () => {
