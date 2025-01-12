@@ -7,22 +7,36 @@ export class Container<B extends Bundle = Bundle> {
 
   readonly bundle: Readonly<B>
 
-  public get registrations() {
-    return 
+  protected get tokens(): Token[] {
+    return Array.from(this.map.keys())
+  }
+
+  protected get registrations(): Registration[] {
+    return Array.from(this.map.values())
   }
 
   public constructor() {
     this.bundle = new Proxy({} as B, {
-      get: (target: B, token: Token) => {
-        return this.map.get(token)?.resolve(this.bundle)
+      get: (_target: B, token: Token) => {
+        return this.resolve(token)
       },
-      set: (target: B, token: Token) => {
+      set: (_target: B, token: Token) => {
         throw new Error(`Could not set registration "${token.toString()}". Registration should not be done through bundle.`)
+      },
+      ownKeys: (_target: B) => {
+        return this.tokens
+      },
+      getOwnPropertyDescriptor: (_target: B, token: Token) => {
+        return !this.map.has(token) ? undefined : {
+          value: this.resolve(token),
+          configurable: true,
+          enumerable: true,
+        };
       },
     })
   }
 
-  public has(token: Token ): boolean  {
+  public has(token: Token): boolean  {
     return this.map.has(token)
   }
 
@@ -37,9 +51,7 @@ export class Container<B extends Bundle = Bundle> {
   }
 
   public unpack(): Registration[]
-
   public unpack(token: string): Registration | undefined
-
   public unpack(token?: string): Registration[] | Registration | undefined {
     if(token) {
       return this.map.get(token)?.clone()

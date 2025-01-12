@@ -1,3 +1,4 @@
+import exp from 'constants'
 import { Container } from './container'
 
 describe('Container', () => {
@@ -173,6 +174,64 @@ describe('Container', () => {
       container.push(stubRegistration)
       expect(container.bundle.stubRegistration).toBe('resolutionString')
       expect(container.bundle['stubRegistration']).toBe('resolutionString')
+    })
+
+    it('should return registered keys when manipulating bundle', () => {
+      const container = new Container()
+
+      const stubRegistration_0 = createStubRegistration({
+        token: 'stubRegistration_0',
+      })
+
+      const stubRegistration_1 = createStubRegistration({
+        token: 'stubRegistration_1',
+      })
+
+      container.push(
+        stubRegistration_0,
+        stubRegistration_1,
+      )
+
+      expect(Object.keys(container.bundle)).toEqual(expect.arrayContaining([
+        stubRegistration_0.token,
+        stubRegistration_1.token,
+      ]))
+    })
+
+    it('should return configurable property descriptors when manipulating bundle',() => {
+      const container = new Container()
+
+      const stubRegistration_0 = createStubRegistration({ token: 'stubRegistration_0', resolution: 'stubRegistration_0' })
+      const stubRegistration_1 = createStubRegistration({ token: 'stubRegistration_1', resolution: 'stubRegistration_1' })
+
+      container.push(
+        stubRegistration_0,
+        stubRegistration_1,
+      )
+
+      const descriptors = Object.getOwnPropertyDescriptors(container.bundle)
+
+      expect(Object.keys(descriptors).length).toBe(2)
+      expect(descriptors[stubRegistration_0.token]?.configurable).toBe(true)
+      expect(descriptors[stubRegistration_1.token]?.configurable).toBe(true)
+    })
+
+    it('should return enumerable property descriptors when manipulating bundle',() => {
+      const container = new Container()
+
+      const stubRegistration_0 = createStubRegistration({ token: 'stubRegistration_0', resolution: 'stubRegistration_0' })
+      const stubRegistration_1 = createStubRegistration({ token: 'stubRegistration_1', resolution: 'stubRegistration_1' })
+
+      container.push(
+        stubRegistration_0,
+        stubRegistration_1,
+      )
+
+      const descriptors = Object.getOwnPropertyDescriptors(container.bundle)
+
+      expect(Object.keys(descriptors).length).toBe(2)
+      expect(descriptors[stubRegistration_0.token]?.enumerable).toBe(true)
+      expect(descriptors[stubRegistration_1.token]?.enumerable).toBe(true)
     })
   })
 })
