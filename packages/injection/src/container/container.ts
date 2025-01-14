@@ -2,64 +2,77 @@ import { Token } from '../token'
 import { Bundle } from '../bundle'
 import { Registration } from '../registration'
 
-export class Container<B extends Bundle = Bundle> {
-  private readonly map: Map<Token, Registration> = new Map()
+export class Container {
 
-  readonly bundle: Readonly<B>
+  private resolving = new Map()
 
-  protected get tokens(): Token[] {
-    return Array.from(this.map.keys())
-  }
+  private readonly registrations: Map<Token, Registration> = new Map()
 
-  protected get registrations(): Registration[] {
-    return Array.from(this.map.values())
-  }
+  private readonly dependencies: Bundle = {}
+
+  public readonly bundle: Bundle;
 
   public constructor() {
-    this.bundle = new Proxy({} as B, {
-      get: (_target: B, token: Token) => {
-        return this.resolve(token)
-      },
-      set: (_target: B, token: Token) => {
+    this.bundle = new Proxy(this.dependencies, {
+      set: (_target: Bundle, token: Token) => {
         throw new Error(`Could not set registration "${token.toString()}". Registration should not be done through bundle.`)
-      },
-      ownKeys: (_target: B) => {
-        return this.tokens
-      },
-      getOwnPropertyDescriptor: (_target: B, token: Token) => {
-        return !this.map.has(token) ? undefined : {
-          value: this.resolve(token),
-          configurable: true,
-          enumerable: true,
-        };
       },
     })
   }
 
   public has(token: Token): boolean  {
-    return this.map.has(token)
+    return this.registrations.has(token)
   }
 
   public push(...registrations: Registration[]): void {
     for (const registration of registrations) {
-      this.map.set(registration.token, registration)
+      this.register(registration)
     }
+  }
+  
+  public register(registration: Registration) {
+    this.registrations.set(registration.token, registration);
+
+    Object.defineProperty(this.dependencies, registration.token, {
+      configurable: true,
+      enumerable: true,
+      get: () => this.resolve(registration.token),
+    });
   }
 
   public resolve(token: Token) {
-    return this.map.get(token)?.resolve(this.bundle)
-  }
-
-  public unpack(): Registration[]
-  public unpack(token: string): Registration | undefined
-  public unpack(token?: string): Registration[] | Registration | undefined {
-    if(token) {
-      return this.map.get(token)?.clone()
+    if (this.resolving.has(token)) {
+      return
     }
 
-    return Array.from(this.map.values()).map((registration) => {
-      return registration.clone()
-    })
+    if (!this.registrations.has(token)) {
+      return undefined
+    }
+
+    this.resolving.set(token, token);
+
+    const registration = this.registrations.get(token);
+
+    if (!registration) {
+      throw new Error(`Token '${token.toString()}' is not a valid registration.`);
+    }
+
+    const resolution = registration.resolve(this.bundle);
+
+    this.resolving.delete(token);
+
+    return resolution;
   }
+
+    public unpack(): Registration[]
+    public unpack(token: string): Registration | undefined
+    public unpack(token?: string): Registration[] | Registration | undefined {
+      if(token) {
+        return this.registrations.get(token)?.clone()
+      }
+
+      return Array.from(this.registrations.values()).map((registration) => {
+        return registration.clone()
+      })
+    }
 }
- 

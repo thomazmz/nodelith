@@ -141,7 +141,7 @@ describe('Container', () => {
 
   describe('bundle', () => {
     it('should throw error when trying to set bundle property', () => {
-      const container = new Container() as any
+      const container = new Container();
 
       expect(() => {
         container.bundle.anyRegistration = createRegistration('anyRegistration')
@@ -198,8 +198,8 @@ describe('Container', () => {
       const descriptors = Object.getOwnPropertyDescriptors(container.bundle)
 
       expect(Object.keys(descriptors).length).toBe(2)
-      expect(descriptors[stubRegistration_0.token]?.configurable).toBe(true)
-      expect(descriptors[stubRegistration_1.token]?.configurable).toBe(true)
+      expect(descriptors[stubRegistration_0.token.toString()]?.configurable).toBe(true)
+      expect(descriptors[stubRegistration_1.token.toString()]?.configurable).toBe(true)
     })
 
     it('should return enumerable property descriptors when manipulating bundle',() => {
@@ -216,8 +216,8 @@ describe('Container', () => {
       const descriptors = Object.getOwnPropertyDescriptors(container.bundle)
 
       expect(Object.keys(descriptors).length).toBe(2)
-      expect(descriptors[stubRegistration_0.token]?.enumerable).toBe(true)
-      expect(descriptors[stubRegistration_1.token]?.enumerable).toBe(true)
+      expect(descriptors[stubRegistration_0.token.toString()]?.enumerable).toBe(true)
+      expect(descriptors[stubRegistration_1.token.toString()]?.enumerable).toBe(true)
     })
   })
 
@@ -259,7 +259,7 @@ describe('Container', () => {
       expect(container.bundle.target_0.call()).toBe('called_target_0')
     })
 
-    it('should resolve acyclic dependency graph  when destructuring bundle', () => {
+    it('should resolve acyclic dependency graph when destructuring bundle', () => {
       const container = new Container()
 
       const targetFactory_0 = () => {
@@ -313,6 +313,35 @@ describe('Container', () => {
         }
       }
   
+      container.push(
+        createRegistration('target_0', targetFactory_0),
+        createRegistration('target_1', targetFactory_1),
+      )
+
+      expect(container.bundle.target_0.call()).toBe('called_target_0')
+      expect(container.bundle.target_1.call()).toBe('called_target_1')
+
+      expect(container.bundle.target_0.callDependency()).toBe('called_target_1')
+      expect(container.bundle.target_1.callDependency()).toBe('called_target_0')
+    })
+
+    it('should resolve cyclic dependency graph when destructuring bundle', () => {
+      const container = new Container()
+
+      const targetFactory_0 = ({ target_1 }: Bundle) => {
+        return {
+          call: () => 'called_target_0',
+          callDependency: () => target_1.call(),
+        }
+      }
+
+      const targetFactory_1 = ({ target_0 }: Bundle) => {
+        return {
+          call: () => 'called_target_1',
+          callDependency: () => target_0.call(),
+        }
+      }
+
       container.push(
         createRegistration('target_0', targetFactory_0),
         createRegistration('target_1', targetFactory_1),
