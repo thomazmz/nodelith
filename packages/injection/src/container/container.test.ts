@@ -58,8 +58,8 @@ describe('Container', () => {
       expect(container.has('stubRegistration_0')).toBe(true)
       expect(container.has('stubRegistration_1')).toBe(true)
 
-      expect(container.unpack('stubRegistration_0')?.token).toBe(stubRegistration_0?.token)
-      expect(container.unpack('stubRegistration_1')?.token).toBe(stubRegistration_1?.token)
+      expect(container.unpack('stubRegistration_0')[0]?.token).toBe(stubRegistration_0?.token)
+      expect(container.unpack('stubRegistration_1')[0]?.token).toBe(stubRegistration_1?.token)
     })
 
     it('should override registration token', () => {
@@ -71,14 +71,14 @@ describe('Container', () => {
       container.push(stubRegistration_0)
 
       expect(container.has('stubToken')).toBe(true)
-      expect(container.unpack('stubToken')?.token).toBe('stubToken')
-      expect(container.unpack('stubToken')?.resolve()).toBe('resolution_0')
+      expect(container.unpack('stubToken')[0]?.token).toBe('stubToken')
+      expect(container.unpack('stubToken')[0]?.resolve()).toBe('resolution_0')
 
       container.push(stubRegistration_1)
 
       expect(container.has('stubToken')).toBe(true)
-      expect(container.unpack('stubToken')?.token).toBe('stubToken')
-      expect(container.unpack('stubToken')?.resolve()).toBe('resolution_1')
+      expect(container.unpack('stubToken')[0]?.token).toBe('stubToken')
+      expect(container.unpack('stubToken')[0]?.resolve()).toBe('resolution_1')
     })
   })
 
@@ -93,7 +93,7 @@ describe('Container', () => {
         stubRegistration_1,
       )
       
-      const undefinedClone = container.unpack('stubRegistration_2')
+      const [ undefinedClone ] = container.unpack('stubRegistration_2')
 
       expect(undefinedClone).toBe(undefined)
     })
@@ -108,14 +108,19 @@ describe('Container', () => {
         stubRegistration_1,
       )
       
-      const stubRegistrationClone_0 = container.unpack('stubRegistration_0')
-      const stubRegistrationClone_1 = container.unpack('stubRegistration_1')
+      const [ stubRegistrationClone_0, stubRegistrationClone_1, undefinedClone ] = container.unpack(
+        'stubRegistration_0',
+        'stubRegistration_1',
+        'invalid'
+      )
 
       expect(stubRegistration_0).not.toBe(stubRegistrationClone_0)
       expect(stubRegistration_1).not.toBe(stubRegistrationClone_1)
-
+      
       expect(stubRegistration_0?.token).toEqual(stubRegistrationClone_0?.token)
       expect(stubRegistration_1?.token).toEqual(stubRegistrationClone_1?.token)
+
+      expect(undefinedClone).toBeUndefined()
     })
 
     it('should return registration clones for all registrations', () => {
@@ -128,14 +133,17 @@ describe('Container', () => {
         stubRegistration_1,
       )
 
-      const registrationClones = container.unpack()
+      const [ 
+        registrationClone_0,
+        registrationClone_1,
+       ] = container.unpack()
 
       expect([
         { token: stubRegistration_0.token, resolution: stubRegistration_0.resolve() },
         { token: stubRegistration_1.token, resolution: stubRegistration_1.resolve() },
       ]).toEqual(expect.arrayContaining([
-        { token: registrationClones[0]?.token, resolution: registrationClones[0]?.resolve() },
-        { token: registrationClones[1]?.token, resolution: registrationClones[1]?.resolve() },
+        { token: registrationClone_0?.token, resolution: registrationClone_0?.resolve() },
+        { token: registrationClone_1?.token, resolution: registrationClone_1?.resolve() },
       ]))
     })
   })
@@ -234,6 +242,53 @@ describe('Container', () => {
       expect(Object.keys(descriptors).length).toBe(2)
       expect(descriptors[stubRegistration_0.token.toString()]?.enumerable).toBe(true)
       expect(descriptors[stubRegistration_1.token.toString()]?.enumerable).toBe(true)
+    })
+
+    it('should not include self references during resolution', () => {
+      const container = new Container()
+
+      container.register(createFactoryRegistration('target_0', (bundle: Bundle) => {
+        expect(Object.keys(bundle)).toEqual(['target_1', 'target_2'])
+        expect(bundle['target_0']).toBeUndefined()
+      }))
+
+      container.register(createFactoryRegistration('target_1', (bundle: Bundle) => {
+        expect(Object.keys(bundle)).toEqual(['target_0', 'target_2'])
+        expect(bundle['target_1']).toBeUndefined()
+      }))
+
+      container.register(createFactoryRegistration('target_2', (bundle: Bundle) => {
+        expect(Object.keys(bundle)).toEqual(['target_0', 'target_1'])
+        expect(bundle['target_2']).toBeUndefined()
+      }))
+
+      container.resolve('target_0')
+      container.resolve('target_1')
+      container.resolve('target_2')
+    })
+
+    it('should not include self references during cloning', () => {
+      const container = new Container()
+
+      container.register({ ...createFactoryRegistration('target_0'), clone(bundle: Bundle) {
+        expect(Object.keys(bundle)).toEqual(['target_1', 'target_2'])
+        expect(bundle['target_0']).toBeUndefined()
+        return this
+      }})
+
+      container.register({ ...createFactoryRegistration('target_1'), clone(bundle: Bundle) {
+        expect(Object.keys(bundle)).toEqual(['target_0', 'target_2'])
+        expect(bundle['target_1']).toBeUndefined()
+        return this
+      }})
+
+      container.register({ ...createFactoryRegistration('target_2'), clone(bundle: Bundle) {
+        expect(Object.keys(bundle)).toEqual(['target_0', 'target_1'])
+        expect(bundle['target_2']).toBeUndefined()
+        return this
+      }})
+
+      container.unpack('target_0','target_1', 'target_2')
     })
   })
 
@@ -639,29 +694,6 @@ describe('Container', () => {
 
       expect(container.bundle.person.firstName).toEqual('Thomaz')
       expect(container.bundle.person.lastName).toEqual('Zandonotto')
-    })
-
-    it('bundle should not have self registration references during resolution', () => {
-      const container = new Container()
-
-      container.register(createFactoryRegistration('target_0', (bundle: Bundle) => {
-        expect(Object.keys(bundle)).toEqual(['target_1', 'target_2'])
-        expect(bundle['target_0']).toBeUndefined()
-      }))
-
-      container.register(createFactoryRegistration('target_1', (bundle: Bundle) => {
-        expect(Object.keys(bundle)).toEqual(['target_0', 'target_2'])
-        expect(bundle['target_1']).toBeUndefined()
-      }))
-
-      container.register(createFactoryRegistration('target_2', (bundle: Bundle) => {
-        expect(Object.keys(bundle)).toEqual(['target_0', 'target_1'])
-        expect(bundle['target_2']).toBeUndefined()
-      }))
-
-      container.resolve('target_0')
-      container.resolve('target_1')
-      container.resolve('target_2')
     })
   })
 })

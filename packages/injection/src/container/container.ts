@@ -57,32 +57,42 @@ export class Container {
       throw new Error(`Token '${token.toString()}' is not a valid registration.`);
     }
 
-    const resolution = registration.resolve(new Proxy(this.bundle, {
-      ownKeys: (target) => {
-        return Reflect.ownKeys(target).filter(key => key !== token);
-      },
-      getOwnPropertyDescriptor: (target, accessedToken) => {
-        return accessedToken !== token ? Reflect.getOwnPropertyDescriptor(target, accessedToken) : undefined
-      },
-      get: (target, accessedToken, receiver) => {
-        return accessedToken !== token ? Reflect.get(target, accessedToken, receiver) : undefined
-      },
-    }))
+    const resolution = registration.resolve(
+      this.createResolutionProxy(token)
+    )
 
     this.resolving.delete(token);
 
     return resolution;
   }
 
-    public unpack(): Registration[]
-    public unpack(token: string): Registration | undefined
-    public unpack(token?: string): Registration[] | Registration | undefined {
-      if(token) {
-        return this.registrations.get(token)?.clone()
-      }
-
-      return Array.from(this.registrations.values()).map((registration) => {
-        return registration.clone()
+  public unpack(): Registration[]
+  public unpack(...tokens: string[]): (Registration | undefined)[]
+  public unpack(...tokens: string[]): (Registration | undefined)[] {
+    if(tokens.length > 0) {
+      return tokens.map(token => {
+        const resolutionProxy = this.createResolutionProxy(token)
+        return this.registrations.get(token)?.clone(resolutionProxy)
       })
     }
+
+    return Array.from(this.registrations.values()).map((registration) => {
+      const resolutionProxy = this.createResolutionProxy(registration.token)
+      return registration.clone(resolutionProxy)
+    })
+  }
+
+  private createResolutionProxy(resolutionToken: Token): Bundle {
+    return new Proxy(this.bundle, {
+      ownKeys: (target) => {
+        return Reflect.ownKeys(target).filter(key => key !== resolutionToken);
+      },
+      getOwnPropertyDescriptor: (target, token) => {
+        return token !== resolutionToken ? Reflect.getOwnPropertyDescriptor(target, token) : undefined
+      },
+      get: (target, token, receiver) => {
+        return token !== resolutionToken ? Reflect.get(target, token, receiver) : undefined
+      },
+    })
+  }
 }
