@@ -2,14 +2,14 @@ import * as Types from '@nodelith/types'
 
 import { Token } from '../token'
 import { Bundle } from '../bundle'
-import { Options } from '../options'
 import { Registration } from '../registration'
+import { ResolverOptions } from '../options'
 
 export class ResolverRegistration<R extends ReturnType<Types.Resolver>> implements Registration<R> {
     
   public readonly token: Token;
 
-  public constructor(resolution: Types.Resolver<R>, options?: Options & {
+  public constructor(resolution: Types.Resolver<R>, options?: ResolverOptions & {
     token?: Token
   })  {
     this.token = options?.token ?? Symbol()

@@ -1,10 +1,17 @@
 import * as Core from '@nodelith/core'
 import * as Types from '@nodelith/types'
 
-import { Mode } from '../mode'
+import {
+  Mode,
+  Access,
+  Lifetime,
+  StaticOptions,
+  FactoryOptions, 
+  ResolverOptions, 
+  ConstructorOptions,
+} from '../options'
+
 import { Token } from '../token'
-import { Options } from '../options' 
-import { Lifetime } from '../lifetime'
 import { Container } from '../container'
 import { Registration }  from '../registration'
 import { StaticRegistration } from '../registration/static-registration'
@@ -15,42 +22,62 @@ import { ConstructorRegistration } from '../registration/constructor-registratio
 export class Module {
 
   public static readonly DEFAULT_MODE: Mode = 'spread'
+  public static readonly DEFAULT_ACCESS: Access = 'public'
   public static readonly DEFAULT_LIFETIME: Lifetime = 'transient'
 
   private readonly mode: Mode
+  private readonly access: Access
   private readonly lifetime: Lifetime
   
-  protected readonly container = new Container()
+  protected readonly publicContainer = new Container()
+  protected readonly privateContainer = new Container()
 
-  public constructor(options?: Options) {
+  public constructor(options?: {
+    mode: Mode,
+    access: Access,
+    lifetime: Lifetime,
+  }) {
     this.mode = options?.mode ?? Module.DEFAULT_MODE
+    this.access = options?.access ?? Module.DEFAULT_ACCESS
     this.lifetime = options?.lifetime ?? Module.DEFAULT_LIFETIME
   }
 
-  public register<R>(token: Token, options: {
-    static: R
-  }): Registration<R>
+  public has(token: Token): boolean {
+    return this.publicContainer.has(token) || this.privateContainer.has(token)
+  }
 
-  public register<R extends InstanceType<Types.Constructor>>(token: Token, options: Options & {
-    constructor: Types.Constructor<R>,
-  }): Registration<R>
+  public register<R>(
+    token: Token,
+    options: { static: R } & StaticOptions 
+  ): Registration<R>
 
-  public register<R extends ReturnType<Types.Factory>>(token: Token, options: Options & {
-    factory: Types.Factory<R>
-  }): Registration<R>
+  public register<R extends ReturnType<Types.Factory>>(
+    token: Token,
+    options: FactoryOptions & { factory: Types.Factory<R> }
+  ): Registration<R>
 
-  public register<R extends ReturnType<Types.Resolver>>(token: Token, options: Options & {
-    resolver: Types.Resolver<R>,
-  }): Registration<R>
+  public register<R extends ReturnType<Types.Resolver>>(
+    token: Token, 
+    options: ResolverOptions & { resolver: Types.Resolver<R> }
+  ): Registration<R>
 
-  public register(token: Token, options:
-    | { static: any }
-    | { factory: Types.Factory } & Options
-    | { resolver: Types.Resolver } & Options
-    | { constructor: Types.Constructor } & Options
+  public register<R extends InstanceType<Types.Constructor>>(
+    token: Token, 
+    options: ConstructorOptions & { constructor: Types.Constructor<R> }
+  ): Registration<R>
+
+  public register(token: Token, 
+    options:
+      | { static: any } & StaticOptions
+      | { factory: Types.Factory } & FactoryOptions
+      | { resolver: Types.Resolver } & ResolverOptions
+      | { constructor: Types.Constructor } & ConstructorOptions
   ):  Registration {
+
     if('static' in options)  {
-      return this.registerStatic(token, options.static)
+      return this.registerStatic(token, options.static, {
+        access: options?.access,
+      })
     }
 
     if('factory' in options) {
@@ -60,6 +87,7 @@ export class Module {
 
       return this.registerFactory(token, options.factory, {
         mode: options?.mode,
+        access: options?.access,
         lifetime: options?.lifetime,
       })
     }
@@ -71,6 +99,7 @@ export class Module {
 
       return this.registerResolver(token, options.resolver, {
         mode: options?.mode,
+        access: options?.access,
         lifetime: options?.lifetime,
       })
     }
@@ -82,6 +111,7 @@ export class Module {
 
       return this.registerConstructor(token, options.constructor, {
         mode: options?.mode,
+        access: options?.access,
         lifetime: options?.lifetime,
       })
     }
@@ -89,37 +119,48 @@ export class Module {
     throw new Error(`Could not register "${token.toString()}". Given options are missing a valid registration target.`)
   }
 
-  public registerStatic<R>(token: Token, resolution: R): Registration<R> {
-    if(this.container.has(token)) {
+  public registerStatic<R>(
+    token: Token, 
+    resolution: R, 
+    options?: StaticOptions
+  ): Registration<R> {
+
+    if(this.has(token)) {
       throw new Error(`Could not complete static registration. Module already contain a registration under "${token.toString()}".`)
+    }
+
+
+    if(!Access.includes(options?.access ?? this.access)) {
+      throw new Error('Could not complete static registration. Invalid access option.')
     }
 
     const registration = new StaticRegistration(resolution, { 
       token: token ?? Symbol(),
     })
 
-    this.container.push(registration)
-    return registration
-  }
-
-  public registerConstructor<R extends InstanceType<Types.Constructor>>(token: Token, constructor: Types.Constructor<R>, options?: Options): Registration<R> {
-    if(this.container.has(token)) {
-      throw new Error(`Could not complete constructor registration. Module already contain a registration under "${token.toString()}".`)
+    if(options?.access ?? this.access === 'private') {
+      this.privateContainer.push(registration)
     }
 
-    const registration = new ConstructorRegistration(constructor, { 
-      token: token ?? Symbol(),
-      mode: options?.mode ?? this.mode,
-      lifetime: options?.lifetime ?? this.lifetime,
-    })
+    if(options?.access ?? this.access === 'public') {
+      this.privateContainer.push(registration)
+    }
 
-    this.container.push(registration)
     return registration
   }
 
-  public registerFactory<R extends ReturnType<Types.Factory>>(token: Token, factory: Types.Factory<R>, options?: Options): Registration<R> {
-    if(this.container.has(token)) {
+  public registerFactory<R extends ReturnType<Types.Factory>>(
+    token: Token,
+    factory: Types.Factory<R>,
+    options?: FactoryOptions,
+  ): Registration<R> {
+
+    if(this.has(token)) {
       throw new Error(`Could not complete factory registration. Module already contain a registration under "${token.toString()}".`)
+    }
+
+    if(!Access.includes(options?.access ?? this.access)) {
+      throw new Error('Could not complete factory registration. Invalid access option.')
     }
 
     const registration = new FactoryRegistration(factory, { 
@@ -128,13 +169,29 @@ export class Module {
       lifetime: options?.lifetime ?? this.lifetime,
     })
 
-    this.container.push(registration)
+    if(options?.access ?? this.access === 'private') {
+      this.privateContainer.push(registration)
+    }
+
+    if(options?.access ?? this.access === 'public') {
+      this.privateContainer.push(registration)
+    }
+
     return registration
   }
 
-  public registerResolver<R extends ReturnType<Types.Resolver>>(token: Token, resolver: Types.Resolver<R>, options?: Options): Registration<R> {
-    if(this.container.has(token)) {
+  public registerResolver<R extends ReturnType<Types.Resolver>>(
+    token: Token,
+    resolver: Types.Resolver<R>,
+    options?: ResolverOptions,
+  ): Registration<R> {
+
+    if(this.has(token)) {
       throw new Error(`Could not complete resolver registration. Module already contain a registration under "${token.toString()}".`)
+    }
+
+    if(!Access.includes(options?.access ?? this.access)) {
+      throw new Error('Could not complete resolver registration. Invalid access option.')
     }
 
     const registration = new ResolverRegistration(resolver, { 
@@ -143,7 +200,45 @@ export class Module {
       lifetime: options?.lifetime ?? this.lifetime,
     })
 
-    this.container.push(registration)
+    if(options?.access ?? this.access === 'private') {
+      this.privateContainer.push(registration)
+    }
+
+    if(options?.access ?? this.access === 'public') {
+      this.privateContainer.push(registration)
+    }
+
+    return registration
+  }
+
+  public registerConstructor<R extends InstanceType<Types.Constructor>>(
+    token: Token,
+    constructor: Types.Constructor<R>,
+    options?: ConstructorOptions,
+  ): Registration<R> {
+
+    if(this.has(token)) {
+      throw new Error(`Could not complete constructor registration. Module already contain a registration under "${token.toString()}".`)
+    }
+
+    if(!Access.includes(options?.access ?? this.access)) {
+      throw new Error('Could not complete constructor registration. Invalid access option.')
+    }
+
+    const registration = new ConstructorRegistration(constructor, { 
+      token: token ?? Symbol(),
+      mode: options?.mode ?? this.mode,
+      lifetime: options?.lifetime ?? this.lifetime,
+    })
+
+    if(options?.access ?? this.access === 'private') {
+      this.privateContainer.push(registration)
+    }
+
+    if(options?.access ?? this.access === 'public') {
+      this.privateContainer.push(registration)
+    }
+
     return registration
   }
 
