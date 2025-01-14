@@ -585,5 +585,52 @@ describe('Container', () => {
       expect(container.bundle.target_0.callDependency()).toBe('called_target_1')
       expect(container.bundle.target_1.callDependency()).toBe('called_target_0')    
     })
+
+    it('should resolve access to the bundle values within the factory registration', () => {
+      const container = new Container()
+
+      function createRegistration(token: string, target: Factory<any, [string, string]>): Registration {
+        return {
+          token,
+          clone: () => createRegistration(token, target),
+          resolve: (bundle: Bundle) => target(bundle.firstName, bundle.lastName),
+        }
+      }
+
+      container.push(
+        createStaticRegistration('firstName', 'Thomaz'),
+        createStaticRegistration('lastName', 'Zandonotto'),
+        createRegistration('person', (firstName: string, lastName: string) => ({ firstName, lastName })),
+      )
+
+      expect(container.bundle.person.firstName).toEqual('Thomaz')
+      expect(container.bundle.person.lastName).toEqual('Zandonotto')
+    })
+
+    it('should resolve access to the bundle values within the constructor registration', () => {
+      const container = new Container()
+
+      function createRegistration(token: string, target: Constructor<any, [string, string]>): Registration {
+        return {
+          token,
+          clone: () => createRegistration(token, target),
+          resolve: (bundle: Bundle) => new target(bundle.firstName, bundle.lastName),
+        }
+      }
+
+      container.push(
+        createStaticRegistration('firstName', 'Thomaz'),
+        createStaticRegistration('lastName', 'Zandonotto'),
+        createRegistration('person', class { 
+          constructor(
+            public readonly firstName: string,
+            public readonly lastName: string
+          ) { }
+        })
+      )
+
+      expect(container.bundle.person.firstName).toEqual('Thomaz')
+      expect(container.bundle.person.lastName).toEqual('Zandonotto')
+    })
   })
 })
