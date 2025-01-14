@@ -57,7 +57,17 @@ export class Container {
       throw new Error(`Token '${token.toString()}' is not a valid registration.`);
     }
 
-    const resolution = registration.resolve(this.bundle);
+    const resolution = registration.resolve(new Proxy(this.bundle, {
+      ownKeys: (target) => {
+        return Reflect.ownKeys(target).filter(key => key !== token);
+      },
+      getOwnPropertyDescriptor: (target, accessedToken) => {
+        return accessedToken !== token ? Reflect.getOwnPropertyDescriptor(target, accessedToken) : undefined
+      },
+      get: (target, accessedToken, receiver) => {
+        return accessedToken !== token ? Reflect.get(target, accessedToken, receiver) : undefined
+      },
+    }))
 
     this.resolving.delete(token);
 

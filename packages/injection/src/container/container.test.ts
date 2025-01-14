@@ -5,6 +5,14 @@ import { Container } from './container'
 import { Bundle } from '../bundle'
 
 describe('Container', () => {
+  function createStaticRegistration(token: string, resolution?: any): Registration {
+    return {
+      token,
+      clone: () => createStaticRegistration(token, resolution),
+      resolve: () => resolution,
+    }
+  }
+
   function createFactoryRegistration(token: string, target?: Factory<any, [Bundle]>): Registration {
     return {
       token,
@@ -13,10 +21,10 @@ describe('Container', () => {
     }
   }
 
-  function createClassRegistration(token: string, target?: Constructor<any, [Bundle]>): Registration {
+  function createConstructor(token: string, target?: Constructor<any, [Bundle]>): Registration {
     return {
       token,
-      clone: () => createClassRegistration(token, target),
+      clone: () => createConstructor(token, target),
       resolve: target ? (bundle: Bundle) => new target(bundle) : () => 'resolution',
     }
   }
@@ -269,7 +277,7 @@ describe('Container', () => {
       expect(container.bundle.target_2.callTarget_1()).toBe('called_target_1')
     })
 
-    it('should resolve acyclic dependency graph with target classes when not destructuring bundle', () => {
+    it('should resolve acyclic dependency graph with target constructors when not destructuring bundle', () => {
       const container = new Container()
 
       class TargetClass_0 {
@@ -318,9 +326,9 @@ describe('Container', () => {
       }
       
       container.push(
-        createClassRegistration('target_0', TargetClass_0),
-        createClassRegistration('target_1', TargetClass_1),
-        createClassRegistration('target_2', TargetClass_2),
+        createConstructor('target_0', TargetClass_0),
+        createConstructor('target_1', TargetClass_1),
+        createConstructor('target_2', TargetClass_2),
       )
 
       expect(container.bundle.target_0.call()).toBe('called_target_0')
@@ -371,7 +379,7 @@ describe('Container', () => {
       expect(container.bundle.target_2.callTarget_1()).toBe('called_target_1')
     })
 
-    it('should resolve acyclic dependency graph with target classes when destructuring bundle', () => {
+    it('should resolve acyclic dependency graph with target constructors when destructuring bundle', () => {
       const container = new Container()
 
       class TargetClass_0 {
@@ -420,9 +428,9 @@ describe('Container', () => {
       }
       
       container.push(
-        createClassRegistration('target_0', TargetClass_0),
-        createClassRegistration('target_1', TargetClass_1),
-        createClassRegistration('target_2', TargetClass_2),
+        createConstructor('target_0', TargetClass_0),
+        createConstructor('target_1', TargetClass_1),
+        createConstructor('target_2', TargetClass_2),
       )
 
       expect(container.bundle.target_0.call()).toBe('called_target_0')
@@ -463,7 +471,7 @@ describe('Container', () => {
       expect(container.bundle.target_1.callDependency()).toBe('called_target_0')
     })
 
-    it('should resolve cyclic dependency graph with target classes when not destructuring bundle', () => {
+    it('should resolve cyclic dependency graph with target constructors when not destructuring bundle', () => {
       const container = new Container()
 
       class TargetClass_0 {
@@ -499,8 +507,8 @@ describe('Container', () => {
       }
 
       container.push(
-        createClassRegistration('target_0', TargetClass_0),
-        createClassRegistration('target_1', TargetClass_1),
+        createConstructor('target_0', TargetClass_0),
+        createConstructor('target_1', TargetClass_1),
       )
 
       expect(container.bundle.target_0.call()).toBe('called_target_0')
@@ -539,7 +547,7 @@ describe('Container', () => {
       expect(container.bundle.target_1.callDependency()).toBe('called_target_0')
     })
 
-    it('should resolve cyclic dependency graph with target classes when destructuring bundle', () => {
+    it('should resolve cyclic dependency graph with target constructors when destructuring bundle', () => {
       const container = new Container()
 
       class TargetClass_0 {
@@ -575,8 +583,8 @@ describe('Container', () => {
       }
 
       container.push(
-        createClassRegistration('target_0', TargetClass_0),
-        createClassRegistration('target_1', TargetClass_1),
+        createConstructor('target_0', TargetClass_0),
+        createConstructor('target_1', TargetClass_1),
       )
 
       expect(container.bundle.target_0.call()).toBe('called_target_0')
@@ -589,10 +597,10 @@ describe('Container', () => {
     it('should resolve access to the bundle values within the factory registration', () => {
       const container = new Container()
 
-      function createRegistration(token: string, target: Factory<any, [string, string]>): Registration {
+      function createInstanceRegistration(token: string, target: Factory<any, [string, string]>): Registration {
         return {
           token,
-          clone: () => createRegistration(token, target),
+          clone: () => createInstanceRegistration(token, target),
           resolve: (bundle: Bundle) => target(bundle.firstName, bundle.lastName),
         }
       }
@@ -600,7 +608,7 @@ describe('Container', () => {
       container.push(
         createStaticRegistration('firstName', 'Thomaz'),
         createStaticRegistration('lastName', 'Zandonotto'),
-        createRegistration('person', (firstName: string, lastName: string) => ({ firstName, lastName })),
+        createInstanceRegistration('person', (firstName: string, lastName: string) => ({ firstName, lastName })),
       )
 
       expect(container.bundle.person.firstName).toEqual('Thomaz')
@@ -610,10 +618,10 @@ describe('Container', () => {
     it('should resolve access to the bundle values within the constructor registration', () => {
       const container = new Container()
 
-      function createRegistration(token: string, target: Constructor<any, [string, string]>): Registration {
+      function createInstanceRegistration(token: string, target: Constructor<any, [string, string]>): Registration {
         return {
           token,
-          clone: () => createRegistration(token, target),
+          clone: () => createInstanceRegistration(token, target),
           resolve: (bundle: Bundle) => new target(bundle.firstName, bundle.lastName),
         }
       }
@@ -621,7 +629,7 @@ describe('Container', () => {
       container.push(
         createStaticRegistration('firstName', 'Thomaz'),
         createStaticRegistration('lastName', 'Zandonotto'),
-        createRegistration('person', class { 
+        createInstanceRegistration('person', class { 
           constructor(
             public readonly firstName: string,
             public readonly lastName: string
@@ -631,6 +639,29 @@ describe('Container', () => {
 
       expect(container.bundle.person.firstName).toEqual('Thomaz')
       expect(container.bundle.person.lastName).toEqual('Zandonotto')
+    })
+
+    it('bundle should not have self registration references during resolution', () => {
+      const container = new Container()
+
+      container.register(createFactoryRegistration('target_0', (bundle: Bundle) => {
+        expect(Object.keys(bundle)).toEqual(['target_1', 'target_2'])
+        expect(bundle['target_0']).toBeUndefined()
+      }))
+
+      container.register(createFactoryRegistration('target_1', (bundle: Bundle) => {
+        expect(Object.keys(bundle)).toEqual(['target_0', 'target_2'])
+        expect(bundle['target_1']).toBeUndefined()
+      }))
+
+      container.register(createFactoryRegistration('target_2', (bundle: Bundle) => {
+        expect(Object.keys(bundle)).toEqual(['target_0', 'target_1'])
+        expect(bundle['target_2']).toBeUndefined()
+      }))
+
+      container.resolve('target_0')
+      container.resolve('target_1')
+      container.resolve('target_2')
     })
   })
 })
