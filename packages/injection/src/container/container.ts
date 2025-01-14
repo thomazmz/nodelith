@@ -46,7 +46,7 @@ export class Container {
     }
 
     if (!this.registrations.has(token)) {
-      return undefined
+      return
     }
 
     this.resolving.set(token, token);
