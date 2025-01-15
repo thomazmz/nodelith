@@ -1,11 +1,18 @@
-import { hasUncaughtExceptionCaptureCallback } from 'process'
-import { Module } from './module'
 import * as Types from '@nodelith/types'
-import { access } from 'fs'
+
 import { Registration } from 'registration'
-import { Container } from 'container'
+import { Module } from './module'
+import { Bundle } from 'bundle'
 
 describe('Module', () => {
+  function createFunctionRegistration(token: string, target?: Function): Registration {
+    return {
+      token,
+      clone: () => createFunctionRegistration(token, target),
+      resolve: target ? (bundle) => target(bundle) : () => 'resolution',
+    }
+  }
+
   describe('register', () => {
     it('should throw an error when making a registration without target', () => {
       const module = new Module()
@@ -168,14 +175,86 @@ describe('Module', () => {
     })
   })
 
-  describe('hey', () => {
-    it('', () => {
-      const dep1 = (dependencies) => {
-        return `dependencies-${dependencies.dep2}`
-      }
-      const dep2 = (dependencies) => {
-        return `dependencies-${dependencies.dep1}`
-      }
+  describe('useModule', () => {
+    it('should throw error when target module already has tokens injected by source module', () => {
+      const targetModule = new Module()
+      targetModule.useRegistration(createFunctionRegistration('dependency', (dependencies: Bundle) => ({
+        has: (token: string) => Object.keys(dependencies).includes(token)
+      })))
+
+      const sourceModule = new Module()
+      sourceModule.useRegistration(createFunctionRegistration('dependency', (dependencies: Bundle) => ({
+        has: (token: string) => Object.keys(dependencies).includes(token)
+      })))
+
+      expect(() => {
+        targetModule.useModule(sourceModule)
+      }).toThrow('Could not complete registration. Module already contain a registration under "dependency" token.')
+    })
+
+    it('should share dependencies between source module and target module', () => {
+      const targetModule = new Module()
+      const sourceModule = new Module()
+
+      targetModule.useRegistration(createFunctionRegistration('dependency_0', (dependencies: Bundle) => ({
+        has: (token: string) => Object.keys(dependencies).includes(token)
+      })))
+
+      sourceModule.useRegistration(createFunctionRegistration('dependency_1', (dependencies: Bundle) => ({
+        has: (token: string) => Object.keys(dependencies).includes(token)
+      })))
+
+      targetModule.useModule(sourceModule)
+
+      const targetModuleDependency_0 = targetModule.resolve('dependency_0')
+      const targetModuleDependency_1 = targetModule.resolve('dependency_1')
+
+      expect(targetModuleDependency_0?.has('dependency_0')).toBe(false)
+      expect(targetModuleDependency_0?.has('dependency_1')).toBe(true)
+
+      expect(targetModuleDependency_1?.has('dependency_1')).toBe(false)
+      expect(targetModuleDependency_1?.has('dependency_0')).toBe(true)
+    })
+
+    it('should not share dependencies between target module and source module', () => {
+      const targetModule = new Module()
+      const sourceModule = new Module()
+
+      targetModule.useRegistration(createFunctionRegistration('dependency_0', (dependencies: Bundle) => ({
+        has: (token: string) => Object.keys(dependencies).includes(token)
+      })))
+
+      sourceModule.useRegistration(createFunctionRegistration('dependency_1', (dependencies: Bundle) => ({
+        has: (token: string) => Object.keys(dependencies).includes(token)
+      })))
+
+      targetModule.useModule(sourceModule)
+
+      const sourceModuleDependency_0 = sourceModule.resolve('dependency_0')
+      const sourceModuleDependency_1 = sourceModule.resolve('dependency_1')
+
+      expect(sourceModuleDependency_0).toBeUndefined()
+
+      expect(sourceModuleDependency_1?.has('dependency_1')).toBe(false)
+      expect(sourceModuleDependency_1?.has('dependency_0')).toBe(false)
+    })
+  })
+
+  describe('useRegistration', () => {
+    it('should throw error when target module already has tokens injected by source registration', () => {
+      const targetModule = new Module()
+
+      targetModule.useRegistration(createFunctionRegistration('dependency', (dependencies: Bundle) => ({
+        has: (token: string) => Object.keys(dependencies).includes(token)
+      })))
+
+      const sourceRegistration = createFunctionRegistration('dependency', (dependencies: Bundle) => ({
+        has: (token: string) => Object.keys(dependencies).includes(token)
+      }))
+
+      expect(() => {
+        targetModule.useRegistration(sourceRegistration)
+      }).toThrow('Could not complete registration. Module already contain a registration under "dependency" token.')
     })
   })
 })

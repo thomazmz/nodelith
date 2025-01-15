@@ -29,8 +29,10 @@ export class Module {
   private readonly access: Access
   private readonly lifetime: Lifetime
   
-  protected readonly publicContainer = new Container()
-  protected readonly privateContainer = new Container()
+  private readonly container = new Container()
+
+  private readonly publicTokens: Token[] = []
+  private readonly privateTokens: Token[] = []
 
   public constructor(options?: {
     mode: Mode,
@@ -42,8 +44,30 @@ export class Module {
     this.lifetime = options?.lifetime ?? Module.DEFAULT_LIFETIME
   }
 
+  public useModule(module: Module): void {
+    for (const registration of module.unpack()) {
+      this.useRegistration(registration)
+    }
+  }
+
+  public useRegistration(registration: Registration): void {
+    if(this.has(registration.token)) {
+      throw new Error(`Could not complete registration. Module already contain a registration under "${registration.token.toString()}" token.`)
+    }
+
+    this.container.push(registration)
+  }
+
   public has(token: Token): boolean {
-    return this.publicContainer.has(token) || this.privateContainer.has(token)
+    return this.container.has(token)
+  }
+
+  public unpack(): Registration[]
+  public unpack(...tokens: Token[]): (Registration | undefined)[]
+  public unpack(...tokens: Token[]): (Registration | undefined)[] {
+    return this.container.unpack(...tokens.map(token => {
+      return this.privateTokens.includes(token) ? Symbol() : token
+    }))
   }
 
   public register<R>(
@@ -129,7 +153,6 @@ export class Module {
       throw new Error(`Could not complete static registration. Module already contain a registration under "${token.toString()}".`)
     }
 
-
     if(!Access.includes(options?.access ?? this.access)) {
       throw new Error('Could not complete static registration. Invalid access option.')
     }
@@ -138,12 +161,14 @@ export class Module {
       token: token ?? Symbol(),
     })
 
+    this.container.push(registration)
+
     if(options?.access ?? this.access === 'private') {
-      this.privateContainer.push(registration)
+      this.privateTokens.push(registration.token)
     }
 
     if(options?.access ?? this.access === 'public') {
-      this.privateContainer.push(registration)
+      this.publicTokens.push(registration.token)
     }
 
     return registration
@@ -169,12 +194,14 @@ export class Module {
       lifetime: options?.lifetime ?? this.lifetime,
     })
 
+    this.container.push(registration)
+
     if(options?.access ?? this.access === 'private') {
-      this.privateContainer.push(registration)
+      this.privateTokens.push(registration.token)
     }
 
     if(options?.access ?? this.access === 'public') {
-      this.privateContainer.push(registration)
+      this.publicTokens.push(registration.token)
     }
 
     return registration
@@ -200,12 +227,14 @@ export class Module {
       lifetime: options?.lifetime ?? this.lifetime,
     })
 
+    this.container.push(registration)
+
     if(options?.access ?? this.access === 'private') {
-      this.privateContainer.push(registration)
+      this.privateTokens.push(registration.token)
     }
 
     if(options?.access ?? this.access === 'public') {
-      this.privateContainer.push(registration)
+      this.publicTokens.push(registration.token)
     }
 
     return registration
@@ -231,12 +260,14 @@ export class Module {
       lifetime: options?.lifetime ?? this.lifetime,
     })
 
+    this.container.push(registration)
+
     if(options?.access ?? this.access === 'private') {
-      this.privateContainer.push(registration)
+      this.privateTokens.push(registration.token)
     }
 
     if(options?.access ?? this.access === 'public') {
-      this.privateContainer.push(registration)
+      this.publicTokens.push(registration.token)
     }
 
     return registration
@@ -271,8 +302,8 @@ export class Module {
     throw new Error('Method not implemented.')
   }
 
-  public resolve<R extends ReturnType<Types.Function>>(token: Token): Registration<R> {
-    throw new Error('Method not implemented.')
+  public resolve<R = any>(token: Token): R | undefined {
+    return this.container.resolve<R>(token);
   }
 
   public resolveFactory<R extends ReturnType<Types.Factory>>(target: Types.Factory<R>, options?: {

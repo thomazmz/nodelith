@@ -1,4 +1,4 @@
-import { Constructor, Factory } from '@nodelith/types'
+import { Constructor, Function } from '@nodelith/types'
 
 import { Registration } from '../registration'
 import { Container } from './container'
@@ -13,15 +13,15 @@ describe('Container', () => {
     }
   }
 
-  function createFactoryRegistration(token: string, target?: Factory<any, [Bundle]>): Registration {
+  function createFunctionRegistration(token: string, target?: Function): Registration {
     return {
       token,
-      clone: () => createFactoryRegistration(token, target),
+      clone: () => createFunctionRegistration(token, target),
       resolve: target ? (bundle: Bundle) => target(bundle) : () => 'resolution',
     }
   }
 
-  function createConstructor(token: string, target?: Constructor<any, [Bundle]>): Registration {
+  function createConstructor(token: string, target?: Constructor): Registration {
     return {
       token,
       clone: () => createConstructor(token, target),
@@ -32,7 +32,7 @@ describe('Container', () => {
   describe('has', () => {
     it('should return "true" when token is already used', () => {
       const container = new Container()
-      const stubRegistration_0 = createFactoryRegistration('stubRegistration')
+      const stubRegistration_0 = createFunctionRegistration('stubRegistration')
 
       container.push(stubRegistration_0)
       expect(container.has('stubRegistration')).toBe(true)
@@ -47,8 +47,8 @@ describe('Container', () => {
   describe('push', () => {
     it('should push registrations as part of the container', () => {
       const container = new Container()
-      const stubRegistration_0 = createFactoryRegistration('stubRegistration_0')
-      const stubRegistration_1 = createFactoryRegistration('stubRegistration_1')
+      const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
+      const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
 
       container.push(
         stubRegistration_0,
@@ -65,8 +65,8 @@ describe('Container', () => {
     it('should override registration token', () => {
       const container = new Container()
 
-      const stubRegistration_0 = createFactoryRegistration('stubToken', () => 'resolution_0' )
-      const stubRegistration_1 = createFactoryRegistration('stubToken', () => 'resolution_1' )
+      const stubRegistration_0 = createFunctionRegistration('stubToken', () => 'resolution_0' )
+      const stubRegistration_1 = createFunctionRegistration('stubToken', () => 'resolution_1' )
       
       container.push(stubRegistration_0)
 
@@ -85,8 +85,8 @@ describe('Container', () => {
   describe('unpack', () => {
     it('should return undefined when unpacking unregistered token', () => {
       const container = new Container()
-      const stubRegistration_0 = createFactoryRegistration('stubRegistration_0')
-      const stubRegistration_1 = createFactoryRegistration('stubRegistration_1')
+      const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
+      const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
 
       container.push(
         stubRegistration_0,
@@ -100,8 +100,8 @@ describe('Container', () => {
 
     it('should return registration clone based on token', () => {
       const container = new Container()
-      const stubRegistration_0 = createFactoryRegistration('stubRegistration_0')
-      const stubRegistration_1 = createFactoryRegistration('stubRegistration_1')
+      const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
+      const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
 
       container.push(
         stubRegistration_0,
@@ -125,8 +125,8 @@ describe('Container', () => {
 
     it('should return registration clones for all registrations', () => {
       const container = new Container()
-      const stubRegistration_0 = createFactoryRegistration('stubRegistration_0', () => 'resolution_0')
-      const stubRegistration_1 = createFactoryRegistration('stubRegistration_1', () => 'resolution_1')
+      const stubRegistration_0 = createFunctionRegistration('stubRegistration_0', () => 'resolution_0')
+      const stubRegistration_1 = createFunctionRegistration('stubRegistration_1', () => 'resolution_1')
 
       container.push(
         stubRegistration_0,
@@ -151,7 +151,7 @@ describe('Container', () => {
   describe('resolve', () => {
     it('should return resolved registration when an existent token is passed', () => {
       const container = new Container()
-      const stubRegistration = createFactoryRegistration('stubRegistration', () => 'resolutionString')
+      const stubRegistration = createFunctionRegistration('stubRegistration', () => 'resolutionString')
 
       container.push(stubRegistration)
       expect(container.resolve('stubRegistration')).toBe('resolutionString')
@@ -168,11 +168,11 @@ describe('Container', () => {
       const container = new Container();
 
       expect(() => {
-        container.bundle.anyRegistration = createFactoryRegistration('anyRegistration')
+        container.bundle.anyRegistration = createFunctionRegistration('anyRegistration')
       }).toThrow('Could not set registration "anyRegistration". Registration should not be done through bundle.')
 
       expect(() => {
-        container.bundle['anyRegistration'] = createFactoryRegistration('anyRegistration')
+        container.bundle['anyRegistration'] = createFunctionRegistration('anyRegistration')
       }).toThrow('Could not set registration "anyRegistration". Registration should not be done through bundle.')
     })
 
@@ -184,7 +184,7 @@ describe('Container', () => {
 
     it('should return resolved registration when accessing existent registration', () => {
       const container = new Container()
-      const stubRegistration = createFactoryRegistration('stubRegistration', () => 'resolutionString')
+      const stubRegistration = createFunctionRegistration('stubRegistration', () => 'resolutionString')
 
       container.push(stubRegistration)
       expect(container.bundle.stubRegistration).toBe('resolutionString')
@@ -194,8 +194,8 @@ describe('Container', () => {
     it('should return registered keys when manipulating bundle', () => {
       const container = new Container()
 
-      const stubRegistration_0 = createFactoryRegistration('stubRegistration_0')
-      const stubRegistration_1 = createFactoryRegistration('stubRegistration_1')
+      const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
+      const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
 
       container.push(
         stubRegistration_0,
@@ -211,8 +211,8 @@ describe('Container', () => {
     it('should return configurable property descriptors when manipulating bundle',() => {
       const container = new Container()
 
-      const stubRegistration_0 = createFactoryRegistration('stubRegistration_0', () => 'stubRegistration_0')
-      const stubRegistration_1 = createFactoryRegistration('stubRegistration_1', () => 'stubRegistration_1')
+      const stubRegistration_0 = createFunctionRegistration('stubRegistration_0', () => 'stubRegistration_0')
+      const stubRegistration_1 = createFunctionRegistration('stubRegistration_1', () => 'stubRegistration_1')
 
       container.push(
         stubRegistration_0,
@@ -229,8 +229,8 @@ describe('Container', () => {
     it('should return enumerable property descriptors when manipulating bundle',() => {
       const container = new Container()
 
-      const stubRegistration_0 = createFactoryRegistration('stubRegistration_0', () => 'stubRegistration_0')
-      const stubRegistration_1 = createFactoryRegistration('stubRegistration_1', () => 'stubRegistration_1')
+      const stubRegistration_0 = createFunctionRegistration('stubRegistration_0', () => 'stubRegistration_0')
+      const stubRegistration_1 = createFunctionRegistration('stubRegistration_1', () => 'stubRegistration_1')
 
       container.push(
         stubRegistration_0,
@@ -247,17 +247,17 @@ describe('Container', () => {
     it('should not include self references during resolution', () => {
       const container = new Container()
 
-      container.register(createFactoryRegistration('target_0', (bundle: Bundle) => {
+      container.register(createFunctionRegistration('target_0', (bundle: Bundle) => {
         expect(Object.keys(bundle)).toEqual(['target_1', 'target_2'])
         expect(bundle['target_0']).toBeUndefined()
       }))
 
-      container.register(createFactoryRegistration('target_1', (bundle: Bundle) => {
+      container.register(createFunctionRegistration('target_1', (bundle: Bundle) => {
         expect(Object.keys(bundle)).toEqual(['target_0', 'target_2'])
         expect(bundle['target_1']).toBeUndefined()
       }))
 
-      container.register(createFactoryRegistration('target_2', (bundle: Bundle) => {
+      container.register(createFunctionRegistration('target_2', (bundle: Bundle) => {
         expect(Object.keys(bundle)).toEqual(['target_0', 'target_1'])
         expect(bundle['target_2']).toBeUndefined()
       }))
@@ -270,19 +270,19 @@ describe('Container', () => {
     it('should not include self references during cloning', () => {
       const container = new Container()
 
-      container.register({ ...createFactoryRegistration('target_0'), clone(bundle: Bundle) {
+      container.register({ ...createFunctionRegistration('target_0'), clone(bundle: Bundle) {
         expect(Object.keys(bundle)).toEqual(['target_1', 'target_2'])
         expect(bundle['target_0']).toBeUndefined()
         return this
       }})
 
-      container.register({ ...createFactoryRegistration('target_1'), clone(bundle: Bundle) {
+      container.register({ ...createFunctionRegistration('target_1'), clone(bundle: Bundle) {
         expect(Object.keys(bundle)).toEqual(['target_0', 'target_2'])
         expect(bundle['target_1']).toBeUndefined()
         return this
       }})
 
-      container.register({ ...createFactoryRegistration('target_2'), clone(bundle: Bundle) {
+      container.register({ ...createFunctionRegistration('target_2'), clone(bundle: Bundle) {
         expect(Object.keys(bundle)).toEqual(['target_0', 'target_1'])
         expect(bundle['target_2']).toBeUndefined()
         return this
@@ -293,23 +293,23 @@ describe('Container', () => {
   })
 
   describe('resolution',() => {
-    it('should resolve acyclic dependency graph with target factories when not destructuring bundle', () => {
+    it('should resolve acyclic dependency graph with target functions when not destructuring bundle', () => {
       const container = new Container()
 
-      const targetFactory_0 = () => {
+      const targetFunction_0 = () => {
         return { 
           call: () => 'called_target_0' 
         }
       }
     
-      const targetFactory_1 = (dependencies: Bundle) => {
+      const targetFunction_1 = (dependencies: Bundle) => {
         return { 
           call: () => 'called_target_1',
           callTarget_0: () => dependencies.target_0.call(),
         }
       }
 
-      const targetFactory_2  = (dependencies: Bundle) => {
+      const targetFunction_2  = (dependencies: Bundle) => {
         return { 
           call: () => 'called_target_2',
           callTarget_0: () => dependencies.target_0.call(),
@@ -318,9 +318,9 @@ describe('Container', () => {
       }
   
       container.push(
-        createFactoryRegistration('target_0', targetFactory_0),
-        createFactoryRegistration('target_1', targetFactory_1),
-        createFactoryRegistration('target_2', targetFactory_2),
+        createFunctionRegistration('target_0', targetFunction_0),
+        createFunctionRegistration('target_1', targetFunction_1),
+        createFunctionRegistration('target_2', targetFunction_2),
       )
 
       expect(container.bundle.target_0.call()).toBe('called_target_0')
@@ -395,23 +395,23 @@ describe('Container', () => {
       expect(container.bundle.target_2.callTarget_1()).toBe('called_target_1')
     })
 
-    it('should resolve acyclic dependency graph with target factories when destructuring bundle', () => {
+    it('should resolve acyclic dependency graph with target functions when destructuring bundle', () => {
       const container = new Container()
 
-      const targetFactory_0 = () => {
+      const targetFunction_0 = () => {
         return { 
           call: () => 'called_target_0' 
         }
       }
     
-      const targetFactory_1 = ({ target_0 }: Bundle) => {
+      const targetFunction_1 = ({ target_0 }: Bundle) => {
         return { 
           call: () => 'called_target_1',
           callTarget_0: () => target_0.call(),
         }
       }
 
-      const targetFactory_2  = ({ target_0, target_1 }: Bundle) => {
+      const targetFunction_2  = ({ target_0, target_1 }: Bundle) => {
         return { 
           call: () => 'called_target_2',
           callTarget_0: () => target_0.call(),
@@ -420,9 +420,9 @@ describe('Container', () => {
       }
   
       container.push(
-        createFactoryRegistration('target_0', targetFactory_0),
-        createFactoryRegistration('target_1', targetFactory_1),
-        createFactoryRegistration('target_2', targetFactory_2),
+        createFunctionRegistration('target_0', targetFunction_0),
+        createFunctionRegistration('target_1', targetFunction_1),
+        createFunctionRegistration('target_2', targetFunction_2),
       )
 
       expect(container.bundle.target_0.call()).toBe('called_target_0')
@@ -497,17 +497,17 @@ describe('Container', () => {
       expect(container.bundle.target_2.callTarget_1()).toBe('called_target_1')
     })
 
-    it('should resolve cyclic dependency graph with target factories when not destructuring bundle', () => {
+    it('should resolve cyclic dependency graph with target functions when not destructuring bundle', () => {
       const container = new Container()
 
-      const targetFactory_0 = (dependencies: Bundle) => {
+      const targetFunction_0 = (dependencies: Bundle) => {
         return {
           call: () => 'called_target_0',
           callDependency: () => dependencies.target_1.call(),
         }
       }
     
-      const targetFactory_1 = (dependencies: Bundle) => {
+      const targetFunction_1 = (dependencies: Bundle) => {
         return {
           call: () => 'called_target_1',
           callDependency: () => dependencies.target_0.call(),
@@ -515,8 +515,8 @@ describe('Container', () => {
       }
   
       container.push(
-        createFactoryRegistration('target_0', targetFactory_0),
-        createFactoryRegistration('target_1', targetFactory_1),
+        createFunctionRegistration('target_0', targetFunction_0),
+        createFunctionRegistration('target_1', targetFunction_1),
       )
 
       expect(container.bundle.target_0.call()).toBe('called_target_0')
@@ -573,17 +573,17 @@ describe('Container', () => {
       expect(container.bundle.target_1.callDependency()).toBe('called_target_0')    
     })
 
-    it('should resolve cyclic dependency graph with target factories when destructuring bundle', () => {
+    it('should resolve cyclic dependency graph with target functions when destructuring bundle', () => {
       const container = new Container()
 
-      const targetFactory_0 = ({ target_1 }: Bundle) => {
+      const targetFunction_0 = ({ target_1 }: Bundle) => {
         return {
           call: () => 'called_target_0',
           callDependency: () => target_1.call(),
         }
       }
 
-      const targetFactory_1 = ({ target_0 }: Bundle) => {
+      const targetFunction_1 = ({ target_0 }: Bundle) => {
         return {
           call: () => 'called_target_1',
           callDependency: () => target_0.call(),
@@ -591,8 +591,8 @@ describe('Container', () => {
       }
 
       container.push(
-        createFactoryRegistration('target_0', targetFactory_0),
-        createFactoryRegistration('target_1', targetFactory_1),
+        createFunctionRegistration('target_0', targetFunction_0),
+        createFunctionRegistration('target_1', targetFunction_1),
       )
 
       expect(container.bundle.target_0.call()).toBe('called_target_0')
@@ -649,10 +649,10 @@ describe('Container', () => {
       expect(container.bundle.target_1.callDependency()).toBe('called_target_0')    
     })
 
-    it('should resolve access to the bundle values within the factory registration', () => {
+    it('should resolve access to the bundle values within the function registration', () => {
       const container = new Container()
 
-      function createInstanceRegistration(token: string, target: Factory<any, [string, string]>): Registration {
+      function createInstanceRegistration(token: string, target: Function<any, [string, string]>): Registration {
         return {
           token,
           clone: () => createInstanceRegistration(token, target),

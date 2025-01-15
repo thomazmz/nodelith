@@ -29,7 +29,7 @@ export class Container {
       this.register(registration)
     }
   }
-  
+
   public register(registration: Registration) {
     this.registrations.set(registration.token, registration);
 
@@ -40,7 +40,7 @@ export class Container {
     });
   }
 
-  public resolve(token: Token) {
+  public resolve<R>(token: Token): R | undefined {
     if (this.resolving.has(token)) {
       return
     }
@@ -67,8 +67,8 @@ export class Container {
   }
 
   public unpack(): Registration[]
-  public unpack(...tokens: string[]): (Registration | undefined)[]
-  public unpack(...tokens: string[]): (Registration | undefined)[] {
+  public unpack(...tokens: Token[]): (Registration | undefined)[]
+  public unpack(...tokens: Token[]): (Registration | undefined)[] {
     if(tokens.length > 0) {
       return tokens.map(token => {
         const resolutionProxy = this.createResolutionProxy(token)
