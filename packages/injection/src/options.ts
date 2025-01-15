@@ -20,7 +20,7 @@ export type LifetimeOptions = { lifetime?: Lifetime | undefined }
 
 export type StaticOptions = AccessOptions
 
-export type ResolverOptions = AccessOptions & LifetimeOptions & ModeOptions
+export type FunctionOptions = AccessOptions & LifetimeOptions & ModeOptions
 
 export type ConstructorOptions = AccessOptions & LifetimeOptions & ModeOptions
 

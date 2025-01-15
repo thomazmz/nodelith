@@ -3,19 +3,19 @@ import * as Types from '@nodelith/types'
 import { Token } from '../token'
 import { Bundle } from '../bundle'
 import { Registration } from '../registration'
-import { ResolverOptions } from '../options'
+import { FunctionOptions } from '../options'
 
-export class ResolverRegistration<R extends ReturnType<Types.Resolver>> implements Registration<R> {
+export class FunctionRegistration<R extends ReturnType<Types.Function>> implements Registration<R> {
     
   public readonly token: Token;
 
-  public constructor(resolution: Types.Resolver<R>, options?: ResolverOptions & {
+  public constructor(resolution: Types.Function<R>, options?: FunctionOptions & {
     token?: Token
   })  {
     this.token = options?.token ?? Symbol()
   }
 
-  public clone(bundle?: Bundle): ResolverRegistration<R> {
+  public clone(bundle?: Bundle): FunctionRegistration<R> {
     throw new Error('Method not implemented')
   }
 

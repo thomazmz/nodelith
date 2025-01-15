@@ -7,7 +7,7 @@ import {
   Lifetime,
   StaticOptions,
   FactoryOptions, 
-  ResolverOptions, 
+  FunctionOptions, 
   ConstructorOptions,
 } from '../options'
 
@@ -16,7 +16,7 @@ import { Container } from '../container'
 import { Registration }  from '../registration'
 import { StaticRegistration } from '../registration/static-registration'
 import { FactoryRegistration } from '../registration/factory-registration'
-import { ResolverRegistration } from '../registration/resolver-registration'
+import { FunctionRegistration } from '../registration/function-registration'
 import { ConstructorRegistration } from '../registration/constructor-registration'
 
 export class Module {
@@ -56,9 +56,9 @@ export class Module {
     options: FactoryOptions & { factory: Types.Factory<R> }
   ): Registration<R>
 
-  public register<R extends ReturnType<Types.Resolver>>(
+  public register<R extends ReturnType<Types.Function>>(
     token: Token, 
-    options: ResolverOptions & { resolver: Types.Resolver<R> }
+    options: FunctionOptions & { function: Types.Function<R> }
   ): Registration<R>
 
   public register<R extends InstanceType<Types.Constructor>>(
@@ -70,7 +70,7 @@ export class Module {
     options:
       | { static: any } & StaticOptions
       | { factory: Types.Factory } & FactoryOptions
-      | { resolver: Types.Resolver } & ResolverOptions
+      | { function: Types.Function } & FunctionOptions
       | { constructor: Types.Constructor } & ConstructorOptions
   ):  Registration {
 
@@ -92,12 +92,12 @@ export class Module {
       })
     }
 
-    if('resolver' in options) {
-      if(typeof options.resolver !== 'function') {
-        throw new Error(`Could not register "${token.toString()}". Provided resolver should be of type "function".`)
+    if('function' in options) {
+      if(typeof options.function !== 'function') {
+        throw new Error(`Could not register "${token.toString()}". Provided function should be of type "function".`)
       }
 
-      return this.registerResolver(token, options.resolver, {
+      return this.registerFunction(token, options.function, {
         mode: options?.mode,
         access: options?.access,
         lifetime: options?.lifetime,
@@ -151,7 +151,7 @@ export class Module {
 
   public registerFactory<R extends ReturnType<Types.Factory>>(
     token: Token,
-    factory: Types.Factory<R>,
+    factoryTarget: Types.Factory<R>,
     options?: FactoryOptions,
   ): Registration<R> {
 
@@ -163,7 +163,7 @@ export class Module {
       throw new Error('Could not complete factory registration. Invalid access option.')
     }
 
-    const registration = new FactoryRegistration(factory, { 
+    const registration = new FactoryRegistration(factoryTarget, { 
       token: token ?? Symbol(),
       mode: options?.mode ?? this.mode,
       lifetime: options?.lifetime ?? this.lifetime,
@@ -180,21 +180,21 @@ export class Module {
     return registration
   }
 
-  public registerResolver<R extends ReturnType<Types.Resolver>>(
+  public registerFunction<R extends ReturnType<Types.Function>>(
     token: Token,
-    resolver: Types.Resolver<R>,
-    options?: ResolverOptions,
+    target: Types.Function<R>,
+    options?: FunctionOptions,
   ): Registration<R> {
 
     if(this.has(token)) {
-      throw new Error(`Could not complete resolver registration. Module already contain a registration under "${token.toString()}".`)
+      throw new Error(`Could not complete function registration. Module already contain a registration under "${token.toString()}".`)
     }
 
     if(!Access.includes(options?.access ?? this.access)) {
-      throw new Error('Could not complete resolver registration. Invalid access option.')
+      throw new Error('Could not complete function registration. Invalid access option.')
     }
 
-    const registration = new ResolverRegistration(resolver, { 
+    const registration = new FunctionRegistration(target, { 
       token: token ?? Symbol(),
       mode: options?.mode ?? this.mode,
       lifetime: options?.lifetime ?? this.lifetime,
@@ -259,33 +259,37 @@ export class Module {
     throw new Error('Method not implemented.')
   }
 
-  public registerInitializerConstructor<I extends Core.Initializer>(token: Token, constructor: Types.Constructor<I>, options?: {
+  public registerInitializerConstructor<I extends Core.Initializer>(token: Token, target: Types.Constructor<I>, options?: {
     mode?: Mode,
   }): Registration<I> {
     throw new Error('Method not implemented.')
   }
 
-  public registerInitializerFactory<I extends Core.Initializer>(token: Token, factory: Types.Factory<I>, options?: {
+  public registerInitializerFactory<I extends Core.Initializer>(token: Token, target: Types.Factory<I>, options?: {
     mode?: Mode,
   }): Registration<I> {
     throw new Error('Method not implemented.')
   }
 
-  public resolve<R extends ReturnType<Types.Resolver>>(resolver: Types.Resolver<R>, options?: {
-    mode?: Mode,
-  }): Registration<R> {
+  public resolve<R extends ReturnType<Types.Function>>(token: Token): Registration<R> {
     throw new Error('Method not implemented.')
   }
 
-  public resolveConstructor<R extends InstanceType<Types.Constructor>>(constructor: Types.Constructor<R>, options?: {
+  public resolveFactory<R extends ReturnType<Types.Factory>>(target: Types.Factory<R>, options?: {
     mode?: Mode,
-  }): Registration<R> {
+  }): R {
     throw new Error('Method not implemented.')
   }
 
-  public resolveFactory<R extends ReturnType<Types.Factory>>(factory: Types.Factory<R>, options?: {
+  public resolveFunction<R extends ReturnType<Types.Function>>(target: Types.Function<R>, options?: {
+    mode?: Mode
+  }): R {
+    throw new Error('Method not implemented.')
+  }
+
+  public resolveConstructor<R extends InstanceType<Types.Constructor>>(target: Types.Constructor<R>, options?: {
     mode?: Mode,
-  }): Registration<R> {
+  }): R {
     throw new Error('Method not implemented.')
   }
 }
