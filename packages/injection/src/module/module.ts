@@ -1,29 +1,27 @@
 import * as Core from '@nodelith/core'
 import * as Types from '@nodelith/types'
 
-import {
-  Mode,
-  Access,
-  Lifetime,
-  StaticOptions,
-  FactoryOptions, 
-  FunctionOptions, 
-  ConstructorOptions,
-} from '../options'
+import { Mode }  from '../mode'
+import { Access } from '../access'
+import { Lifetime } from '../lifetime'
 
 import { Token } from '../token'
 import { Container } from '../container'
 import { Registration }  from '../registration'
-import { StaticRegistration } from '../registration/static-registration'
-import { FactoryRegistration } from '../registration/factory-registration'
-import { FunctionRegistration } from '../registration/function-registration'
-import { ConstructorRegistration } from '../registration/constructor-registration'
+import { StaticRegistrationOptions }  from '../registration'
+import { DynamicRegistrationOptions }  from '../registration'
+
+export type StaticModuleRegistrationOptions = Partial<
+  Omit<StaticRegistrationOptions, 'token'> & { access: Access }
+>
+
+export type DynamicModuleRegistrationOptions = Partial<
+  Omit<DynamicRegistrationOptions, 'token'> & { access: Access }
+>
 
 export class Module {
 
-  public static readonly DEFAULT_MODE: Mode = 'spread'
-  public static readonly DEFAULT_ACCESS: Access = 'public'
-  public static readonly DEFAULT_LIFETIME: Lifetime = 'transient'
+  public static readonly DEFAULT_ACCESS: Access  = 'public' as const
 
   private readonly mode: Mode
   private readonly access: Access
@@ -39,9 +37,9 @@ export class Module {
     access: Access,
     lifetime: Lifetime,
   }) {
-    this.mode = options?.mode ?? Module.DEFAULT_MODE
+    this.mode = options?.mode ?? Registration.DEFAULT_MODE
     this.access = options?.access ?? Module.DEFAULT_ACCESS
-    this.lifetime = options?.lifetime ?? Module.DEFAULT_LIFETIME
+    this.lifetime = options?.lifetime ?? Registration.DEFAULT_LIFETIME
   }
 
   public useModule(module: Module): void {
@@ -72,36 +70,34 @@ export class Module {
 
   public register<R>(
     token: Token,
-    options: { static: R } & StaticOptions 
+    options: StaticModuleRegistrationOptions & { static: R } 
   ): Registration<R>
 
   public register<R extends ReturnType<Types.Factory>>(
     token: Token,
-    options: FactoryOptions & { factory: Types.Factory<R> }
+    options: DynamicModuleRegistrationOptions & { factory: Types.Factory<R> }
   ): Registration<R>
 
   public register<R extends ReturnType<Types.Function>>(
     token: Token, 
-    options: FunctionOptions & { function: Types.Function<R> }
+    options: DynamicModuleRegistrationOptions & { function: Types.Function<R> }
   ): Registration<R>
 
   public register<R extends InstanceType<Types.Constructor>>(
     token: Token, 
-    options: ConstructorOptions & { constructor: Types.Constructor<R> }
+    options: DynamicModuleRegistrationOptions & { constructor: Types.Constructor<R> }
   ): Registration<R>
 
   public register(token: Token, 
     options:
-      | { static: any } & StaticOptions
-      | { factory: Types.Factory } & FactoryOptions
-      | { function: Types.Function } & FunctionOptions
-      | { constructor: Types.Constructor } & ConstructorOptions
+      | { static: any } & StaticModuleRegistrationOptions
+      | { factory: Types.Factory } & DynamicModuleRegistrationOptions
+      | { function: Types.Function } & DynamicModuleRegistrationOptions
+      | { constructor: Types.Constructor } & DynamicModuleRegistrationOptions
   ):  Registration {
 
     if('static' in options)  {
-      return this.registerStatic(token, options.static, {
-        access: options?.access,
-      })
+      return this.registerStatic(token, options.static, options)
     }
 
     if('factory' in options) {
@@ -109,11 +105,7 @@ export class Module {
         throw new Error(`Could not register "${token.toString()}". Provided factory should be of type "function".`)
       }
 
-      return this.registerFactory(token, options.factory, {
-        mode: options?.mode,
-        access: options?.access,
-        lifetime: options?.lifetime,
-      })
+      return this.registerFactory(token, options.factory, options)
     }
 
     if('function' in options) {
@@ -121,11 +113,7 @@ export class Module {
         throw new Error(`Could not register "${token.toString()}". Provided function should be of type "function".`)
       }
 
-      return this.registerFunction(token, options.function, {
-        mode: options?.mode,
-        access: options?.access,
-        lifetime: options?.lifetime,
-      })
+      return this.registerFunction(token, options.function, options)
     }
 
     if('constructor' in options) {
@@ -133,11 +121,7 @@ export class Module {
         throw new Error(`Could not register "${token.toString()}". Provided constructor should be of type "function".`)
       }
 
-      return this.registerConstructor(token, options.constructor, {
-        mode: options?.mode,
-        access: options?.access,
-        lifetime: options?.lifetime,
-      })
+      return this.registerConstructor(token, options.constructor, options)
     }
 
     throw new Error(`Could not register "${token.toString()}". Given options are missing a valid registration target.`)
@@ -145,8 +129,8 @@ export class Module {
 
   public registerStatic<R>(
     token: Token, 
-    resolution: R, 
-    options?: StaticOptions
+    target: R, 
+    options?: StaticModuleRegistrationOptions
   ): Registration<R> {
 
     if(this.has(token)) {
@@ -157,8 +141,9 @@ export class Module {
       throw new Error('Could not complete static registration. Invalid access option.')
     }
 
-    const registration = new StaticRegistration(resolution, { 
-      token: token ?? Symbol(),
+    const registration = Registration.create({ ...options,
+      static: target,
+      token,
     })
 
     this.container.push(registration)
@@ -176,8 +161,8 @@ export class Module {
 
   public registerFactory<R extends ReturnType<Types.Factory>>(
     token: Token,
-    factoryTarget: Types.Factory<R>,
-    options?: FactoryOptions,
+    target: Types.Factory<R>,
+    options?: DynamicModuleRegistrationOptions,
   ): Registration<R> {
 
     if(this.has(token)) {
@@ -188,11 +173,12 @@ export class Module {
       throw new Error('Could not complete factory registration. Invalid access option.')
     }
 
-    const registration = new FactoryRegistration(factoryTarget, { 
-      token: token ?? Symbol(),
-      mode: options?.mode ?? this.mode,
+    const registration = Registration.create({ ...options,
       lifetime: options?.lifetime ?? this.lifetime,
-    })
+      mode: options?.mode ?? this.mode,
+      factory: target,
+      token,
+    });
 
     this.container.push(registration)
 
@@ -210,7 +196,7 @@ export class Module {
   public registerFunction<R extends ReturnType<Types.Function>>(
     token: Token,
     target: Types.Function<R>,
-    options?: FunctionOptions,
+    options?: DynamicModuleRegistrationOptions,
   ): Registration<R> {
 
     if(this.has(token)) {
@@ -221,11 +207,12 @@ export class Module {
       throw new Error('Could not complete function registration. Invalid access option.')
     }
 
-    const registration = new FunctionRegistration(target, { 
-      token: token ?? Symbol(),
-      mode: options?.mode ?? this.mode,
+    const registration = Registration.create({ ...options,
       lifetime: options?.lifetime ?? this.lifetime,
-    })
+      mode: options?.mode ?? this.mode,
+      function: target,
+      token,
+    });
 
     this.container.push(registration)
 
@@ -242,8 +229,8 @@ export class Module {
 
   public registerConstructor<R extends InstanceType<Types.Constructor>>(
     token: Token,
-    constructor: Types.Constructor<R>,
-    options?: ConstructorOptions,
+    target: Types.Constructor<R>,
+    options?: DynamicModuleRegistrationOptions,
   ): Registration<R> {
 
     if(this.has(token)) {
@@ -254,11 +241,12 @@ export class Module {
       throw new Error('Could not complete constructor registration. Invalid access option.')
     }
 
-    const registration = new ConstructorRegistration(constructor, { 
-      token: token ?? Symbol(),
-      mode: options?.mode ?? this.mode,
+    const registration = Registration.create({ ...options,
       lifetime: options?.lifetime ?? this.lifetime,
-    })
+      mode: options?.mode ?? this.mode,
+      constructor: target,
+      token,
+    });
 
     this.container.push(registration)
 

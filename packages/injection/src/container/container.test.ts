@@ -17,7 +17,7 @@ describe('Container', () => {
     return {
       token,
       clone: () => createFunctionRegistration(token, target),
-      resolve: target ? (bundle: Bundle) => target(bundle) : () => 'resolution',
+      resolve: target ? (bundle?: Bundle) => target(bundle) : () => 'resolution',
     }
   }
 
@@ -25,7 +25,7 @@ describe('Container', () => {
     return {
       token,
       clone: () => createConstructor(token, target),
-      resolve: target ? (bundle: Bundle) => new target(bundle) : () => 'resolution',
+      resolve: target ? (bundle?: Bundle) => new target(bundle) : () => 'resolution',
     }
   }
 
@@ -270,19 +270,19 @@ describe('Container', () => {
     it('should not include self references during cloning', () => {
       const container = new Container()
 
-      container.register({ ...createFunctionRegistration('target_0'), clone(bundle: Bundle) {
+      container.register({ ...createFunctionRegistration('target_0'), clone(bundle: Bundle = {}) {
         expect(Object.keys(bundle)).toEqual(['target_1', 'target_2'])
         expect(bundle['target_0']).toBeUndefined()
         return this
       }})
 
-      container.register({ ...createFunctionRegistration('target_1'), clone(bundle: Bundle) {
+      container.register({ ...createFunctionRegistration('target_1'), clone(bundle: Bundle = {}) {
         expect(Object.keys(bundle)).toEqual(['target_0', 'target_2'])
         expect(bundle['target_1']).toBeUndefined()
         return this
       }})
 
-      container.register({ ...createFunctionRegistration('target_2'), clone(bundle: Bundle) {
+      container.register({ ...createFunctionRegistration('target_2'), clone(bundle: Bundle = {}) {
         expect(Object.keys(bundle)).toEqual(['target_0', 'target_1'])
         expect(bundle['target_2']).toBeUndefined()
         return this
@@ -656,7 +656,7 @@ describe('Container', () => {
         return {
           token,
           clone: () => createInstanceRegistration(token, target),
-          resolve: (bundle: Bundle) => target(bundle.firstName, bundle.lastName),
+          resolve: (bundle?: Bundle) => target(bundle?.firstName, bundle?.lastName),
         }
       }
 
@@ -677,7 +677,7 @@ describe('Container', () => {
         return {
           token,
           clone: () => createInstanceRegistration(token, target),
-          resolve: (bundle: Bundle) => new target(bundle.firstName, bundle.lastName),
+          resolve: (bundle?: Bundle) => new target(bundle?.firstName, bundle?.lastName),
         }
       }
 
