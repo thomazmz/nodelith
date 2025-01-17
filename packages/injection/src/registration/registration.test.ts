@@ -38,10 +38,10 @@ describe('Registration', () => {
         expect(resolution_1).toBeDefined()
       })
       it('Should inject custom bundle during resolution', () => {
-        const bundle_0 =  { dependency_0: 'dependency_0' }
-        const bundle_1 =  { dependency_1: 'dependency_1' }
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
 
-        const registration = Registration.create({ bundle: bundle_0, function: (dependencies) => {
+        const registration = Registration.create({ mode: 'bundle', bundle: bundle_0, function: (dependencies) => {
           return `${dependencies.dependency_0}_${dependencies.dependency_1}`
         }})
 
@@ -53,7 +53,7 @@ describe('Registration', () => {
         const bundle_1 = { dependency_1: 'dependency_1' }
         const bundle_2 = { dependency_2: 'dependency_2' }
 
-        const registration = Registration.create({ bundle: bundle_0, function: (dependencies) => {
+        const registration = Registration.create({ mode: 'bundle', bundle: bundle_0, function: (dependencies) => {
           return `${dependencies.dependency_0}_${dependencies.dependency_1}_${dependencies.dependency_2}`
         }})
 
@@ -72,6 +72,39 @@ describe('Registration', () => {
 
         expect(resolution_0).toBeDefined()
         expect(resolution_1).toBeDefined()
+      })
+      it('should inject parameters in positional order by default', () => {
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
+
+        const registration = Registration.create({ bundle: bundle_0, function: (dependency_0, dependency_1) => {
+          return `${dependency_0}_${dependency_1}`
+        }})
+
+        const resolution = registration.resolve(bundle_1)
+        expect(resolution).toBe("dependency_0_dependency_1")
+      })
+      it('should inject parameters in positional order when explicitly set', () => {
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
+
+        const registration = Registration.create({ mode: 'spread', bundle: bundle_0, function: (dependency_0, dependency_1) => {
+          return `${dependency_0}_${dependency_1}` 
+        }})
+
+        const resolution = registration.resolve(bundle_1)
+        expect(resolution).toBe("dependency_0_dependency_1")
+      })
+      it('should inject parameters as bundle object when explicitly set', () => {
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
+
+        const registration = Registration.create({ mode: 'spread', bundle: bundle_0, function: (dependency_0, dependency_1) => {
+          return `${dependency_0}_${dependency_1}`
+        }})
+
+        const resolution = registration.resolve(bundle_1)
+        expect(resolution).toBe("dependency_0_dependency_1")
       })
     })
     describe('factory',  () => {
@@ -103,10 +136,10 @@ describe('Registration', () => {
         expect(resolution_1).toBeDefined()
       })
       it('Should inject custom bundle during resolution', () => {
-        const bundle_0 =  { dependency_0: 'dependency_0' }
-        const bundle_1 =  { dependency_1: 'dependency_1' }
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
 
-        const registration = Registration.create({ bundle: bundle_0, factory: (bundle) => ({
+        const registration = Registration.create({ mode: 'bundle', bundle: bundle_0, factory: (bundle) => ({
           dependency_0:  bundle.dependency_0,
           dependency_1:  bundle.dependency_1,
         })})
@@ -116,11 +149,11 @@ describe('Registration', () => {
         expect(resolution.dependency_1).toBe(bundle_1.dependency_1)
       })
       it('should inject custom bundles during clone resolution', () => {
-        const bundle_0 =  { dependency_0: 'dependency_0' }
-        const bundle_1 =  { dependency_1: 'dependency_1' }
-        const bundle_2 =  { dependency_2: 'dependency_2' }
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
+        const bundle_2 = { dependency_2: 'dependency_2' }
 
-        const registration = Registration.create({ bundle: bundle_0, factory: (bundle) => ({
+        const registration = Registration.create({ mode: 'bundle', bundle: bundle_0, factory: (bundle) => ({
           dependency_0: bundle.dependency_0,
           dependency_1: bundle.dependency_1,
           dependency_2: bundle.dependency_2,
@@ -144,6 +177,45 @@ describe('Registration', () => {
 
         expect(resolution_0).toBeDefined()
         expect(resolution_1).toBeDefined()
+      })
+      it('should inject parameters in positional order by default', () => {
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
+
+        const registration = Registration.create({ bundle: bundle_0, factory: (dependency_0, dependency_1) => ({
+          dependency_0,
+          dependency_1,
+        })})
+
+        const resolution = registration.resolve(bundle_1)
+        expect(resolution.dependency_0).toBe(bundle_0.dependency_0)
+        expect(resolution.dependency_1).toBe(bundle_1.dependency_1)
+      })
+      it('should inject parameters in positional order when explicitly set', () => {
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
+
+        const registration = Registration.create({ mode: 'spread', bundle: bundle_0, factory: (dependency_0, dependency_1) => ({
+          dependency_0,
+          dependency_1,
+         })})
+
+        const resolution = registration.resolve(bundle_1)
+        expect(resolution.dependency_0).toBe(bundle_0.dependency_0)
+        expect(resolution.dependency_1).toBe(bundle_1.dependency_1)
+      })
+      it('should inject parameters as bundle object when explicitly set', () => {
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
+
+        const registration = Registration.create({ mode: 'spread', bundle: bundle_0, factory: (dependency_0, dependency_1) => ({
+          dependency_0,
+          dependency_1,
+        })})
+
+        const resolution = registration.resolve(bundle_1)
+        expect(resolution.dependency_0).toBe(bundle_0.dependency_0)
+        expect(resolution.dependency_1).toBe(bundle_1.dependency_1)
       })
     })
     describe('constructor',  () => {
@@ -173,10 +245,10 @@ describe('Registration', () => {
         expect(resolution_1).toBeDefined()
       })
       it('should inject custom bundle during resolution', () => {
-        const bundle_0 =  { dependency_0: 'dependency_0' }
-        const bundle_1 =  { dependency_1: 'dependency_1' }
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
 
-        const registration = Registration.create({ bundle: bundle_0, constructor: class { 
+        const registration = Registration.create({ mode: 'bundle', bundle: bundle_0, constructor: class { 
           public readonly dependency_0: string
           public readonly dependency_1: string
           constructor(bundle: Bundle) {
@@ -190,20 +262,24 @@ describe('Registration', () => {
         expect(resolution.dependency_1).toBe(bundle_1.dependency_1)
       })
       it('should inject custom bundles during clone resolution', () => {
-        const bundle_0 =  { dependency_0: 'dependency_0' }
-        const bundle_1 =  { dependency_1: 'dependency_1' }
-        const bundle_2 =  { dependency_2: 'dependency_2' }
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
+        const bundle_2 = { dependency_2: 'dependency_2' }
 
-        const registration = Registration.create({ bundle: bundle_0, constructor: class { 
-          public readonly dependency_0: string
-          public readonly dependency_1: string
-          public readonly dependency_2: string
-          constructor(bundle: Bundle) {
-            this.dependency_0 = bundle.dependency_0
-            this.dependency_1 = bundle.dependency_1
-            this.dependency_2 = bundle.dependency_2 
+        const registration = Registration.create({ 
+          mode: 'bundle', 
+          bundle: bundle_0, 
+          constructor: class { 
+            public readonly dependency_0: string
+            public readonly dependency_1: string
+            public readonly dependency_2: string
+            constructor(bundle: Bundle) {
+              this.dependency_0 = bundle.dependency_0
+              this.dependency_1 = bundle.dependency_1
+              this.dependency_2 = bundle.dependency_2 
+            }
           }
-        }})
+        })
 
         const clone = registration.clone(bundle_1)
         const resolution = clone.resolve(bundle_2)
@@ -223,6 +299,51 @@ describe('Registration', () => {
 
         expect(resolution_0).toBeDefined()
         expect(resolution_1).toBeDefined()
+      })
+      it('should inject parameters in positional order by default', () => {
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
+
+        const registration = Registration.create({ bundle: bundle_0, constructor: class { 
+          constructor(
+            public readonly dependency_0: string,
+            public readonly dependency_1: string,
+          ) { }
+        }})
+
+        const resolution = registration.resolve(bundle_1)
+        expect(resolution.dependency_0).toBe(bundle_0.dependency_0)
+        expect(resolution.dependency_1).toBe(bundle_1.dependency_1)
+      })
+      it('should inject parameters in positional order when explicitly set', () => {
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
+
+        const registration = Registration.create({ mode: 'spread', bundle: bundle_0, constructor: class { 
+          constructor(
+            public readonly dependency_0: string,
+            public readonly dependency_1: string,
+          ) { }
+        }})
+
+        const resolution = registration.resolve(bundle_1)
+        expect(resolution.dependency_0).toBe(bundle_0.dependency_0)
+        expect(resolution.dependency_1).toBe(bundle_1.dependency_1)
+      })
+      it('should inject parameters as bundle object when explicitly set', () => {
+        const bundle_0 = { dependency_0: 'dependency_0' }
+        const bundle_1 = { dependency_1: 'dependency_1' }
+
+        const registration = Registration.create({ mode: 'spread', bundle: bundle_0, constructor: class { 
+          constructor(
+            public readonly dependency_0: string,
+            public readonly dependency_1: string,
+          ) { }
+        }})
+
+        const resolution = registration.resolve(bundle_1)
+        expect(resolution.dependency_0).toBe(bundle_0.dependency_0)
+        expect(resolution.dependency_1).toBe(bundle_1.dependency_1)
       })
     })
   })
