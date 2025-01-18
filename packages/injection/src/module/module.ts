@@ -10,14 +10,15 @@ import { Container } from '../container'
 import { Registration }  from '../registration'
 import { StaticRegistrationOptions }  from '../registration'
 import { DynamicRegistrationOptions }  from '../registration'
+import { Bundle } from 'bundle'
 
-export type StaticModuleRegistrationOptions = Partial<
-  Omit<StaticRegistrationOptions, 'token'> & { access: Access }
->
+export type StaticModuleRegistrationOptions =
+  & Omit<StaticRegistrationOptions, 'token'>
+  & { access?: Access }
 
-export type DynamicModuleRegistrationOptions = Partial<
-  Omit<DynamicRegistrationOptions, 'token'> & { access: Access }
->
+export type DynamicModuleRegistrationOptions =
+  & Omit<DynamicRegistrationOptions, 'token'>
+  & { access?: Access }
 
 export class Module {
 
@@ -26,7 +27,7 @@ export class Module {
   private readonly mode: Mode
   private readonly access: Access
   private readonly lifetime: Lifetime
-  
+
   private readonly container = new Container()
 
   private readonly publicTokens: Token[] = []
@@ -70,30 +71,30 @@ export class Module {
 
   public register<R>(
     token: Token,
-    options: StaticModuleRegistrationOptions & { static: R } 
+    options: Partial<StaticModuleRegistrationOptions> & { static: R } 
   ): Registration<R>
 
   public register<R extends ReturnType<Types.Factory>>(
     token: Token,
-    options: DynamicModuleRegistrationOptions & { factory: Types.Factory<R> }
+    options: Partial<DynamicModuleRegistrationOptions> & { factory: Types.Factory<R> }
   ): Registration<R>
 
   public register<R extends ReturnType<Types.Function>>(
     token: Token, 
-    options: DynamicModuleRegistrationOptions & { function: Types.Function<R> }
+    options: Partial<DynamicModuleRegistrationOptions> & { function: Types.Function<R> }
   ): Registration<R>
 
   public register<R extends InstanceType<Types.Constructor>>(
     token: Token, 
-    options: DynamicModuleRegistrationOptions & { constructor: Types.Constructor<R> }
+    options: Partial<DynamicModuleRegistrationOptions> & { constructor: Types.Constructor<R> }
   ): Registration<R>
 
   public register(token: Token, 
     options:
-      | { static: any } & StaticModuleRegistrationOptions
-      | { factory: Types.Factory } & DynamicModuleRegistrationOptions
-      | { function: Types.Function } & DynamicModuleRegistrationOptions
-      | { constructor: Types.Constructor } & DynamicModuleRegistrationOptions
+      | { static: any } & Partial<StaticModuleRegistrationOptions>
+      | { factory: Types.Factory } & Partial<DynamicModuleRegistrationOptions>
+      | { function: Types.Function } & Partial<DynamicModuleRegistrationOptions>
+      | { constructor: Types.Constructor } & Partial<DynamicModuleRegistrationOptions>
   ):  Registration {
 
     if('static' in options)  {
@@ -162,7 +163,7 @@ export class Module {
   public registerFactory<R extends ReturnType<Types.Factory>>(
     token: Token,
     target: Types.Factory<R>,
-    options?: DynamicModuleRegistrationOptions,
+    options?: Partial<DynamicModuleRegistrationOptions> 
   ): Registration<R> {
 
     if(this.has(token)) {
@@ -178,7 +179,7 @@ export class Module {
       mode: options?.mode ?? this.mode,
       factory: target,
       token,
-    });
+    })
 
     this.container.push(registration)
 
@@ -196,7 +197,7 @@ export class Module {
   public registerFunction<R extends ReturnType<Types.Function>>(
     token: Token,
     target: Types.Function<R>,
-    options?: DynamicModuleRegistrationOptions,
+    options?: Partial<DynamicModuleRegistrationOptions>
   ): Registration<R> {
 
     if(this.has(token)) {
@@ -212,7 +213,7 @@ export class Module {
       mode: options?.mode ?? this.mode,
       function: target,
       token,
-    });
+    })
 
     this.container.push(registration)
 
@@ -230,7 +231,7 @@ export class Module {
   public registerConstructor<R extends InstanceType<Types.Constructor>>(
     token: Token,
     target: Types.Constructor<R>,
-    options?: DynamicModuleRegistrationOptions,
+    options?: Partial<DynamicModuleRegistrationOptions>
   ): Registration<R> {
 
     if(this.has(token)) {
@@ -246,7 +247,7 @@ export class Module {
       mode: options?.mode ?? this.mode,
       constructor: target,
       token,
-    });
+    })
 
     this.container.push(registration)
 
@@ -294,21 +295,45 @@ export class Module {
     return this.container.resolve<R>(token);
   }
 
-  public resolveFactory<R extends ReturnType<Types.Factory>>(target: Types.Factory<R>, options?: {
-    mode?: Mode,
-  }): R {
-    throw new Error('Method not implemented.')
+  public resolveFactory<R extends ReturnType<Types.Factory>>(
+    target: Types.Factory<R>,
+    options?: { 
+      mode?: Mode
+      bundle?: Bundle
+    }
+  ): R {
+    return Registration.create({ 
+      mode: options?.mode ?? this.mode,
+      bundle: this.container.bundle,
+      factory: target
+    }).resolve(options?.bundle)
   }
 
-  public resolveFunction<R extends ReturnType<Types.Function>>(target: Types.Function<R>, options?: {
-    mode?: Mode
-  }): R {
-    throw new Error('Method not implemented.')
+  public resolveFunction<R extends ReturnType<Types.Function>>(
+    target: Types.Function<R>,
+    options?: { 
+      mode?: Mode
+      bundle?: Bundle
+    }
+  ): R {
+    return Registration.create({ 
+      mode: options?.mode ?? this.mode,
+      bundle: this.container.bundle,
+      function: target
+    }).resolve(options?.bundle)
   }
 
-  public resolveConstructor<R extends InstanceType<Types.Constructor>>(target: Types.Constructor<R>, options?: {
-    mode?: Mode,
-  }): R {
-    throw new Error('Method not implemented.')
+  public resolveConstructor<R extends InstanceType<Types.Constructor>>(
+    target: Types.Constructor<R>,
+    options?: { 
+      mode?: Mode
+      bundle?: Bundle
+    }
+  ): R {
+    return Registration.create({ 
+      mode: options?.mode ?? this.mode,
+      bundle: this.container.bundle,
+      constructor: target
+    }).resolve(options?.bundle)
   }
 }
