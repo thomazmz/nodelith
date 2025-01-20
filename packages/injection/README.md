@@ -36,7 +36,168 @@ npm install  @nodelith/injection
 import * as Injection from '@nodelilth/injection'
 ```
 
-## Usage Examples
+## Usage Example
+
+```typescript
+
+// Lets start declaring a Module to manage our Dummy domain
+const dummyModule = new Injection.Module()
+
+interface DummyRepositoryInterface {
+  findById(id: string): Promise<Dummy>
+}
+
+class DummyService {
+  public constructor(
+    // We can reference the interface here as it doesn't exist in runtime
+    private readonly dummyRepository: DummyRepositoryInterface,
+    private readonly dummyRepository: DummyRepositoryInterface,
+  ) {}
+
+  public getDummyById(id: string) {
+    const dummy = this.dummyRepository.findById(id)
+
+    if(!dummy) {
+      throw new Error('Could not find Dummy!')
+    }
+
+    return dummy
+  }
+}
+
+// To register our DummyService we can use the Module:register method
+// We could also use the Module:registerClass method to achieve the same result
+dummyModule.register('dummyService', {
+  constructor: DummyService,
+
+  // We need to explicitly make this registration 'transient'
+  // This ensures it will generate one new DummyService in every resolution
+  lifetime: 'transient',
+
+  // Lets explicitly make the injection mode 'spread' (this is also the default)
+  // This ensures the factory dependencies will be injected as parameters 
+  mode: 'spread',
+})
+
+// Lets now declare another Module to manage our infrastructure dependencies
+const infrastructureModule = new Injection.Module()
+
+// The following will be our logger class
+class Logger {
+  // We  want each logger to have a unique UUID associated to it
+  private uuid = crypto.randomUUID()
+
+  public error(message: string) {
+    // Then we can use the UUID when logging
+    // This ensures we know from which logger the error is coming from
+    console.error(`[${this.uuid}]: ${message}`)
+  }
+
+  public info(message: string) {
+    // The same can be done for logging informational messages
+    console.info(`[${this.uuid}]: ${message}`)
+  }
+}
+
+// To register our "Logger" we can use the Module:register method
+// We could also use the Module:registerClass method to achieve the same result
+infrastructureModule.register('logger', {
+
+  // We need to explicitly make the Logger registration "transient"
+  // This way, we ensure a new Logger instance will be created for each resolution
+  lifetime: 'transient',
+
+  // Using the "constructor" key here flags the type of our registration
+  // This is important because "Logger" is a class constructor 
+  constructor: Logger,
+})
+
+// This is our database Initializer class
+// Initializers work a bit different than other registrations
+//  - They should return an object with an async "initialize" method 
+//  - They can optionally return an async "terminate" method 
+//  - They are resolved and initialized when Module:initialize is called
+//  - They are terminated when Module:terminate is called
+class DatabaseInitializer  {
+  private readonly connectionString: string
+  private readonly connectionTimeout: number
+  
+  // Although Initializers behave differently, constructing then is not different from other registrations
+  // Here we expect the container to pass the dependencies as a bundle
+  public constructor(bundle: {
+    // In practice, the bundle will allow access to any dependency on the container
+    // However, we can use TypeScript to limit usage to only the "config" registration
+    config: DatabaseConfig
+  }) {
+    this.connectionString = bundle.config.connectionString
+    this.connectionTimeout = bundle.config.connectionTimeout
+  }
+
+  // This is a required method declaration for initializers
+  // The associated Module will call this method as part of Module:initialize
+  public async initialize(): Promise<Database> {
+    // We need to be a bit creative here
+    // Just imagine that we are using your preferred database library here
+    return yourPreferredDatabaseLibrary.connect({
+      connectionString: this.connectionString,
+      connectionTimeout: this.connectionTimeout,
+    })
+  }
+
+  // This is an optional method declaration
+  // The associated Module will call this method as part of Module:terminate
+  // In this  case, it is convenient to ensure our database connection will be closed 
+  public terminate(): Promise<void> {
+    // As above, just imagine that we are using your preferred database library here
+    await yourPreferredDatabaseLibrary.close()
+  }
+}
+
+// To register our "DatabaseInitializer" we can use the Module:registerInitializer method
+// We could also use the Module:registerInitializerConstructor method to achieve the same result
+infrastructureModule.registerInitializer('database', {
+
+  // Lets make this registration 'singleton' (this is also the default)
+  // This way, we will share only one instance of the class among all resolutions
+  lifetime: 'singleton',
+
+  // Using the "constructor" key here flags the type of our registration
+  // This is important because "DatabaseInitializer" is a class constructor 
+  constructor: DatabaseInitializer,
+})
+
+
+// This is our repository class implementation
+class DummyRepositoryImplementation implements DummyRepositoryInterface {
+  private readonly database: Database
+
+  // We are destructuring the bundle here to obtain the database object
+  public constructor({ database }: { database: Database }) {
+    this.database = database
+  }
+
+  public findById(id: string) {
+    // This is also just illustrative
+    return this.database.query(`
+      SELECT * FROM dummies WHERE id = ${id}
+    `)
+  }
+}
+
+// To register our "DummyRepositoryImplementation" we can use the Module:register method
+// We could also use the Module:registerConstructor method to achieve the same result
+infrastructureModule.register('dummyRepository', {
+
+  // Lets explicitly make this registration 'singleton' (this is also the default)
+  // This way, we will share only one instance of this class among all resolutions
+  lifetime: 'singleton',
+
+  // Using the "constructor" key here flags the type of our registration
+  // This is important because "DatabaseInitializer" is a class constructor 
+  constructor: DatabaseInitializer,
+})
+
+```
 
 ## Concepts
 
