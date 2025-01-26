@@ -37,6 +37,9 @@ export class StaticRegistration<R extends any> implements Registration<R> {
   }
 
   public clone(): Registration<R> {
-    return new StaticRegistration(this.resolution)
+    return new StaticRegistration(this.resolution,{
+      token: this.token,
+      access: this.access
+    })
   }
 }
