@@ -38,7 +38,7 @@ export class Module {
   }
 
   public useModule(module: Module): void {
-    for (const registration of module.unpack()) {
+    for (const registration of module.container.registrations) {
       this.useRegistration(registration)
     }
   }
@@ -53,14 +53,6 @@ export class Module {
 
   public has(token: Token): boolean {
     return this.container.has(token)
-  }
-
-  public unpack(): Registration[]
-  public unpack(...tokens: Token[]): (Registration | undefined)[]
-  public unpack(...tokens: Token[]): (Registration | undefined)[] {
-    return this.container.unpack(...tokens.map(token => {
-      return this.privateTokens.includes(token) ? Symbol() : token
-    }))
   }
 
   public register<R>(

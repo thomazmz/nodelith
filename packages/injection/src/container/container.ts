@@ -6,22 +6,30 @@ export class Container {
 
   private resolving = new Map()
 
-  private readonly registrations: Map<Token, Registration> = new Map()
-
-  private readonly dependencies: Bundle = {}
-
+  private readonly _bundle: Bundle = {}
+  
+  private readonly _registrations: Map<Token, Registration> = new Map()
+  
   public readonly bundle: Bundle;
 
+  public get registrations(): Registration[] {
+    return Array.from(this._registrations.values())
+  }
+
   public constructor() {
-    this.bundle = new Proxy(this.dependencies, {
+    this.bundle = new Proxy(this._bundle, {
       set: (_target: Bundle, token: Token) => {
         throw new Error(`Could not set registration "${token.toString()}". Registration should not be done through bundle.`)
       },
     })
   }
 
+  public get(token: Token): Registration | undefined {
+    return this._registrations.get(token)
+  }
+
   public has(token: Token): boolean  {
-    return this.registrations.has(token)
+    return this._registrations.has(token)
   }
 
   public push(...registrations: Registration[]): void {
@@ -39,9 +47,9 @@ export class Container {
       throw new Error(`Could not register "${registration.token.toString()}". Registration clone has a different token "${scopedRegistration.token.toString()}".`)
     }
 
-    this.registrations.set(scopedRegistration.token, scopedRegistration);
+    this._registrations.set(scopedRegistration.token, scopedRegistration);
 
-    Object.defineProperty(this.dependencies, scopedRegistration.token, {
+    Object.defineProperty(this._bundle, scopedRegistration.token, {
       get: () => this.resolve(scopedRegistration.token),
       configurable: true,
       enumerable: true,
@@ -55,13 +63,13 @@ export class Container {
       return
     }
 
-    if (!this.registrations.has(token)) {
+    if (!this._registrations.has(token)) {
       return
     }
 
     this.resolving.set(token, token);
 
-    const registration = this.registrations.get(token);
+    const registration = this._registrations.get(token);
 
     if (!registration) {
       throw new Error(`Token '${token.toString()}' is not a valid registration.`);
@@ -74,23 +82,6 @@ export class Container {
     this.resolving.delete(token);
 
     return resolution;
-  }
-
-  public unpack(): Registration[]
-  public unpack(...tokens: Token[]): (Registration | undefined)[]
-  public unpack(...tokens: Token[]): (Registration | undefined)[] {
-    if(tokens.length > 0) {
-      return tokens.map(token => {
-        // const resolutionProxy = this.createResolutionProxy(token)
-        return this.registrations.get(token)//?.clone(resolutionProxy)
-      })
-    }
-    return Array.from(this.registrations.values())
-
-    // return ).map((registration) => {
-    //   // const resolutionProxy = this.createResolutionProxy(registration.token)
-    //   return registration.clone(resolutionProxy)
-    // })
   }
 
   private createResolutionProxy(resolutionToken: Token): Bundle {

@@ -56,8 +56,8 @@ describe('Container', () => {
       expect(container.has('stubRegistration_0')).toBe(true)
       expect(container.has('stubRegistration_1')).toBe(true)
 
-      expect(container.unpack('stubRegistration_0')[0]?.token).toBe(stubRegistration_0?.token)
-      expect(container.unpack('stubRegistration_1')[0]?.token).toBe(stubRegistration_1?.token)
+      expect(container.get('stubRegistration_0')?.token).toBe(stubRegistration_0?.token)
+      expect(container.get('stubRegistration_1')?.token).toBe(stubRegistration_1?.token)
     })
 
     it('should override registration token', () => {
@@ -69,14 +69,14 @@ describe('Container', () => {
       container.register(stubRegistration_0)
 
       expect(container.has('stubToken')).toBe(true)
-      expect(container.unpack('stubToken')[0]?.token).toBe('stubToken')
-      expect(container.unpack('stubToken')[0]?.resolve()).toBe('resolution_0')
+      expect(container.get('stubToken')?.token).toBe('stubToken')
+      expect(container.get('stubToken')?.resolve()).toBe('resolution_0')
 
       container.register(stubRegistration_1)
 
       expect(container.has('stubToken')).toBe(true)
-      expect(container.unpack('stubToken')[0]?.token).toBe('stubToken')
-      expect(container.unpack('stubToken')[0]?.resolve()).toBe('resolution_1')
+      expect(container.get('stubToken')?.token).toBe('stubToken')
+      expect(container.get('stubToken')?.resolve()).toBe('resolution_1')
     })
 
     it('should throw error when cloning the registration results a different token', () => {
@@ -105,8 +105,8 @@ describe('Container', () => {
       expect(container.has('stubRegistration_0')).toBe(true)
       expect(container.has('stubRegistration_1')).toBe(true)
 
-      expect(container.unpack('stubRegistration_0')[0]?.token).toBe(stubRegistration_0?.token)
-      expect(container.unpack('stubRegistration_1')[0]?.token).toBe(stubRegistration_1?.token)
+      expect(container.get('stubRegistration_0')?.token).toBe(stubRegistration_0?.token)
+      expect(container.get('stubRegistration_1')?.token).toBe(stubRegistration_1?.token)
     })
 
     it('should override registration token', () => {
@@ -118,14 +118,14 @@ describe('Container', () => {
       container.push(stubRegistration_0)
 
       expect(container.has('stubToken')).toBe(true)
-      expect(container.unpack('stubToken')[0]?.token).toBe('stubToken')
-      expect(container.unpack('stubToken')[0]?.resolve()).toBe('resolution_0')
+      expect(container.get('stubToken')?.token).toBe('stubToken')
+      expect(container.get('stubToken')?.resolve()).toBe('resolution_0')
 
       container.push(stubRegistration_1)
 
       expect(container.has('stubToken')).toBe(true)
-      expect(container.unpack('stubToken')[0]?.token).toBe('stubToken')
-      expect(container.unpack('stubToken')[0]?.resolve()).toBe('resolution_1')
+      expect(container.get('stubToken')?.token).toBe('stubToken')
+      expect(container.get('stubToken')?.resolve()).toBe('resolution_1')
     })
 
     it('should throw error when cloning the registration results a different token', () => {
@@ -140,8 +140,8 @@ describe('Container', () => {
     })
   })
 
-  describe('unpack', () => {
-    it('should return undefined when unpacking unregistered token', () => {
+  describe('get', () => {
+    it('should return undefined when getting unregistered token', () => {
       const container = new Container()
       const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
       const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
@@ -151,12 +151,12 @@ describe('Container', () => {
         stubRegistration_1,
       )
       
-      const [ undefinedClone ] = container.unpack('stubRegistration_2')
+      const registration = container.get('stubRegistration_2')
 
-      expect(undefinedClone).toBe(undefined)
+      expect(registration).toBe(undefined)
     })
 
-    it('should return registration clone based on token', () => {
+    it('should return registration based on token', () => {
       const container = new Container()
       const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
       const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
@@ -165,44 +165,15 @@ describe('Container', () => {
         stubRegistration_0,
         stubRegistration_1,
       )
-      
-      const [ stubRegistrationClone_0, stubRegistrationClone_1, undefinedClone ] = container.unpack(
-        'stubRegistration_0',
-        'stubRegistration_1',
-        'invalid'
-      )
 
+      const stubRegistrationClone_0 = container.get('stubRegistration_0')
+      const stubRegistrationClone_1 = container.get('stubRegistration_1')
+      
       expect(stubRegistration_0).not.toBe(stubRegistrationClone_0)
       expect(stubRegistration_1).not.toBe(stubRegistrationClone_1)
       
       expect(stubRegistration_0?.token).toEqual(stubRegistrationClone_0?.token)
       expect(stubRegistration_1?.token).toEqual(stubRegistrationClone_1?.token)
-
-      expect(undefinedClone).toBeUndefined()
-    })
-
-    it('should return registration clones for all registrations', () => {
-      const container = new Container()
-      const stubRegistration_0 = createFunctionRegistration('stubRegistration_0', () => 'resolution_0')
-      const stubRegistration_1 = createFunctionRegistration('stubRegistration_1', () => 'resolution_1')
-
-      container.push(
-        stubRegistration_0,
-        stubRegistration_1,
-      )
-
-      const [ 
-        registrationClone_0,
-        registrationClone_1,
-       ] = container.unpack()
-
-      expect([
-        { token: stubRegistration_0.token, resolution: stubRegistration_0.resolve() },
-        { token: stubRegistration_1.token, resolution: stubRegistration_1.resolve() },
-      ]).toEqual(expect.arrayContaining([
-        { token: registrationClone_0?.token, resolution: registrationClone_0?.resolve() },
-        { token: registrationClone_1?.token, resolution: registrationClone_1?.resolve() },
-      ]))
     })
   })
 
