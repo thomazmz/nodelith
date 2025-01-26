@@ -26,7 +26,7 @@ export class Container {
 
   public push(...registrations: Registration[]): void {
     for (const registration of registrations) {
-      this.register(registration)
+      this.register(registration.clone(this.bundle))
     }
   }
 
