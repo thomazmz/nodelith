@@ -2,56 +2,65 @@ import * as Types from '@nodelith/types'
 
 import { Mode } from '../mode'
 import { Token } from'../token'
+import { Access } from'../access'
 import { Bundle } from '../bundle'
 import { Lifetime } from '../lifetime'
-import { createStaticRegistration } from './create-static-registration'
-import { createFactoryRegistration } from './create-factory-registration'
-import { createFunctionRegistration } from './create-function-registration'
-import { createConstructorRegistration } from './create-constructor-registration'
 
-export type DynamicRegistrationOptions = {
-  mode: Mode
-  token: Token
-  bundle: Bundle
-  lifetime: Lifetime
-}
-
-export type StaticRegistrationOptions = {
-  token: Token
-}
+import { StaticRegistration, StaticRegistrationOptions } from './static-registration'
+import { FactoryRegistration, FactoryRegistrationOptions } from './factory-registration'
+import { FunctionRegistration, FunctionRegistrationOptions } from './function-registration'
+import { ConstructorRegistration, ConstructorRegistrationOptions } from './constructor-registration'
 
 export abstract class Registration<R = any> {
 
+  abstract readonly mode?: Mode
+  
+  abstract readonly lifetime?: Lifetime
+
+  abstract readonly token: Token
+
+  abstract readonly resolve: (bundle?: Bundle) => R
+
+  abstract readonly clone: (bundle?: Bundle) => Registration<R>
+
   public static readonly DEFAULT_MODE: Mode = 'spread' as const
+
+  public static readonly DEFAULT_ACCESS: Access = 'public' as const
 
   public static readonly DEFAULT_LIFETIME: Lifetime = 'singleton' as const
 
   public static create<R  = any >(
-    options: Partial<StaticRegistrationOptions> & { static: R }
+    options: StaticRegistrationOptions & { static: R }
   ): Registration<R>
 
   public static create<R extends ReturnType<Types.Factory>>(
-    options: Partial<DynamicRegistrationOptions> & { factory: Types.Factory<R> }
+    options: FactoryRegistrationOptions & { factory: Types.Factory<R> }
   ): Registration<R>
 
   public static create<R extends ReturnType<Types.Function>>(
-    options: Partial<DynamicRegistrationOptions> & { function: Types.Function<R> }
+    options: FunctionRegistrationOptions & { function: Types.Function<R> }
   ): Registration<R>
 
   public static create<R extends InstanceType<Types.Constructor>>(
-    options: Partial<DynamicRegistrationOptions> & { constructor: Types.Constructor<R> }
+    options: ConstructorRegistrationOptions & { constructor: Types.Constructor<R> }
+  ): Registration<R>
+
+  public static create<R extends InstanceType<Types.Constructor>>(
+    options: 
+      | ConstructorRegistrationOptions & { constructor: Types.Constructor<R> }
+      | FactoryRegistrationOptions & { factory: Types.Factory<R> }
   ): Registration<R>
 
   public static create(
     options:
-      | { static: any } & Partial<StaticRegistrationOptions>
-      | { factory: Types.Factory } & Partial<DynamicRegistrationOptions>
-      | { function: Types.Function } & Partial<DynamicRegistrationOptions>
-      | { constructor: Types.Constructor } & Partial<DynamicRegistrationOptions>
+      | { static: any } & StaticRegistrationOptions
+      | { factory: Types.Factory } & FactoryRegistrationOptions
+      | { function: Types.Function } & FunctionRegistrationOptions
+      | { constructor: Types.Constructor } & ConstructorRegistrationOptions
   ):  Registration {
 
     if('static' in options)  {
-      return createStaticRegistration(options.static, Registration.resolveStaticOptions(options))
+      return StaticRegistration.create(options)
     }
 
     if('factory' in options) {
@@ -59,7 +68,7 @@ export abstract class Registration<R = any> {
         throw new Error(`Could create registration. Provided factory parameter is not a function.`)
       }
 
-      return createFactoryRegistration(options.factory, Registration.resolveDynamicOptions(options))
+      return FactoryRegistration.create(options)
     }
 
     if('function' in options) {
@@ -67,42 +76,17 @@ export abstract class Registration<R = any> {
         throw new Error(`Could create registration. Provided function parameter is not a function.`)
       }
 
-      return createFunctionRegistration(options.function, Registration.resolveDynamicOptions(options))
+      return FunctionRegistration.create(options)
     }
 
     if('constructor' in options) {
       if(typeof options.constructor !== 'function') {
-        throw new Error(`Could create registration. Provided constructor parameter should be of type "function".`)
+        throw new Error(`Could create registration. Provided constructor parameter should be of type 'function'.`)
       }
 
-      return createConstructorRegistration(options.constructor, Registration.resolveDynamicOptions(options))
+      return ConstructorRegistration.create(options)
     }
 
-    throw new Error(`Could not create registration". Options are missing a valid registration target.`)
+    throw new Error(`Could not create registration'. Options are missing a valid registration target.`)
   }
-
-  private static resolveStaticOptions(
-    options: Partial<StaticRegistrationOptions>
-  ): StaticRegistrationOptions {
-    return {
-      token: options?.token ?? Symbol(),
-    }
-  }
-
-  private static resolveDynamicOptions(
-    options: Partial<DynamicRegistrationOptions>
-  ): DynamicRegistrationOptions {
-    return {
-      bundle: options?.bundle ?? {},
-      token: options?.token ?? Symbol(),
-      mode: options?.mode ?? Registration.DEFAULT_MODE,
-      lifetime: options?.lifetime ?? Registration.DEFAULT_LIFETIME,
-    }
-  }
-
-  abstract readonly token: Token
-
-  abstract readonly resolve: (bundle?: Bundle) => R
-
-  abstract readonly clone: (bundle?: Bundle) => Registration<R>
 }

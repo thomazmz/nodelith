@@ -2,23 +2,17 @@ import * as Core from '@nodelith/core'
 import * as Types from '@nodelith/types'
 
 import { Mode }  from '../mode'
+import { Token } from '../token'
+import { Bundle } from '../bundle'
 import { Access } from '../access'
 import { Lifetime } from '../lifetime'
-
-import { Token } from '../token'
 import { Container } from '../container'
-import { Registration }  from '../registration'
-import { StaticRegistrationOptions }  from '../registration'
-import { DynamicRegistrationOptions }  from '../registration'
-import { Bundle } from 'bundle'
 
-export type StaticModuleRegistrationOptions =
-  & Omit<StaticRegistrationOptions, 'token'>
-  & { access?: Access }
-
-export type DynamicModuleRegistrationOptions =
-  & Omit<DynamicRegistrationOptions, 'token'>
-  & { access?: Access }
+import { Registration} from '../registration'
+import { StaticRegistrationOptions} from '../registration'
+import { FactoryRegistrationOptions} from '../registration'
+import { FunctionRegistrationOptions} from '../registration'
+import { ConstructorRegistrationOptions} from '../registration'
 
 export class Module {
 
@@ -71,30 +65,30 @@ export class Module {
 
   public register<R>(
     token: Token,
-    options: Partial<StaticModuleRegistrationOptions> & { static: R } 
+    options: Omit<StaticRegistrationOptions, 'token'> & { static: any }
   ): Registration<R>
 
   public register<R extends ReturnType<Types.Factory>>(
     token: Token,
-    options: Partial<DynamicModuleRegistrationOptions> & { factory: Types.Factory<R> }
+    options: Omit<FactoryRegistrationOptions, 'token'> & { factory: Types.Factory }
   ): Registration<R>
 
   public register<R extends ReturnType<Types.Function>>(
     token: Token, 
-    options: Partial<DynamicModuleRegistrationOptions> & { function: Types.Function<R> }
+    options: Omit<FunctionRegistrationOptions, 'token'> & { function: Types.Function } 
   ): Registration<R>
 
   public register<R extends InstanceType<Types.Constructor>>(
     token: Token, 
-    options: Partial<DynamicModuleRegistrationOptions> & { constructor: Types.Constructor<R> }
+    options: Omit<ConstructorRegistrationOptions, 'token'> & { constructor: Types.Constructor }
   ): Registration<R>
 
   public register(token: Token, 
     options:
-      | { static: any } & Partial<StaticModuleRegistrationOptions>
-      | { factory: Types.Factory } & Partial<DynamicModuleRegistrationOptions>
-      | { function: Types.Function } & Partial<DynamicModuleRegistrationOptions>
-      | { constructor: Types.Constructor } & Partial<DynamicModuleRegistrationOptions>
+      | { static: any } & Omit<StaticRegistrationOptions, 'token'>
+      | { factory: Types.Factory } & Omit<FactoryRegistrationOptions, 'token'>
+      | { function: Types.Function } & Omit<FunctionRegistrationOptions, 'token'>
+      | { constructor: Types.Constructor } & Omit<ConstructorRegistrationOptions, 'token'>
   ):  Registration {
 
     if('static' in options)  {
@@ -131,7 +125,7 @@ export class Module {
   public registerStatic<R>(
     token: Token, 
     target: R, 
-    options?: StaticModuleRegistrationOptions
+    options?: Omit<StaticRegistrationOptions, 'token'>
   ): Registration<R> {
 
     if(this.has(token)) {
@@ -163,8 +157,9 @@ export class Module {
   public registerFactory<R extends ReturnType<Types.Factory>>(
     token: Token,
     target: Types.Factory<R>,
-    options?: Partial<DynamicModuleRegistrationOptions> 
+    options?: Omit<FactoryRegistrationOptions, 'token'>
   ): Registration<R> {
+
 
     if(this.has(token)) {
       throw new Error(`Could not complete factory registration. Module already contain a registration under "${token.toString()}".`)
@@ -197,7 +192,7 @@ export class Module {
   public registerFunction<R extends ReturnType<Types.Function>>(
     token: Token,
     target: Types.Function<R>,
-    options?: Partial<DynamicModuleRegistrationOptions>
+    options?: Omit<FunctionRegistrationOptions, 'token'>
   ): Registration<R> {
 
     if(this.has(token)) {
@@ -231,7 +226,7 @@ export class Module {
   public registerConstructor<R extends InstanceType<Types.Constructor>>(
     token: Token,
     target: Types.Constructor<R>,
-    options?: Partial<DynamicModuleRegistrationOptions>
+    options?: Omit<ConstructorRegistrationOptions, 'token'>
   ): Registration<R> {
 
     if(this.has(token)) {
