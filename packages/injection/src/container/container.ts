@@ -2,11 +2,11 @@ import { Token } from '../token'
 import { Bundle } from '../bundle'
 import { Registration } from '../registration'
 
-export class Container {
+export class Container<R extends Registration = Registration> {
 
   private resolving = new Map()
 
-  private readonly registrations: Map<Token, Registration> = new Map()
+  private readonly registrations: Map<Token, R> = new Map()
 
   private readonly dependencies: Bundle = {}
 
@@ -24,13 +24,13 @@ export class Container {
     return this.registrations.has(token)
   }
 
-  public push(...registrations: Registration[]): void {
+  public push(...registrations: R[]): void {
     for (const registration of registrations) {
       this.register(registration)
     }
   }
 
-  public register(registration: Registration) {
+  public register(registration: R) {
     this.registrations.set(registration.token, registration);
 
     Object.defineProperty(this.dependencies, registration.token, {
@@ -66,16 +66,7 @@ export class Container {
     return resolution;
   }
 
-  public unpack(): Registration[]
-  public unpack(...tokens: Token[]): (Registration | undefined)[]
-  public unpack(...tokens: Token[]): (Registration | undefined)[] {
-    if(tokens.length > 0) {
-      return tokens.map(token => {
-        const resolutionProxy = this.createResolutionProxy(token)
-        return this.registrations.get(token)?.clone(resolutionProxy)
-      })
-    }
-
+  public unpack(): Registration<any, R>[] {
     return Array.from(this.registrations.values()).map((registration) => {
       const resolutionProxy = this.createResolutionProxy(registration.token)
       return registration.clone(resolutionProxy)

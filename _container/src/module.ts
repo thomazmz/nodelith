@@ -1,14 +1,22 @@
 import * as Core from '@nodelith/core'
 import * as Types from '@nodelith/types'
 
-export class Module extends Core.Initializer {
-  public static readonly DEFAULT_ACCESS: Injection.Access = 'public'
+import { 
+  StaticRegistration,
+  FactoryRegistration,
+  ResolverRegistration,
+  ConstructorRegistration,
+  RegistrationInjection,
+  RegistrationLifetime,
+  RegistrationToken,
+  Registration
+} from './registration'
 
-  public static readonly DEFAULT_LIFETIME: Injection.Lifetime = 'transient'
-  
-  public static readonly DEFAULT_MODE: Injection.Mode = 'spread'
+import {
+  Container
+} from  './container'
 
-  private readonly mode: Injection.Mode
+export class Module {
   
   private readonly lifetime: RegistrationLifetime
   
@@ -19,20 +27,11 @@ export class Module extends Core.Initializer {
   protected readonly container = new Container()
 
   public constructor(options?: {
-    access?: Injection.Access,
-    lifetime?: Injection.Lifetime,
-    mode?: Injection.Mode
+    lifetime?: RegistrationLifetime
+    injection?: RegistrationInjection
   }) {
-    super()
-    this.mode = options?.mode ?? Module.DEFAULT_MODE
-    this.access = options?.access ?? Module.DEFAULT_ACCESS
-    this.lifetime = options?.lifetime ?? Module.DEFAULT_LIFETIME
-  }
-
-  public get registrations() {
-    return this.container.registrations.filter((registration) => {
-      return registration.access === 'public'
-    })
+    this.lifetime = options?.lifetime ?? 'transient'
+    this.injection = options?.injection ?? 'spread'
   }
 
   public async initialize(): Promise<void> {
@@ -89,10 +88,10 @@ export class Module extends Core.Initializer {
       throw new Error(`Could not complete factory registration. Module already contain a registration under "${token.toString()}".`)
     }
 
-    const registration = new Injection.FactoryRegistration(factory, {
-      bundle: this.container.bundle,
-      token,
-      mode: this.mode
+    const registration = new FactoryRegistration(factory, {
+      token, 
+      lifetime: options?.lifetime ?? this.lifetime,
+      injection: options?.injection ?? this.injection,
     })
 
     this.container.push(registration)
@@ -106,10 +105,10 @@ export class Module extends Core.Initializer {
       throw new Error(`Could not complete constructor registration. Module already contain a registration under "${token.toString()}".`)
     }
 
-    const registration = new Injection.ConstructorRegistration<Core.Initializer>(constructor, {
-      bundle: this.container.bundle,
-      token,
-      mode: this.mode
+    const registration = new ConstructorRegistration(constructor, { 
+      token, 
+      lifetime: options?.lifetime ?? this.lifetime,
+      injection: options?.injection ?? this.injection,
     })
 
     this.container.push(registration)
@@ -123,17 +122,30 @@ export class Module extends Core.Initializer {
     return this.container.bundle[token]
   }
 
-  public resolveFactory<I = any, F extends Types.Factory<I> = Types.Factory<I>>(factory: F): I {
-    const { instance } = new Injection.FactoryRegistration<I>(factory, {
+  public provideResolver<R extends ReturnType<Types.Resolver> = ReturnType<Types.Resolver>>(resolver: Types.Resolver<R>, options?: {
+    injection: RegistrationInjection,
+  }): R {
+    return ResolverRegistration.provide(resolver, {
+      injection: options?.injection ?? this.injection,
       bundle: this.container.bundle,
-      mode: this.mode
     })
   }
 
-  public resolveConstructor<I = any, C extends Types.Constructor<I> = Types.Constructor<I>>(constructor: C): I {
-    const { instance } = new Injection.ConstructorRegistration<I>(constructor, {
+  public provideFactory<R extends ReturnType<Types.Factory> = ReturnType<Types.Factory>>(factory: Types.Factory<R>, options?: {
+    injection: RegistrationInjection,
+  }): R {
+    return FactoryRegistration.provide(factory, {
+      injection: options?.injection ?? this.injection,
       bundle: this.container.bundle,
-      mode: this.mode
+    })
+  }
+
+  public provideConstructor<R extends InstanceType<Types.Constructor> = InstanceType<Types.Constructor>>(constructor: Types.Constructor<R>, options?: {
+    injection: RegistrationInjection,
+  }): R {
+    return ConstructorRegistration.provide(constructor, {
+      injection: options?.injection ?? this.injection, 
+      bundle: this.container.bundle
     })
   }
 }

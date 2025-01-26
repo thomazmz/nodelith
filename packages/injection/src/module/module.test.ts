@@ -1,8 +1,8 @@
 import * as Types from '@nodelith/types'
 
-import { Registration } from 'registration'
+import { Registration } from '../registration'
+import { Bundle } from '../bundle'
 import { Module } from './module'
-import { Bundle } from 'bundle'
 
 describe('Module', () => {
   function createFunctionRegistration(token: string, target?: Function): Registration {
@@ -14,38 +14,6 @@ describe('Module', () => {
   }
 
   describe('register', () => {
-    it('should throw an error when making a registration without target', () => {
-      const module = new Module()
-  
-      expect(() =>  {
-        module.register('someToken', Object.create(null))
-      }).toThrow('Could not register "someToken". Given options are missing a valid registration target.')
-    })
-
-    it('should throw an error when factory registration target is not a function', () => {
-      const module = new Module()
-  
-      expect(() =>  {
-        module.register('someToken', { factory: 'fakeFactory' as any as Types.Factory })
-      }).toThrow('Could not register "someToken". Provided factory should be of type "function".')
-    })
-  
-    it('should throw an error when function registration target is not a function', () => {
-      const module = new Module()
-  
-      expect(() =>  {
-        module.register('someToken', { function: 'fakeFunction' as any as Types.Function })
-      }).toThrow('Could not register "someToken". Provided function should be of type "function".')
-    })
-  
-    it('should throw an error when constructor registration target is not a function', () => {
-      const module = new Module()
-  
-      expect(() =>  {
-        module.register('someToken', { constructor: 'fakeConstructor' as any as Types.Constructor })
-      }).toThrow('Could not register "someToken". Provided constructor should be of type "function".')
-    })
-
     it('should throw an error when making a static registration into already used token', () => {
       const module = new Module()
       module.registerStatic('someToken', 'someString')

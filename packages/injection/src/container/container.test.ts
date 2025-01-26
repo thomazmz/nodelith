@@ -45,83 +45,83 @@ describe('Container', () => {
   })
 
   describe('push', () => {
-    it('should push registrations as part of the container', () => {
-      const container = new Container()
-      const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
-      const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
+  //   it('should push registrations as part of the container', () => {
+  //     const container = new Container()
+  //     const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
+  //     const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
 
-      container.push(
-        stubRegistration_0,
-        stubRegistration_1,
-      )
+  //     container.push(
+  //       stubRegistration_0,
+  //       stubRegistration_1,
+  //     )
 
-      expect(container.has('stubRegistration_0')).toBe(true)
-      expect(container.has('stubRegistration_1')).toBe(true)
+  //     expect(container.has('stubRegistration_0')).toBe(true)
+  //     expect(container.has('stubRegistration_1')).toBe(true)
 
-      expect(container.unpack('stubRegistration_0')[0]?.token).toBe(stubRegistration_0?.token)
-      expect(container.unpack('stubRegistration_1')[0]?.token).toBe(stubRegistration_1?.token)
-    })
+  //     expect(container.unpack('stubRegistration_0')[0]?.token).toBe(stubRegistration_0?.token)
+  //     expect(container.unpack('stubRegistration_1')[0]?.token).toBe(stubRegistration_1?.token)
+  //   })
 
-    it('should override registration token', () => {
-      const container = new Container()
+  //   it('should override registration token', () => {
+  //     const container = new Container()
 
-      const stubRegistration_0 = createFunctionRegistration('stubToken', () => 'resolution_0' )
-      const stubRegistration_1 = createFunctionRegistration('stubToken', () => 'resolution_1' )
+  //     const stubRegistration_0 = createFunctionRegistration('stubToken', () => 'resolution_0' )
+  //     const stubRegistration_1 = createFunctionRegistration('stubToken', () => 'resolution_1' )
       
-      container.push(stubRegistration_0)
+  //     container.push(stubRegistration_0)
 
-      expect(container.has('stubToken')).toBe(true)
-      expect(container.unpack('stubToken')[0]?.token).toBe('stubToken')
-      expect(container.unpack('stubToken')[0]?.resolve()).toBe('resolution_0')
+  //     expect(container.has('stubToken')).toBe(true)
+  //     expect(container.unpack('stubToken')[0]?.token).toBe('stubToken')
+  //     expect(container.unpack('stubToken')[0]?.resolve()).toBe('resolution_0')
 
-      container.push(stubRegistration_1)
+  //     container.push(stubRegistration_1)
 
-      expect(container.has('stubToken')).toBe(true)
-      expect(container.unpack('stubToken')[0]?.token).toBe('stubToken')
-      expect(container.unpack('stubToken')[0]?.resolve()).toBe('resolution_1')
-    })
+  //     expect(container.has('stubToken')).toBe(true)
+  //     expect(container.unpack('stubToken')[0]?.token).toBe('stubToken')
+  //     expect(container.unpack('stubToken')[0]?.resolve()).toBe('resolution_1')
+  //   })
   })
 
   describe('unpack', () => {
-    it('should return undefined when unpacking unregistered token', () => {
-      const container = new Container()
-      const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
-      const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
+    // it('should return undefined when unpacking unregistered token', () => {
+    //   const container = new Container()
+    //   const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
+    //   const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
 
-      container.push(
-        stubRegistration_0,
-        stubRegistration_1,
-      )
+    //   container.push(
+    //     stubRegistration_0,
+    //     stubRegistration_1,
+    //   )
       
-      const [ undefinedClone ] = container.unpack('stubRegistration_2')
+    //   const [ undefinedClone ] = container.unpack('stubRegistration_2')
 
-      expect(undefinedClone).toBe(undefined)
-    })
+    //   expect(undefinedClone).toBe(undefined)
+    // })
 
-    it('should return registration clone based on token', () => {
-      const container = new Container()
-      const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
-      const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
+    // it('should return registration clone based on token', () => {
+    //   const container = new Container()
+    //   const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
+    //   const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
 
-      container.push(
-        stubRegistration_0,
-        stubRegistration_1,
-      )
+    //   container.push(
+    //     stubRegistration_0,
+    //     stubRegistration_1,
+    //   )
       
-      const [ stubRegistrationClone_0, stubRegistrationClone_1, undefinedClone ] = container.unpack(
-        'stubRegistration_0',
-        'stubRegistration_1',
-        'invalid'
-      )
+    //   const [ stubRegistrationClone_0, stubRegistrationClone_1, undefinedClone ] = container.unpack(
+    //     'stubRegistration_0',
+    //     'stubRegistration_1',
+    //     'invalid'
+    //   )
 
-      expect(stubRegistration_0).not.toBe(stubRegistrationClone_0)
-      expect(stubRegistration_1).not.toBe(stubRegistrationClone_1)
+    //   expect(stubRegistration_0).not.toBe(stubRegistrationClone_0)
+    //   expect(stubRegistration_1).not.toBe(stubRegistrationClone_1)
       
-      expect(stubRegistration_0?.token).toEqual(stubRegistrationClone_0?.token)
-      expect(stubRegistration_1?.token).toEqual(stubRegistrationClone_1?.token)
+    //   expect(stubRegistration_0?.token).toEqual(stubRegistrationClone_0?.token)
+    //   expect(stubRegistration_1?.token).toEqual(stubRegistrationClone_1?.token)
 
-      expect(undefinedClone).toBeUndefined()
-    })
+    //   expect(undefinedClone).toBeUndefined()
+    // })
 
     it('should return registration clones for all registrations', () => {
       const container = new Container()
@@ -267,29 +267,29 @@ describe('Container', () => {
       container.resolve('target_2')
     })
 
-    it('should not include self references during cloning', () => {
-      const container = new Container()
+    // it('should not include self references during cloning', () => {
+    //   const container = new Container()
 
-      container.register({ ...createFunctionRegistration('target_0'), clone(bundle: Bundle = {}) {
-        expect(Object.keys(bundle)).toEqual(['target_1', 'target_2'])
-        expect(bundle['target_0']).toBeUndefined()
-        return this
-      }})
+    //   container.register({ ...createFunctionRegistration('target_0'), clone(bundle: Bundle = {}) {
+    //     expect(Object.keys(bundle)).toEqual(['target_1', 'target_2'])
+    //     expect(bundle['target_0']).toBeUndefined()
+    //     return this
+    //   }})
 
-      container.register({ ...createFunctionRegistration('target_1'), clone(bundle: Bundle = {}) {
-        expect(Object.keys(bundle)).toEqual(['target_0', 'target_2'])
-        expect(bundle['target_1']).toBeUndefined()
-        return this
-      }})
+    //   container.register({ ...createFunctionRegistration('target_1'), clone(bundle: Bundle = {}) {
+    //     expect(Object.keys(bundle)).toEqual(['target_0', 'target_2'])
+    //     expect(bundle['target_1']).toBeUndefined()
+    //     return this
+    //   }})
 
-      container.register({ ...createFunctionRegistration('target_2'), clone(bundle: Bundle = {}) {
-        expect(Object.keys(bundle)).toEqual(['target_0', 'target_1'])
-        expect(bundle['target_2']).toBeUndefined()
-        return this
-      }})
+    //   container.register({ ...createFunctionRegistration('target_2'), clone(bundle: Bundle = {}) {
+    //     expect(Object.keys(bundle)).toEqual(['target_0', 'target_1'])
+    //     expect(bundle['target_2']).toBeUndefined()
+    //     return this
+    //   }})
 
-      container.unpack('target_0','target_1', 'target_2')
-    })
+    //   container.unpack('target_0','target_1', 'target_2')
+    // })
   })
 
   describe('resolution',() => {

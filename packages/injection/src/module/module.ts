@@ -2,23 +2,18 @@ import * as Core from '@nodelith/core'
 import * as Types from '@nodelith/types'
 
 import { Mode }  from '../mode'
+import { Token } from '../token'
+import { Bundle } from '../bundle'
 import { Access } from '../access'
 import { Lifetime } from '../lifetime'
-
-import { Token } from '../token'
 import { Container } from '../container'
-import { Registration }  from '../registration'
-import { StaticRegistrationOptions }  from '../registration'
-import { DynamicRegistrationOptions }  from '../registration'
-import { Bundle } from 'bundle'
 
-export type StaticModuleRegistrationOptions =
-  & Omit<StaticRegistrationOptions, 'token'>
-  & { access?: Access }
-
-export type DynamicModuleRegistrationOptions =
-  & Omit<DynamicRegistrationOptions, 'token'>
-  & { access?: Access }
+import { InitializerRegistrationOptions, Registration} from '../registration'
+import { InitializerRegistration } from '../registration'
+import { StaticRegistrationOptions} from '../registration'
+import { FactoryRegistrationOptions} from '../registration'
+import { FunctionRegistrationOptions} from '../registration'
+import { ConstructorRegistrationOptions} from '../registration'
 
 export class Module {
 
@@ -28,10 +23,7 @@ export class Module {
   private readonly access: Access
   private readonly lifetime: Lifetime
 
-  private readonly container = new Container()
-
-  private readonly publicTokens: Token[] = []
-  private readonly privateTokens: Token[] = []
+  protected readonly container = new Container()
 
   public constructor(options?: {
     mode: Mode,
@@ -44,7 +36,7 @@ export class Module {
   }
 
   public useModule(module: Module): void {
-    for (const registration of module.unpack()) {
+    for (const registration of module.container.unpack()) {
       this.useRegistration(registration)
     }
   }
@@ -61,40 +53,32 @@ export class Module {
     return this.container.has(token)
   }
 
-  public unpack(): Registration[]
-  public unpack(...tokens: Token[]): (Registration | undefined)[]
-  public unpack(...tokens: Token[]): (Registration | undefined)[] {
-    return this.container.unpack(...tokens.map(token => {
-      return this.privateTokens.includes(token) ? Symbol() : token
-    }))
-  }
-
   public register<R>(
     token: Token,
-    options: Partial<StaticModuleRegistrationOptions> & { static: R } 
+    options: Omit<StaticRegistrationOptions, 'token'> & { static: any }
   ): Registration<R>
 
   public register<R extends ReturnType<Types.Factory>>(
     token: Token,
-    options: Partial<DynamicModuleRegistrationOptions> & { factory: Types.Factory<R> }
+    options: Omit<FactoryRegistrationOptions, 'token'> & { factory: Types.Factory }
   ): Registration<R>
 
   public register<R extends ReturnType<Types.Function>>(
     token: Token, 
-    options: Partial<DynamicModuleRegistrationOptions> & { function: Types.Function<R> }
+    options: Omit<FunctionRegistrationOptions, 'token'> & { function: Types.Function } 
   ): Registration<R>
 
   public register<R extends InstanceType<Types.Constructor>>(
     token: Token, 
-    options: Partial<DynamicModuleRegistrationOptions> & { constructor: Types.Constructor<R> }
+    options: Omit<ConstructorRegistrationOptions, 'token'> & { constructor: Types.Constructor }
   ): Registration<R>
 
   public register(token: Token, 
     options:
-      | { static: any } & Partial<StaticModuleRegistrationOptions>
-      | { factory: Types.Factory } & Partial<DynamicModuleRegistrationOptions>
-      | { function: Types.Function } & Partial<DynamicModuleRegistrationOptions>
-      | { constructor: Types.Constructor } & Partial<DynamicModuleRegistrationOptions>
+      | { static: any } & Omit<StaticRegistrationOptions, 'token'>
+      | { factory: Types.Factory } & Omit<FactoryRegistrationOptions, 'token'>
+      | { function: Types.Function } & Omit<FunctionRegistrationOptions, 'token'>
+      | { constructor: Types.Constructor } & Omit<ConstructorRegistrationOptions, 'token'>
   ):  Registration {
 
     if('static' in options)  {
@@ -102,36 +86,24 @@ export class Module {
     }
 
     if('factory' in options) {
-      if(typeof options.factory !== 'function') {
-        throw new Error(`Could not register "${token.toString()}". Provided factory should be of type "function".`)
-      }
-
       return this.registerFactory(token, options.factory, options)
     }
 
     if('function' in options) {
-      if(typeof options.function !== 'function') {
-        throw new Error(`Could not register "${token.toString()}". Provided function should be of type "function".`)
-      }
-
       return this.registerFunction(token, options.function, options)
     }
 
     if('constructor' in options) {
-      if(typeof options.constructor !== 'function') {
-        throw new Error(`Could not register "${token.toString()}". Provided constructor should be of type "function".`)
-      }
-
       return this.registerConstructor(token, options.constructor, options)
     }
 
-    throw new Error(`Could not register "${token.toString()}". Given options are missing a valid registration target.`)
+    throw new Error(`Could not register "${token.toString()}". Options are missing a valid registration target.`)
   }
 
   public registerStatic<R>(
     token: Token, 
     target: R, 
-    options?: StaticModuleRegistrationOptions
+    options?: Omit<StaticRegistrationOptions, 'token'>
   ): Registration<R> {
 
     if(this.has(token)) {
@@ -149,21 +121,13 @@ export class Module {
 
     this.container.push(registration)
 
-    if(options?.access ?? this.access === 'private') {
-      this.privateTokens.push(registration.token)
-    }
-
-    if(options?.access ?? this.access === 'public') {
-      this.publicTokens.push(registration.token)
-    }
-
     return registration
   }
 
   public registerFactory<R extends ReturnType<Types.Factory>>(
     token: Token,
     target: Types.Factory<R>,
-    options?: Partial<DynamicModuleRegistrationOptions> 
+    options?: Omit<FactoryRegistrationOptions, 'token'>
   ): Registration<R> {
 
     if(this.has(token)) {
@@ -176,6 +140,7 @@ export class Module {
 
     const registration = Registration.create({ ...options,
       lifetime: options?.lifetime ?? this.lifetime,
+      access: options?.access ?? this.access,
       mode: options?.mode ?? this.mode,
       factory: target,
       token,
@@ -183,21 +148,13 @@ export class Module {
 
     this.container.push(registration)
 
-    if(options?.access ?? this.access === 'private') {
-      this.privateTokens.push(registration.token)
-    }
-
-    if(options?.access ?? this.access === 'public') {
-      this.publicTokens.push(registration.token)
-    }
-
     return registration
   }
 
   public registerFunction<R extends ReturnType<Types.Function>>(
     token: Token,
     target: Types.Function<R>,
-    options?: Partial<DynamicModuleRegistrationOptions>
+    options?: Omit<FunctionRegistrationOptions, 'token'>
   ): Registration<R> {
 
     if(this.has(token)) {
@@ -210,6 +167,7 @@ export class Module {
 
     const registration = Registration.create({ ...options,
       lifetime: options?.lifetime ?? this.lifetime,
+      access: options?.access ?? this.access,
       mode: options?.mode ?? this.mode,
       function: target,
       token,
@@ -217,23 +175,14 @@ export class Module {
 
     this.container.push(registration)
 
-    if(options?.access ?? this.access === 'private') {
-      this.privateTokens.push(registration.token)
-    }
-
-    if(options?.access ?? this.access === 'public') {
-      this.publicTokens.push(registration.token)
-    }
-
     return registration
   }
 
   public registerConstructor<R extends InstanceType<Types.Constructor>>(
     token: Token,
     target: Types.Constructor<R>,
-    options?: Partial<DynamicModuleRegistrationOptions>
+    options?: Omit<ConstructorRegistrationOptions, 'token'>
   ): Registration<R> {
-
     if(this.has(token)) {
       throw new Error(`Could not complete constructor registration. Module already contain a registration under "${token.toString()}".`)
     }
@@ -244,6 +193,7 @@ export class Module {
 
     const registration = Registration.create({ ...options,
       lifetime: options?.lifetime ?? this.lifetime,
+      access: options?.access ?? this.access,
       mode: options?.mode ?? this.mode,
       constructor: target,
       token,
@@ -251,44 +201,50 @@ export class Module {
 
     this.container.push(registration)
 
-    if(options?.access ?? this.access === 'private') {
-      this.privateTokens.push(registration.token)
-    }
-
-    if(options?.access ?? this.access === 'public') {
-      this.publicTokens.push(registration.token)
-    }
-
     return registration
   }
 
-  public registerInitializer<I extends Core.Initializer>(token: Token, options: {
-    factory: Types.Factory<I>
+  public registerInitializer<R extends object>(token: Token, options: {
+    factory: Types.Factory<Core.Initializer<R>>
     mode?: Mode,
-  }): Registration<I>
+  }): Registration<R>
 
-  public registerInitializer<I extends Core.Initializer>(token: Token, options: {
-    constructor: Types.Constructor<I>
+  public registerInitializer<R extends object>(token: Token, options: {
+    constructor: Types.Constructor<Core.Initializer<R>> 
     mode?: Mode,
-  }): Registration<I>
+  }): Registration<R>
 
-  public registerInitializer<I extends Core.Initializer>(token: Token, options:
-    | { factory: Types.Factory<I>, mode?: Mode }
-    | { constructor: Types.Constructor<I>, mode?: Mode }
-  ): Registration<I> {
-    throw new Error('Method not implemented.')
+  public registerInitializer<R extends object>(token: Token, options:
+    | { factory: Types.Factory<Core.Initializer<R>>, mode?: Mode }
+    | { constructor: Types.Constructor<Core.Initializer<R>>, mode?: Mode }
+  ): Registration<R> {
+    return InitializerRegistration.create<R>(options)
   }
 
-  public registerInitializerConstructor<I extends Core.Initializer>(token: Token, target: Types.Constructor<I>, options?: {
-    mode?: Mode,
-  }): Registration<I> {
-    throw new Error('Method not implemented.')
+  public registerInitializerConstructor<R extends object>(
+    token: Token,
+    constructor: Types.Constructor<Core.Initializer<R>>,
+    options?: Omit<InitializerRegistrationOptions, 'token'> 
+  ): Registration<R> {
+    return InitializerRegistration.create({ ...options,
+      access: options?.access ?? this.access,
+      mode: options?.mode ?? this.mode,
+      constructor,
+      token,
+    })
   }
 
-  public registerInitializerFactory<I extends Core.Initializer>(token: Token, target: Types.Factory<I>, options?: {
-    mode?: Mode,
-  }): Registration<I> {
-    throw new Error('Method not implemented.')
+  public registerInitializerFactory<R extends object>(
+    token: Token,
+    factory: Types.Factory<Core.Initializer<R>>,
+    options?: Omit<InitializerRegistrationOptions, 'token'>
+  ): Registration<R> {
+    return InitializerRegistration.create({ ...options,
+      access: options?.access ?? this.access,
+      mode: options?.mode ?? this.mode,
+      factory,
+      token,
+    })
   }
 
   public resolve<R = any>(token: Token): R | undefined {
