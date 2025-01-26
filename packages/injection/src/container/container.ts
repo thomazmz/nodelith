@@ -32,13 +32,13 @@ export class Container {
     return this._registrations.has(token)
   }
 
-  public push(...registrations: Registration[]): void {
-    for (const registration of registrations) {
-      this.register(registration)
-    }
+  public push(...registrations: Registration[]): Registration[] {
+    return registrations.map(registration => {
+      return this.register(registration)
+    })
   }
 
-  public register(registration: Registration) {
+  public register(registration: Registration): Registration {
     const scopedRegistration = registration.clone(
       this.createResolutionProxy(registration.token)
     )

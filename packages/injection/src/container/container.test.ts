@@ -92,6 +92,26 @@ describe('Container', () => {
   })
 
   describe('push', () => {
+    it('should return scoped registrations', () => {
+      const container = new Container()
+      const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
+      const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
+
+      const [
+        stubScopedRegistration_0,
+        stubScopedRegistration_1,
+      ] = container.push(
+        stubRegistration_0,
+        stubRegistration_1,
+      )
+
+      expect(stubScopedRegistration_0).not.toBe(stubRegistration_0)
+      expect(stubScopedRegistration_1).not.toBe(stubRegistration_1)
+
+      expect(stubScopedRegistration_0?.token).toBe(stubRegistration_0?.token)
+      expect(stubScopedRegistration_1?.token).toBe(stubRegistration_1?.token)
+    })
+
     it('should push registrations as part of the container', () => {
       const container = new Container()
       const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
