@@ -26,18 +26,24 @@ export class Container {
 
   public push(...registrations: Registration[]): void {
     for (const registration of registrations) {
-      this.register(registration.clone(this.bundle))
+      this.register(registration)
     }
   }
 
   public register(registration: Registration) {
-    this.registrations.set(registration.token, registration);
+    const scopedRegistration = registration.clone(
+      this.createResolutionProxy(registration.token)
+    )
 
-    Object.defineProperty(this.dependencies, registration.token, {
+    this.registrations.set(scopedRegistration.token, scopedRegistration);
+
+    Object.defineProperty(this.dependencies, scopedRegistration.token, {
+      get: () => this.resolve(scopedRegistration.token),
       configurable: true,
       enumerable: true,
-      get: () => this.resolve(registration.token),
     });
+
+    return scopedRegistration
   }
 
   public resolve<R>(token: Token): R | undefined {
@@ -71,15 +77,16 @@ export class Container {
   public unpack(...tokens: Token[]): (Registration | undefined)[] {
     if(tokens.length > 0) {
       return tokens.map(token => {
-        const resolutionProxy = this.createResolutionProxy(token)
-        return this.registrations.get(token)?.clone(resolutionProxy)
+        // const resolutionProxy = this.createResolutionProxy(token)
+        return this.registrations.get(token)//?.clone(resolutionProxy)
       })
     }
+    return Array.from(this.registrations.values())
 
-    return Array.from(this.registrations.values()).map((registration) => {
-      const resolutionProxy = this.createResolutionProxy(registration.token)
-      return registration.clone(resolutionProxy)
-    })
+    // return ).map((registration) => {
+    //   // const resolutionProxy = this.createResolutionProxy(registration.token)
+    //   return registration.clone(resolutionProxy)
+    // })
   }
 
   private createResolutionProxy(resolutionToken: Token): Bundle {

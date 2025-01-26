@@ -270,25 +270,29 @@ describe('Container', () => {
     it('should not include self references during cloning', () => {
       const container = new Container()
 
-      container.register({ ...createFunctionRegistration('target_0'), clone(bundle: Bundle = {}) {
-        expect(Object.keys(bundle)).toEqual(['target_1', 'target_2'])
+      const registration_0 = createFunctionRegistration('target_0')
+      container.register({ ...registration_0, clone(bundle: Bundle = {}) {
+        console.log(0, Object.keys(bundle))
+        expect(Object.keys(bundle)).toEqual([])
         expect(bundle['target_0']).toBeUndefined()
-        return this
+        return registration_0.clone(bundle)
       }})
 
-      container.register({ ...createFunctionRegistration('target_1'), clone(bundle: Bundle = {}) {
-        expect(Object.keys(bundle)).toEqual(['target_0', 'target_2'])
+      const registration_1 = createFunctionRegistration('target_1')
+      container.register({ ...registration_1, clone(bundle: Bundle = {}) {
+        console.log(1, Object.keys(bundle))
+        expect(Object.keys(bundle)).toEqual(['target_0'])
         expect(bundle['target_1']).toBeUndefined()
-        return this
+        return registration_1.clone(bundle)
       }})
 
-      container.register({ ...createFunctionRegistration('target_2'), clone(bundle: Bundle = {}) {
+      const registration_2 = createFunctionRegistration('target_2')
+      container.register({ ...registration_2, clone(bundle: Bundle = {}) {
+        console.log(2, Object.keys(bundle))
         expect(Object.keys(bundle)).toEqual(['target_0', 'target_1'])
         expect(bundle['target_2']).toBeUndefined()
-        return this
+        return registration_2.clone(bundle)
       }})
-
-      container.unpack('target_0','target_1', 'target_2')
     })
   })
 
