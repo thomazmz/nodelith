@@ -22,7 +22,7 @@ export class Module {
   private readonly access: Access
   private readonly lifetime: Lifetime
 
-  private readonly container = new Container()
+  protected readonly container = new Container()
 
   private readonly publicTokens: Token[] = []
   private readonly privateTokens: Token[] = []
@@ -137,19 +137,12 @@ export class Module {
     }
 
     const registration = Registration.create({ ...options,
+      access: options?.access ?? this.access,
       static: target,
       token,
     })
 
     this.container.push(registration)
-
-    if(options?.access ?? this.access === 'private') {
-      this.privateTokens.push(registration.token)
-    }
-
-    if(options?.access ?? this.access === 'public') {
-      this.publicTokens.push(registration.token)
-    }
 
     return registration
   }
@@ -171,6 +164,7 @@ export class Module {
 
     const registration = Registration.create({ ...options,
       lifetime: options?.lifetime ?? this.lifetime,
+      access: options?.access ?? this.access,
       mode: options?.mode ?? this.mode,
       factory: target,
       token,
@@ -205,6 +199,7 @@ export class Module {
 
     const registration = Registration.create({ ...options,
       lifetime: options?.lifetime ?? this.lifetime,
+      access: options?.access ?? this.access,
       mode: options?.mode ?? this.mode,
       function: target,
       token,
@@ -239,6 +234,7 @@ export class Module {
 
     const registration = Registration.create({ ...options,
       lifetime: options?.lifetime ?? this.lifetime,
+      access: options?.access ?? this.access,
       mode: options?.mode ?? this.mode,
       constructor: target,
       token,

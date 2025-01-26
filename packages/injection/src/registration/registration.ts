@@ -14,6 +14,8 @@ import { ConstructorRegistration, ConstructorRegistrationOptions } from './const
 export abstract class Registration<R = any> {
 
   abstract readonly mode?: Mode
+
+  abstract readonly access?: Access
   
   abstract readonly lifetime?: Lifetime
 

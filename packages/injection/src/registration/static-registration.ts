@@ -7,9 +7,7 @@ import { Token } from 'token';
 
 export type StaticRegistrationOptions = {
   token?: Token | undefined
-  mode?: Mode | undefined
   access?: Access | undefined
-  lifetime?: Lifetime | undefined
 }
 
 export class StaticRegistration<R extends any> implements Registration<R> {
@@ -21,9 +19,7 @@ export class StaticRegistration<R extends any> implements Registration<R> {
 
   public readonly token: Token;
 
-  public readonly mode: Mode
   public readonly access: Access
-  public readonly lifetime: Lifetime
 
   private readonly resolution: R
   
@@ -33,9 +29,7 @@ export class StaticRegistration<R extends any> implements Registration<R> {
   ) {
     this.resolution = resolution;
     this.token = options?.token ?? Symbol()
-    this.mode = options?.mode ?? 'spread'
     this.access = options?.access ?? 'public' 
-    this.lifetime = options?.lifetime ?? 'singleton'
   }
 
   public resolve(): R {
