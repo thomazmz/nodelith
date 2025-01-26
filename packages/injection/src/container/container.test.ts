@@ -44,6 +44,53 @@ describe('Container', () => {
     })
   })
 
+  describe('register', () => {
+    it('should register registrations as part of the container', () => {
+      const container = new Container()
+      const stubRegistration_0 = createFunctionRegistration('stubRegistration_0')
+      const stubRegistration_1 = createFunctionRegistration('stubRegistration_1')
+
+      container.register(stubRegistration_0)
+      container.register(stubRegistration_1)
+
+      expect(container.has('stubRegistration_0')).toBe(true)
+      expect(container.has('stubRegistration_1')).toBe(true)
+
+      expect(container.unpack('stubRegistration_0')[0]?.token).toBe(stubRegistration_0?.token)
+      expect(container.unpack('stubRegistration_1')[0]?.token).toBe(stubRegistration_1?.token)
+    })
+
+    it('should override registration token', () => {
+      const container = new Container()
+
+      const stubRegistration_0 = createFunctionRegistration('stubToken', () => 'resolution_0' )
+      const stubRegistration_1 = createFunctionRegistration('stubToken', () => 'resolution_1' )
+      
+      container.register(stubRegistration_0)
+
+      expect(container.has('stubToken')).toBe(true)
+      expect(container.unpack('stubToken')[0]?.token).toBe('stubToken')
+      expect(container.unpack('stubToken')[0]?.resolve()).toBe('resolution_0')
+
+      container.register(stubRegistration_1)
+
+      expect(container.has('stubToken')).toBe(true)
+      expect(container.unpack('stubToken')[0]?.token).toBe('stubToken')
+      expect(container.unpack('stubToken')[0]?.resolve()).toBe('resolution_1')
+    })
+
+    it('should throw error when cloning the registration results a different token', () => {
+      const container = new Container()
+      const registration = { ...createStaticRegistration('someToken', 'staticValue'), clone() {
+        return createStaticRegistration('anotherToken', 'staticValue')
+      }}
+
+      expect(() => {
+        container.register(registration)
+      }).toThrow('Could not register "someToken". Registration clone has a different token "anotherToken".')
+    })
+  })
+
   describe('push', () => {
     it('should push registrations as part of the container', () => {
       const container = new Container()
@@ -79,6 +126,17 @@ describe('Container', () => {
       expect(container.has('stubToken')).toBe(true)
       expect(container.unpack('stubToken')[0]?.token).toBe('stubToken')
       expect(container.unpack('stubToken')[0]?.resolve()).toBe('resolution_1')
+    })
+
+    it('should throw error when cloning the registration results a different token', () => {
+      const container = new Container()
+      const registration = { ...createStaticRegistration('someToken', 'staticValue'), clone() {
+        return createStaticRegistration('anotherToken', 'staticValue')
+      }}
+
+      expect(() => {
+        container.push(registration)
+      }).toThrow('Could not register "someToken". Registration clone has a different token "anotherToken".')
     })
   })
 
@@ -272,7 +330,6 @@ describe('Container', () => {
 
       const registration_0 = createFunctionRegistration('target_0')
       container.register({ ...registration_0, clone(bundle: Bundle = {}) {
-        console.log(0, Object.keys(bundle))
         expect(Object.keys(bundle)).toEqual([])
         expect(bundle['target_0']).toBeUndefined()
         return registration_0.clone(bundle)
@@ -280,7 +337,6 @@ describe('Container', () => {
 
       const registration_1 = createFunctionRegistration('target_1')
       container.register({ ...registration_1, clone(bundle: Bundle = {}) {
-        console.log(1, Object.keys(bundle))
         expect(Object.keys(bundle)).toEqual(['target_0'])
         expect(bundle['target_1']).toBeUndefined()
         return registration_1.clone(bundle)
@@ -288,7 +344,6 @@ describe('Container', () => {
 
       const registration_2 = createFunctionRegistration('target_2')
       container.register({ ...registration_2, clone(bundle: Bundle = {}) {
-        console.log(2, Object.keys(bundle))
         expect(Object.keys(bundle)).toEqual(['target_0', 'target_1'])
         expect(bundle['target_2']).toBeUndefined()
         return registration_2.clone(bundle)

@@ -35,6 +35,10 @@ export class Container {
       this.createResolutionProxy(registration.token)
     )
 
+    if(scopedRegistration.token !== registration.token) {
+      throw new Error(`Could not register "${registration.token.toString()}". Registration clone has a different token "${scopedRegistration.token.toString()}".`)
+    }
+
     this.registrations.set(scopedRegistration.token, scopedRegistration);
 
     Object.defineProperty(this.dependencies, scopedRegistration.token, {
