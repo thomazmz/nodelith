@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@nodelith/controller": "workspace:*",
-    "@nodelith/container": "workspace:*",
+    "@nodelith/injection": "workspace:*",
     "@nodelith/utilities": "workspace:*",
     "@nodelith/types": "workspace:*",
     "@nodelith/core": "workspace:*",

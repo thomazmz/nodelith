@@ -2,10 +2,10 @@ import express from 'express'
 import * as Http from '@nodelith/http'
 import * as Types from '@nodelith/types'
 import * as Utilities from '@nodelith/utilities'
-import * as Container from '@nodelith/container'
+import * as Injection from '@nodelith/injection'
 import * as Controller from '@nodelith/controller'
 
-export class RouterModule extends Container.Module {
+export class RouterModule extends Injection.Module {
 
   private readonly controllers: Types.Constructor[] = []
 
@@ -42,7 +42,7 @@ export class RouterModule extends Container.Module {
   }
 
   protected resolveControllerRouter(controller: Types.Constructor): express.Router {
-    const controllerInstance = this.provideConstructor(controller)
+    const controllerInstance = this.resolveConstructor(controller)
 
     const propertyDescriptors = Object.getOwnPropertyDescriptors(controller.prototype)
 
@@ -90,7 +90,7 @@ export class RouterModule extends Container.Module {
 
   protected resolveRequestHandlers(): express.RequestHandler[] {
     return this.requestHandlers.map(handlerFactory => {
-      const handler = this.provideFactory(handlerFactory)
+      const handler = this.resolveFactory(handlerFactory)
       return (request, response, next) => {
         Promise.resolve(handler(request, response, next)).catch(next)
       }
@@ -99,7 +99,7 @@ export class RouterModule extends Container.Module {
 
   protected resolveRequestErrorHandlers(): express.ErrorRequestHandler[] {
     return this.errorHandlers.map(errorHandlerFactory => {
-      const errorHandler = this.provideFactory(errorHandlerFactory)
+      const errorHandler = this.resolveFactory(errorHandlerFactory)
       return (error, request, response, next) => {
         Promise.resolve(errorHandler(error, request, response, next)).catch(next)
       }

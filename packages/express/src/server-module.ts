@@ -4,7 +4,7 @@ import * as Express from './router-module'
 
 export class ServerModule extends Express.RouterModule {
   public async initialize(): Promise<void> {
-    await super.initialize()
+    // await super.initialize()
   
     this.resolveApplication().listen(3003, () => {
       console.log('Application running on port 3003')
