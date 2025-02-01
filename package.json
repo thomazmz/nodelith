@@ -16,6 +16,7 @@
   "scripts": {
     "build": "pnpm --recursive --if-present run build",
     "test": "pnpm --recursive --if-present run test",
+    "test:coverage": "pnpm --recursive --if-present run test:coverage",
     "build:watch": "pnpm --parallel --if-present run build:watch",
     "test:watch": "pnpm --parallel --if-present run test:watch"
   },
