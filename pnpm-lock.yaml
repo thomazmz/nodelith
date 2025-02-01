@@ -8,83 +8,7 @@ importers:
 
   .: {}
 
-  examples/api:
-    dependencies:
-      '@nodelith/config':
-        specifier: workspace:*
-        version: link:../../packages/config
-      '@nodelith/container':
-        specifier: workspace:*
-        version: link:../../packages/container
-      '@nodelith/controller':
-        specifier: workspace:*
-        version: link:../../packages/controller
-      '@nodelith/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@nodelith/express':
-        specifier: workspace:*
-        version: link:../../packages/express
-      '@nodelith/http':
-        specifier: workspace:*
-        version: link:../../packages/http
-      '@nodelith/mongodb':
-        specifier: workspace:*
-        version: link:../../packages/mongodb
-      '@nodelith/utilities':
-        specifier: workspace:*
-        version: link:../../packages/utilities
-      express:
-        specifier: ^4.18.2
-        version: 4.21.1
-    devDependencies:
-      '@types/express':
-        specifier: ^4.17.21
-        version: 4.17.21
-      '@types/jest':
-        specifier: ^29.4.0
-        version: 29.5.14
-      '@types/node':
-        specifier: ^22.9.0
-        version: 22.9.0
-      rimraf:
-        specifier: ^5.0.1
-        version: 5.0.10
-      typescript:
-        specifier: ^5.6.3
-        version: 5.6.3
-
   packages/config:
-    devDependencies:
-      '@nodelith/core':
-        specifier: workspace:*
-        version: link:../core
-      '@nodelith/types':
-        specifier: workspace:*
-        version: link:../types
-      '@nodelith/utilities':
-        specifier: workspace:*
-        version: link:../utilities
-      '@types/jest':
-        specifier: ^29.4.0
-        version: 29.5.14
-      '@types/node':
-        specifier: ^22.9.0
-        version: 22.9.0
-      jest:
-        specifier: ^29.4.3
-        version: 29.7.0(@types/node@22.9.0)
-      rimraf:
-        specifier: ^5.0.1
-        version: 5.0.10
-      ts-jest:
-        specifier: ^29.0.5
-        version: 29.2.5(@babel/core@7.26.0)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.0))(jest@29.7.0(@types/node@22.9.0))(typescript@5.6.3)
-      typescript:
-        specifier: ^5.6.3
-        version: 5.6.3
-
-  packages/container:
     devDependencies:
       '@nodelith/core':
         specifier: workspace:*
@@ -173,9 +97,6 @@ importers:
 
   packages/express:
     devDependencies:
-      '@nodelith/container':
-        specifier: workspace:*
-        version: link:../container
       '@nodelith/controller':
         specifier: workspace:*
         version: link:../controller
@@ -185,6 +106,9 @@ importers:
       '@nodelith/http':
         specifier: workspace:*
         version: link:../http
+      '@nodelith/injection':
+        specifier: workspace:*
+        version: link:../injection
       '@nodelith/types':
         specifier: workspace:*
         version: link:../types
@@ -218,6 +142,36 @@ importers:
 
   packages/http:
     devDependencies:
+      '@types/jest':
+        specifier: ^29.4.0
+        version: 29.5.14
+      '@types/node':
+        specifier: ^22.9.0
+        version: 22.9.0
+      jest:
+        specifier: ^29.4.3
+        version: 29.7.0(@types/node@22.9.0)
+      rimraf:
+        specifier: ^5.0.1
+        version: 5.0.10
+      ts-jest:
+        specifier: ^29.0.5
+        version: 29.2.5(@babel/core@7.26.0)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.0))(jest@29.7.0(@types/node@22.9.0))(typescript@5.6.3)
+      typescript:
+        specifier: ^5.6.3
+        version: 5.6.3
+
+  packages/injection:
+    devDependencies:
+      '@nodelith/core':
+        specifier: workspace:*
+        version: link:../core
+      '@nodelith/types':
+        specifier: workspace:*
+        version: link:../types
+      '@nodelith/utilities':
+        specifier: workspace:*
+        version: link:../utilities
       '@types/jest':
         specifier: ^29.4.0
         version: 29.5.14
