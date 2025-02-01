@@ -21,7 +21,8 @@
     "access": "public"
   },
   "scripts": {
-    "test": "jest --passWithNoTests --config ./jest.json",
+    "test": "jest --pass-with-no-tests --config ./jest.json",
+    "test:coverage": "pnpm test -- --collect-coverage",
     "build": "rimraf ./dist/* && tsc",
     "build:watch": "rimraf ./dist/* && tsc --watch"
   },
