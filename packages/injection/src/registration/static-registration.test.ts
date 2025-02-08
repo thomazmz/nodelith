@@ -22,5 +22,4 @@ describe('StaticRegistration',  () => {
       expect(clone.token).toBe('token')
     })
   })
-  
 })

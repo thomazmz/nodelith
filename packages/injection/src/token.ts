@@ -1,1 +1,1 @@
-export type Token = string | symbol
+export type Token = symbol | string

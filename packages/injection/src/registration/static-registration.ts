@@ -1,9 +1,7 @@
-import { Bundle } from '../bundle';
-import { Mode } from '../mode';
+
+import { Registration } from '../registration';
 import { Access } from '../access';
-import { Lifetime } from '../lifetime';
-import { Registration } from 'registration/registration';
-import { Token } from 'token';
+import { Token } from '../token';
 
 export type StaticRegistrationOptions = {
   token?: Token | undefined

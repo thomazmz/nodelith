@@ -1,5 +1,2 @@
-export * from './constructor-registration'
-export * from './function-registration'
-export * from './factory-registration'
-export * from './static-registration'
 export * from './registration'
+export * from './factory-registration'

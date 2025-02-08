@@ -1,63 +1,59 @@
-import { Bundle } from "bundle";
-import { Lifetime } from "lifetime";
-import { Mode } from "mode";
-import { Registration } from "registration/registration";
-import { Token } from "token";
 import * as Types from '@nodelith/types'
-import * as Utilities from '@nodelith/utilities'
-import { Access } from "access";
 
-export type FunctionRegistrationOptions = {
-  token?: Token | undefined
-  bundle?: Bundle | undefined
-  mode?: Mode | undefined
-  access?: Access | undefined
-  lifetime?: Lifetime | undefined
+import { Token } from '../token';
+import { Bundle } from '../bundle';
+import { Access } from '../access';
+import { Lifetime } from '../lifetime';
+import { Registration } from './registration'
+
+export type FunctionRegistration<R extends object> = {
+  target: Types.Factory<R>
+  bundle?: Bundle | undefined;
+  token?: Token | undefined;
+  access?: Access | undefined;
+  lifetime?: Lifetime | undefined;
 }
 
-export class FunctionRegistration<R extends ReturnType<Types.Function>> implements Registration<R> {
-  public static create<R extends ReturnType<Types.Function>>(
-    options: FunctionRegistrationOptions & { function: Types.Function<R> }
-  ): FunctionRegistration<R> {
-    return new FunctionRegistration(options.function, options)
+export class FactoryRegistration<R extends object> implements Registration<R> {
+  public static create<R extends object>(options: FunctionRegistration<R>): FactoryRegistration<R> {
+    return new FactoryRegistration(options)
   }
 
   private readonly singleton: { resolution?: R } = { }
 
-  private readonly target: Types.Function<R>
+  private readonly target: Types.Factory<R>
 
   private readonly bundle: Bundle
-  
-  public readonly mode: Mode
 
-  public readonly access: Access
+  private readonly proxy: Bundle
 
   public readonly lifetime: Lifetime
+  
+  public readonly access: Access
 
-  public readonly token: Token
+  public token: Token
 
-  private constructor(
-    target: Types.Function<R>,
-    options?: FunctionRegistrationOptions
-  ) {
-    this.target = target
+  public constructor(options: FunctionRegistration<R>) {
     this.token = options?.token ?? Symbol()
     this.bundle = options?.bundle ?? {}
-    this.mode = options?.mode ?? 'spread'
-    this.access = options?.access ?? 'public' 
+    this.access = options?.access ?? 'public'
     this.lifetime = options?.lifetime ?? 'singleton'
+    this.target = options.target
+
+    this.proxy = new Proxy(this.bundle ?? {}, {
+      set: (_target: Bundle, token: Token) => {
+        throw new Error(`Could not set bundle key "${token.toString()}". Targets are not allowed to assign bundle values.`)
+      }
+    })
   }
 
   public clone(bundle?: Bundle): Registration<R> {
-    return new FunctionRegistration(this.target, {
-      lifetime: this.lifetime,
-      access: this.access,
+    return new FactoryRegistration<R>({
       token: this.token,
-      mode: this.mode,
-      bundle: {
-        ...bundle,
-        ...this.bundle,
-      },
+      target: this.target,
+      access: this.access,
+      lifetime: this.lifetime,
+      bundle,
     })
   }
 
@@ -66,25 +62,29 @@ export class FunctionRegistration<R extends ReturnType<Types.Function>> implemen
       return this.singleton.resolution
     }
 
-    const parameters = this.resolveTargetParameters({ ...bundle, ...this.bundle })
+    const resolutionBundle = this.createResolutionBundle(bundle)
 
     if(this.lifetime === 'singleton') {
-      return this.singleton.resolution = this.target(...parameters)
+      return this.singleton.resolution = this.target(resolutionBundle)
     }
 
-    return this.target(...parameters)
-  }
+    return this.target(resolutionBundle)
+  };
 
-  private resolveTargetParameters(bundle: Bundle): Array<unknown> {
-    if(this.mode === 'bundle') {
-      return [bundle]
-    }
-
-    const parameters = Utilities.FunctionUtils
-      .extractArguments(this.target)
-
-    return parameters.map(parameter => {
-      return bundle[parameter]
+  private createResolutionBundle(bundle: Bundle = {}): Bundle {
+    return new Proxy(this.proxy, {
+      get: (target, token) => {
+        if(token  === this.token) {
+          throw new Error(`Could not access bundle key "${token.toString()}". Target should access its own token.`)
+        }
+        if(token in this.bundle) {
+          return this.bundle[token]
+        }
+        if(token in bundle) {
+          return bundle[token]
+        }
+        return target[token]
+      } 
     })
   }
 }

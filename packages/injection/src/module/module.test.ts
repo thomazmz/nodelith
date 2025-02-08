@@ -1,260 +1,681 @@
-import * as Types from '@nodelith/types'
-
-import { Registration } from 'registration'
 import { Module } from './module'
-import { Bundle } from 'bundle'
 
 describe('Module', () => {
-  function createFunctionRegistration(token: string, target?: Function): Registration {
-    return {
-      token,
-      clone: () => createFunctionRegistration(token, target),
-      resolve: target ? (bundle) => target(bundle) : () => 'resolution',
-    }
-  }
-
-  describe('register', () => {
-    it('should throw an error when making a registration without target', () => {
+  describe('has', () => {
+    it('should return true when module contains public registration token', () => {
       const module = new Module()
-  
-      expect(() =>  {
-        module.register('someToken', Object.create(null))
-      }).toThrow('Could not register "someToken". Given options are missing a valid registration target.')
+      module.register('registration_0', {
+        access: 'public', 
+        factory: () => ({ value: 'registration_0' })
+      })
+      expect(module.has('registration_0')).toBe(true)
     })
-
-    it('should throw an error when factory registration target is not a function', () => {
+    it('should return true when module contains private registration token', () => {
       const module = new Module()
-  
-      expect(() =>  {
-        module.register('someToken', { factory: 'fakeFactory' as any as Types.Factory })
-      }).toThrow('Could not register "someToken". Provided factory should be of type "function".')
+      module.register('registration_0', {
+        access: 'public', 
+        factory: () => ({ value: 'registration_0' })
+      })
+      expect(module.has('registration_0')).toBe(true)
     })
-  
-    it('should throw an error when function registration target is not a function', () => {
+    it('should return false when module does not contain registration token', () => {
       const module = new Module()
-  
-      expect(() =>  {
-        module.register('someToken', { function: 'fakeFunction' as any as Types.Function })
-      }).toThrow('Could not register "someToken". Provided function should be of type "function".')
-    })
-  
-    it('should throw an error when constructor registration target is not a function', () => {
-      const module = new Module()
-  
-      expect(() =>  {
-        module.register('someToken', { constructor: 'fakeConstructor' as any as Types.Constructor })
-      }).toThrow('Could not register "someToken". Provided constructor should be of type "function".')
-    })
-
-    it('should throw an error when making a static registration into already used token', () => {
-      const module = new Module()
-      module.registerStatic('someToken', 'someString')
-  
-      expect(()  => {
-        module.register('someToken', { static: 'anotherString' })
-      }).toThrow('Could not complete static registration. Module already contain a registration under "someToken".')
-    })
-
-    it('should throw an error when making a function registration into already used token', () => {
-      const module = new Module()
-      module.registerFunction('someToken', () => { return 'someString' })
-
-      expect(()  => {
-        module.register('someToken', { function: () => { return 'anotherString' }})
-      }).toThrow('Could not complete function registration. Module already contain a registration under "someToken".')
-    })
-
-    it('should throw an error when making a factory registration into already used token', () => {
-      const module = new Module()
-      module.registerFactory('someToken', () => { return { someString: 'someString' }})
-  
-      expect(()  => {
-        module.register('someToken', {  factory: () => { return { anotherString: 'anotherString' }}})
-      }).toThrow('Could not complete factory registration. Module already contain a registration under "someToken".')
-    })
-
-    it('should throw an error when making a constructor registration into already used token', () => {
-      const module = new Module()
-      module.registerConstructor('someToken', class SomeClass {})
-  
-      expect(()  => {
-        module.register('someToken', {  constructor: class  AnotherClass { }})
-      }).toThrow('Could not complete constructor registration. Module already contain a registration under "someToken".')
-    })
-
-    it('should throw an error when making a static registration with invalid access option', () => {
-      const module = new Module()
-
-      expect(() => {
-        module.registerStatic('someToken', 'someString', { access: 'invalid' as any })
-      }).toThrow('Could not complete static registration. Invalid access option.')
-      
-  
-      expect(()  => {
-        module.register('someToken', { static: 'anotherString', access: 'invalid' as any })
-      }).toThrow('Could not complete static registration. Invalid access option.')
-    })
-
-    it('should throw an error when making a function registration with invalid access option', () => {
-      const module = new Module()
-
-      expect(() => {
-        module.registerFunction('someToken', () => { return 'someString' }, { access: 'invalid' as any })
-      }).toThrow('Could not complete function registration. Invalid access option.')
-
-      expect(()  => {
-        module.register('someToken', { function: () => { return 'anotherString' },  access: 'invalid' as any})
-      }).toThrow('Could not complete function registration. Invalid access option.')
-    })
-
-    it('should throw an error when making a factory registration with invalid access option', () => { 
-      const module = new Module()
-      
-      expect(() => {
-        module.registerFactory('someToken', () => { return { someString: 'someString' }}, { access: 'invalid' as any })
-      }).toThrow('Could not complete factory registration. Invalid access option.')
-  
-      expect(()  => {
-        module.register('someToken', {  factory: () => { return { anotherString: 'anotherString' }}, access: 'invalid' as any })
-      }).toThrow('Could not complete factory registration. Invalid access option.')
-    })
-
-    it('should throw an error when making a constructor registration with invalid access option', () => {
-      const module = new Module()
-      expect(() => {
-        module.registerConstructor('someToken', class SomeClass {}, { access: 'invalid' as any })
-      }).toThrow('Could not complete constructor registration. Invalid access option.')
-  
-      expect(()  => {
-        module.register('someToken', {  constructor: class  AnotherClass { }, access: 'invalid' as any })
-      }).toThrow('Could not complete constructor registration. Invalid access option.')
+      expect(module.has('registration_0')).toBe(false)
     })
   })
-  
-  describe('registerStatic', () => {
-    it('should throw an error when trying to making a static registration into already used token', () => {
+  describe('exposes', () => {
+    it('should return true when module contain public registration token', () => {
       const module = new Module()
-      module.registerStatic('someToken', 'someString')
-  
-      expect(()  => {
-        module.registerStatic('someToken', 'anotherString')
-      }).toThrow('Could not complete static registration. Module already contain a registration under "someToken".')
+      module.register('registration_0', {
+        access: 'public', 
+        factory: () => ({ value: 'registration_0' })
+      })
+      expect(module.exposes('registration_0')).toBe(true)
+    })
+    it('should return false when module contain private registration token', () => {
+      const module = new Module()
+      module.register('registration_0', {
+        access: 'private', 
+        factory: () => ({ value: 'registration_0' })
+      })
+      expect(module.exposes('registration_0')).toBe(false)
+    })
+    it('should return false when module does not contain registration token', () => {
+      const module = new Module()
+      expect(module.exposes('registration_0')).toBe(false)
     })
   })
+  describe('clone', () => {
+    it('should create new object reference', () => {
+      const module = new Module()
 
-  describe('registerFunction', () => {
-    it('should throw an error when trying to making a function registration into already used token', () => {
-      const module = new Module()
-      module.registerFunction('someToken', () => { return 'someString' })
-  
-      expect(()  => {
-        module.registerFunction('someToken', () => { return 'anotherString' })
-      }).toThrow('Could not complete function registration. Module already contain a registration under "someToken".')
-    })
-  })
+      module.register('registration_0', { factory: () => {
+        return { value: 'registration_0'}
+      }})
 
-  describe('registerFactory', () => {
-    it('should throw an error when trying to making a factory registration into already used token', () => {
-      const module = new Module()
-      module.registerFactory('someToken', () => { return { someString: 'someString' }})
-  
-      expect(()  => {
-        module.registerFactory('someToken', () => { return { anotherString: 'anotherString' }})
-      }).toThrow('Could not complete factory registration. Module already contain a registration under "someToken".')
+      const clone = module.clone()
+      expect(clone).not.toBe(module)
+    
+      const moduleResolution  = module.resolve('registration_0')
+      const cloneResolution = clone.resolve('registration_1')
+      expect(moduleResolution).not.toBe(cloneResolution)
     })
-  })
-  
-  describe('registerConstructor', () => {
-    it('should throw an error when trying to making a constructor registration into already used token', () => {
-      const module = new Module()
-      module.registerConstructor('someToken', class SomeClass {})
-  
-      expect(()  => {
-        module.registerConstructor('someToken', class AnotherClass {})
-      }).toThrow('Could not complete constructor registration. Module already contain a registration under "someToken".')
-    })
-  })
+    it('should have all downstream public registrations', () => {
+      const module_0 = new Module()
+      module_0.register('registration_0', { access: 'public', factory: () => ({ value: 'registration_0'}) })
 
+      const module_1 = new Module()
+      module_1.register('registration_1', { access: 'public', factory: () => ({ value: 'registration_1'}) })
+      module_1.useModule(module_0)
+
+      const module_2 = new Module()
+      module_2.register('registration_2', { access: 'public', factory: () => ({ value: 'registration_2'}) })
+      module_2.useModule(module_1)
+
+      const clone = module_2.clone()
+
+      expect(clone.has('registration_0')).toBe(true)
+      expect(clone.has('registration_1')).toBe(true)
+      expect(clone.has('registration_2')).toBe(true)
+    })
+    it('should have all downstream private registrations', () => {
+      const module_0 = new Module()
+      module_0.register('registration_0', { access: 'public', factory: () => ({ value: 'registration_0'}) })
+
+      const module_1 = new Module()
+      module_1.register('registration_1', { access: 'private', factory: () => ({ value: 'registration_1'}) })
+      module_1.useModule(module_0)
+
+      const module_2 = new Module()
+      module_2.register('registration_2', { access: 'private', factory: () => ({ value: 'registration_2'}) })
+      module_2.useModule(module_1)
+
+      const clone = module_2.clone()
+
+      expect(clone.has('registration_0')).toBe(true)
+      expect(clone.has('registration_1')).toBe(true)
+      expect(clone.has('registration_2')).toBe(true)
+    })
+    it('should expose all downstream public registrations', () => {
+      const module_0 = new Module()
+      module_0.register('registration_0', { access: 'public', factory: () => ({ value: 'registration_0'}) })
+
+      const module_1 = new Module()
+      module_1.register('registration_1', { access: 'public', factory: () => ({ value: 'registration_1'}) })
+      module_1.useModule(module_0)
+
+      const module_2 = new Module()
+      module_2.register('registration_2', { access: 'public', factory: () => ({ value: 'registration_2'}) })
+      module_2.useModule(module_1)
+
+      const clone = module_2.clone()
+
+      expect(clone.exposes('registration_0')).toBe(true)
+      expect(clone.exposes('registration_1')).toBe(true)
+      expect(clone.exposes('registration_2')).toBe(true)
+    })
+    it('should not expose downstream private registrations', () => {
+      const module_0 = new Module()
+      module_0.register('registration_0', { access: 'public', factory: () => ({ value: 'registration_0'}) })
+
+      const module_1 = new Module()
+      module_1.register('registration_1', { access: 'private', factory: () => ({ value: 'registration_1'}) })
+      module_1.useModule(module_0)
+
+      const module_2 = new Module()
+      module_2.register('registration_2', { access: 'private', factory: () => ({ value: 'registration_2'}) })
+      module_2.useModule(module_1)
+
+      const clone = module_2.clone()
+
+      expect(clone.exposes('registration_0')).toBe(true)
+      expect(clone.exposes('registration_1')).toBe(false)
+      expect(clone.exposes('registration_2')).toBe(false)
+    })
+  })
+  describe('resolve', () => {
+    it('should resolve registration value', () => {
+      const module = new Module()
+      module.register('registration', { factory: () => {
+        return { value: 'registration'}
+      }})
+      expect(module.resolve('registration')).toEqual({ value: 'registration' })
+    })
+    it('should return undefined for unregistered token', () => {
+      const container = new Module()
+      expect(container.resolve('registration')).toBe(undefined)
+    })
+    it('should resolve source modules public registrations', () => {
+      const targetModule = new Module()
+      targetModule.register('registration_0', { access: 'private', factory: () => {
+        return { value: 'registration_0' }
+      }})
+
+      const sourceModule_1 = new Module()
+      sourceModule_1.register('registration_1', { access: 'public',  factory: () => {
+        return { value: 'registration_1'}
+      }})
+
+      const sourceModule_2 = new Module()
+      sourceModule_2.register('registration_2', { access: 'public',  factory: () => {
+        return { value: 'registration_2'}
+      }})
+
+      targetModule.useModules(
+        sourceModule_1,
+        sourceModule_2,
+      )
+
+      expect(targetModule.resolve('registration_0')).toEqual(undefined)
+
+      expect(targetModule.resolve('registration_1')).toEqual({
+        value: 'registration_1'
+      })
+
+      expect(targetModule.resolve('registration_2')).toEqual({
+        value: 'registration_2'
+      })
+    })
+    it('should resolve token through target module public registration', () => {
+      const targetModule = new Module()
+      targetModule.register('token', { access: 'public', factory: () => {
+        return { value: 'registration_0' }
+      }})
+
+      const sourceModule_1 = new Module()
+      sourceModule_1.register('token', { access: 'public',  factory: () => {
+        return { value: 'registration_1'}
+      }})
+
+      const sourceModule_2 = new Module()
+      sourceModule_2.register('token', { access: 'public',  factory: () => {
+        return { value: 'registration_2'}
+      }})
+
+      targetModule.useModules(
+        sourceModule_1,
+        sourceModule_2,
+      )
+
+      targetModule.useModules(
+        sourceModule_1,
+        sourceModule_2,
+      )
+
+      expect(targetModule.resolve('token')).toEqual({
+        value: 'registration_0'
+      })
+    })
+    it('should resolve token through source module when token is private on the target', () => {
+      const targetModule = new Module()
+      targetModule.register('token', { access: 'private', factory: () => {
+        return { value: 'registration_0' }
+      }})
+
+      const sourceModule_1 = new Module()
+      sourceModule_1.register('token', { access: 'private',  factory: () => {
+        return { value: 'registration_1'}
+      }})
+
+      const sourceModule_2 = new Module()
+      sourceModule_2.register('token', { access: 'public',  factory: () => {
+        return { value: 'registration_2'}
+      }})
+
+      targetModule.useModules(
+        sourceModule_1,
+        sourceModule_2,
+      )
+
+      expect(targetModule.resolve('token')).toEqual({
+        value: 'registration_2'
+      })
+    })
+    it('should return undefined when attempting to resolve target module private registrations', () => {
+      const targetModule = new Module()
+      targetModule.register('toke', { access: 'private', factory: () => {
+        return { value: 'registration_0' }
+      }})
+
+      const sourceModule = new Module()
+      sourceModule.register('token', { access: 'private',  factory: () => {
+        return { value: 'registration_1'}
+      }})
+
+      targetModule.useModule(sourceModule)
+
+      expect(targetModule.resolve('token')).toEqual(undefined)
+    })
+    it('should return undefined when attempting to resolve source module private registrations', () => {
+      const targetModule = new Module()
+      targetModule.register('registration_0', { access: 'public', factory: () => {
+        return { value: 'registration_0' }
+      }})
+
+      const sourceModule = new Module()
+      sourceModule.register('registration_1', { access: 'private',  factory: () => {
+        return { value: 'registration_1'}
+      }})
+
+      targetModule.useModule(sourceModule)
+
+      expect(targetModule.resolve('registration_1')).toEqual(undefined)
+    })
+  })
   describe('useModule', () => {
-    it('should throw error when target module already has tokens injected by source module', () => {
+    it('should hold source module public registrations', () => {
       const targetModule = new Module()
-      targetModule.useRegistration(createFunctionRegistration('dependency', (dependencies: Bundle) => ({
-        has: (token: string) => Object.keys(dependencies).includes(token)
-      })))
+      targetModule.register('registration_0', { access: 'public', factory: () => {
+        return { value: 'registration_0'}
+      }})
 
       const sourceModule = new Module()
-      sourceModule.useRegistration(createFunctionRegistration('dependency', (dependencies: Bundle) => ({
-        has: (token: string) => Object.keys(dependencies).includes(token)
-      })))
-
-      expect(() => {
-        targetModule.useModule(sourceModule)
-      }).toThrow('Could not complete registration. Module already contain a registration under "dependency" token.')
-    })
-
-    it('should share dependencies between source module and target module', () => {
-      const targetModule = new Module()
-      const sourceModule = new Module()
-
-      targetModule.useRegistration(createFunctionRegistration('dependency_0', (dependencies: Bundle) => ({
-        has: (token: string) => Object.keys(dependencies).includes(token)
-      })))
-
-      sourceModule.useRegistration(createFunctionRegistration('dependency_1', (dependencies: Bundle) => ({
-        has: (token: string) => Object.keys(dependencies).includes(token)
-      })))
+      sourceModule.register('registration_1', { access: 'public', factory: () => {
+        return { value: 'registration_1'}
+      }})
 
       targetModule.useModule(sourceModule)
 
-      const targetModuleDependency_0 = targetModule.resolve('dependency_0')
-      const targetModuleDependency_1 = targetModule.resolve('dependency_1')
-
-      expect(targetModuleDependency_0?.has('dependency_0')).toBe(false)
-      expect(targetModuleDependency_0?.has('dependency_1')).toBe(true)
-
-      expect(targetModuleDependency_1?.has('dependency_1')).toBe(false)
-      expect(targetModuleDependency_1?.has('dependency_0')).toBe(true)
+      expect(targetModule.has('registration_0')).toBe(true)
+      expect(targetModule.has('registration_1')).toBe(true)
     })
-
-    it('should not share dependencies between target module and source module', () => {
+    it('should hold source module private registrations', () => {
       const targetModule = new Module()
+      targetModule.register('registration_0', { access: 'private', factory: () => {
+        return { value: 'registration_0' }
+      }})
+
       const sourceModule = new Module()
-
-      targetModule.useRegistration(createFunctionRegistration('dependency_0', (dependencies: Bundle) => ({
-        has: (token: string) => Object.keys(dependencies).includes(token)
-      })))
-
-      sourceModule.useRegistration(createFunctionRegistration('dependency_1', (dependencies: Bundle) => ({
-        has: (token: string) => Object.keys(dependencies).includes(token)
-      })))
+      sourceModule.register('registration_1', { access: 'private',  factory: () => {
+        return { value: 'registration_1'}
+      }})
 
       targetModule.useModule(sourceModule)
 
-      const sourceModuleDependency_0 = sourceModule.resolve('dependency_0')
-      const sourceModuleDependency_1 = sourceModule.resolve('dependency_1')
+      expect(targetModule.has('registration_0')).toBe(true)
+      expect(targetModule.has('registration_1')).toBe(true)
+    })
+    it('should expose source module public registrations', () => {
+      const targetModule = new Module()
+      targetModule.register('registration_0', { access: 'public', factory: () => {
+        return { value: 'registration_0'}
+      }})
 
-      expect(sourceModuleDependency_0).toBeUndefined()
+      const sourceModule = new Module()
+      sourceModule.register('registration_1', { access: 'public', factory: () => {
+        return { value: 'registration_1'}
+      }})
 
-      expect(sourceModuleDependency_1?.has('dependency_1')).toBe(false)
-      expect(sourceModuleDependency_1?.has('dependency_0')).toBe(false)
+      targetModule.useModule(sourceModule)
+
+      expect(targetModule.exposes('registration_0')).toBe(true)
+    })
+    it('should not expose source module private registrations', () => {
+      const targetModule = new Module()
+      targetModule.register('registration_0', { access: 'private', factory: () => {
+        return { value: 'registration_0' }
+      }})
+
+      const sourceModule = new Module()
+      sourceModule.register('registration_1', { access: 'public',  factory: () => {
+        return { value: 'registration_1'}
+      }})
+
+      targetModule.useModule(sourceModule)
+
+      expect(targetModule.exposes('registration_0')).toBe(false)
+    })
+    it('should resolve source module public registrations', () => {
+      const targetModule = new Module()
+      targetModule.register('registration_0', { access: 'public', factory: () => {
+        return { value: 'registration_0' }
+      }})
+
+      const sourceModule = new Module()
+      sourceModule.register('registration_1', { access: 'public',  factory: () => {
+        return { value: 'registration_1'}
+      }})
+
+      targetModule.useModule(sourceModule)
+
+      expect(targetModule.resolve('registration_1')).toEqual({
+        value: 'registration_1'
+      })
+    })
+    it('should resolve token through target module public registration', () => {
+      const targetModule = new Module()
+      targetModule.register('token', { access: 'public', factory: () => {
+        return { value: 'registration_0' }
+      }})
+
+      const sourceModule = new Module()
+      sourceModule.register('token', { access: 'public',  factory: () => {
+        return { value: 'registration_1'}
+      }})
+
+      targetModule.useModule(sourceModule)
+
+      expect(targetModule.resolve('token')).toEqual({
+        value: 'registration_0'
+      })
+    })
+    it('should resolve token through source target module public registration', () => {
+      const targetModule = new Module()
+      targetModule.register('token', { access: 'private', factory: () => {
+        return { value: 'registration_0' }
+      }})
+
+      const sourceModule = new Module()
+      sourceModule.register('token', { access: 'public',  factory: () => {
+        return { value: 'registration_1'}
+      }})
+
+      targetModule.useModule(sourceModule)
+
+      expect(targetModule.resolve('token')).toEqual({
+        value: 'registration_1'
+      })
     })
   })
-
-  describe('useRegistration', () => {
-    it('should throw error when target module already has tokens injected by source registration', () => {
+  describe.only('useModules', () => {
+    it('should hold source modules public registrations', () => {
       const targetModule = new Module()
+      targetModule.register('registration_0', { access: 'public', factory: () => {
+        return { value: 'registration_0'}
+      }})
 
-      targetModule.useRegistration(createFunctionRegistration('dependency', (dependencies: Bundle) => ({
-        has: (token: string) => Object.keys(dependencies).includes(token)
-      })))
+      const sourceModule_1 = new Module()
+      sourceModule_1.register('registration_1', { access: 'public', factory: () => {
+        return { value: 'registration_1'}
+      }})
 
-      const sourceRegistration = createFunctionRegistration('dependency', (dependencies: Bundle) => ({
-        has: (token: string) => Object.keys(dependencies).includes(token)
-      }))
+      const sourceModule_2 = new Module()
+      sourceModule_2.register('registration_2', { access: 'public', factory: () => {
+        return { value: 'registration_2'}
+      }})
 
-      expect(() => {
-        targetModule.useRegistration(sourceRegistration)
-      }).toThrow('Could not complete registration. Module already contain a registration under "dependency" token.')
+      targetModule.useModules(
+        sourceModule_1,
+        sourceModule_2,
+      )
+
+      expect(targetModule.has('registration_0')).toBe(true)
+      expect(targetModule.has('registration_1')).toBe(true)
+      expect(targetModule.has('registration_2')).toBe(true)
     })
+    it('should hold source modules private registrations', () => {
+      const targetModule = new Module()
+      targetModule.register('registration_0', { access: 'private', factory: () => {
+        return { value: 'registration_0' }
+      }})
+
+      const sourceModule_1 = new Module()
+      sourceModule_1.register('registration_1', { access: 'private', factory: () => {
+        return { value: 'registration_1'}
+      }})
+
+      const sourceModule_2 = new Module()
+      sourceModule_2.register('registration_2', { access: 'private', factory: () => {
+        return { value: 'registration_2'}
+      }})
+
+      targetModule.useModules(
+        sourceModule_1,
+        sourceModule_2,
+      )
+
+      expect(targetModule.has('registration_0')).toBe(true)
+      expect(targetModule.has('registration_1')).toBe(true)
+      expect(targetModule.has('registration_2')).toBe(true)
+    })
+    it('should expose source modules public registrations', () => {
+      const targetModule = new Module()
+      targetModule.register('registration_0', { access: 'private', factory: () => {
+        return { value: 'registration_0'}
+      }})
+
+      const sourceModule_1 = new Module()
+      sourceModule_1.register('registration_1', { access: 'public', factory: () => {
+        return { value: 'registration_1'}
+      }})
+
+      const sourceModule_2 = new Module()
+      sourceModule_2.register('registration_2', { access: 'public', factory: () => {
+        return { value: 'registration_2'}
+      }})
+
+      targetModule.useModules(
+        sourceModule_1,
+        sourceModule_2,
+      )
+
+      expect(targetModule.exposes('registration_0')).toBe(false)
+      expect(targetModule.exposes('registration_1')).toBe(true)
+      expect(targetModule.exposes('registration_2')).toBe(true)
+    })
+    it('should not expose source modules private registrations', () => {
+      const targetModule = new Module()
+      targetModule.register('registration_0', { access: 'public', factory: () => {
+        return { value: 'registration_0' }
+      }})
+
+      const sourceModule_1 = new Module()
+      sourceModule_1.register('registration_1', { access: 'private',  factory: () => {
+        return { value: 'registration_1'}
+      }})
+
+      const sourceModule_2 = new Module()
+      sourceModule_2.register('registration_2', { access: 'private',  factory: () => {
+        return { value: 'registration_2'}
+      }})
+
+      targetModule.useModules(
+        sourceModule_1,
+        sourceModule_2,
+      )
+
+      expect(targetModule.exposes('registration_0')).toBe(true)
+      expect(targetModule.exposes('registration_1')).toBe(false)
+      expect(targetModule.exposes('registration_2')).toBe(false)
+    })
+    it('should expose private registrations to downstream modules', () => {
+      const module_0 = new Module()
+      const module_1 = new Module()
+      const module_2 = new Module()
+
+      module_0.register('registration_0', { access: 'public', factory: (bundle) => {
+        return { 
+          value: 'registration_0',
+          registration_1: bundle.registration_1.value,
+          registration_2: bundle.registration_2.value,
+        }
+      }})
+
+      module_1.register('registration_1', { access: 'public', factory: (bundle) => {
+        return { 
+          value: 'registration_1',
+          registration_2: bundle.registration_2.value,
+        }
+      }})
+
+      module_2.register('registration_2', { access: 'private', factory: (bundle) => {
+        return {
+          value: 'registration_2',
+        }
+      }})
+
+      module_1.useModule(module_0)
+      module_2.useModule(module_1)
+
+      expect(module_2.resolve('registration_0')).toEqual({
+        value: 'registration_0',
+        registration_1: 'registration_1',
+        registration_2: 'registration_2',
+      })
+
+      expect(module_2.resolve('registration_1')).toEqual({
+        value: 'registration_1',
+        registration_2: 'registration_2',
+      })
+    })
+    it('should expose private registrations to downstream modules', () => {
+      const module_0 = new Module()
+      const module_1 = new Module()
+      const module_2 = new Module()
+
+      module_0.register('registration_0', { access: 'public', factory: (bundle) => {
+        return { 
+          value: 'registration_0',
+          registration_1: bundle.registration_1.value,
+          registration_2: bundle.registration_2.value,
+        }
+      }})
+
+      module_1.register('registration_1', { access: 'public', factory: (bundle) => {
+        return { 
+          value: 'registration_1',
+          registration_2: bundle.registration_2.value,
+        }
+      }})
+
+      module_2.register('registration_2', { access: 'private', factory: (bundle) => {
+        return {
+          value: 'registration_2',
+        }
+      }})
+
+      module_1.useModule(module_0)
+      module_2.useModule(module_1)
+
+      expect(module_2.resolve('registration_0')).toEqual({
+        value: 'registration_0',
+        registration_1: 'registration_1',
+        registration_2: 'registration_2',
+      })
+
+      expect(module_2.resolve('registration_1')).toEqual({
+        value: 'registration_1',
+        registration_2: 'registration_2',
+      })
+    })
+    it('should expose public registrations to downstream modules', () => {
+      const module_0 = new Module()
+      const module_1 = new Module()
+      const module_2 = new Module()
+
+      module_0.register('registration_0', { access: 'public', factory: (bundle) => {
+        return { 
+          value: 'registration_0',
+          registration_1: bundle.registration_1.value,
+          registration_2: bundle.registration_2.value,
+        }
+      }})
+
+      module_1.register('registration_1', { access: 'public', factory: (bundle) => {
+        return { 
+          value: 'registration_1',
+          registration_2: bundle.registration_2.value,
+        }
+      }})
+
+      module_2.register('registration_2', { access: 'public', factory: (bundle) => {
+        return {
+          value: 'registration_2',
+        }
+      }})
+
+      module_1.useModule(module_0)
+      module_2.useModule(module_1)
+
+      expect(module_2.resolve('registration_0')).toEqual({
+        value: 'registration_0',
+        registration_1: 'registration_1',
+        registration_2: 'registration_2',
+      })
+
+      expect(module_2.resolve('registration_1')).toEqual({
+        value: 'registration_1',
+        registration_2: 'registration_2',
+      })
+
+      expect(module_2.resolve('registration_2')).toEqual({
+        value: 'registration_2',
+      })
+    })
+    xit('should expose public registrations to upstream modules', () => {
+      const module_0 = new Module()
+      const module_1 = new Module()
+      const module_2 = new Module()
+
+      module_0.register('registration_0', { access: 'public', factory: (bundle) => {
+        return { 
+          value: 'registration_0',
+          registration_1: bundle.registration_1.value,
+        }
+      }})
+
+      module_1.register('registration_1', { access: 'public', factory: (bundle) => {
+        return { 
+          value: 'registration_1',
+          registration_0: bundle.registration_0.value,
+          // registration_2: bundle.registration_2.value,
+        }
+      }})
+
+      module_2.register('registration_2', { access: 'public', factory: (bundle) => {
+        return { 
+          value: 'registration_2',
+          registration_0: bundle.registration_0.value,
+          registration_1: bundle.registration_1.value,
+        }
+      }})
+
+      module_0.useModule(module_1)
+      module_0.useModule(module_2)
+
+      console.log(module_0.resolve('registration_1'))
+      // console.log(module_0.resolve('registration_2'))
+
+    })
+    it.only('should expose public registrations to downstream modules', () => {
+      const module_0 = new Module()
+      const module_1 = new Module()
+      // const module_2 = new Module()
+
+      module_0.register('registration_0', { access: 'public', factory: (bundle) => {
+        return { 
+          value: 'registration_0',
+          registration_1a: bundle.registration_1.value,
+        }
+      }})
+
+      module_0.register('registration_1', { access: 'public', factory: (bundle) => {
+        return { 
+          value: 'registration_1a',
+        }
+      }})
+
+      module_1.register('registration_1', { access: 'public', factory: (bundle) => {
+        return {
+          value: 'registration_1b',
+        }
+      }})
+
+      module_1.useModule(module_0)
+
+      expect(module_1.resolve('registration_0')).toEqual({
+        value: 'registration_0',
+        registration_1a: 'registration_1a',
+      })
+
+      expect(module_1.resolve('registration_1')).toEqual({
+        value: 'registration_1b',
+      })
+
+      // expect(module_1.resolve('registration_2')).toEqual({
+      //   value: 'registration_2',
+      // })
+    })
+    it.todo('should not expose private registrations to upstream modules')
   })
 })

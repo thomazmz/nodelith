@@ -1,66 +1,60 @@
 
 import * as Types from '@nodelith/types'
-import * as Utilities from '@nodelith/utilities'
 
-import { Mode } from "../mode";
-import { Token } from "../token";
-import { Bundle } from "../bundle";
-import { Access } from "../access";
-import { Lifetime } from "../lifetime";
+import { Token } from '../token';
+import { Bundle } from '../bundle';
+import { Access } from '../access';
+import { Lifetime } from '../lifetime';
+import { Registration } from './registration'
 
-import { Registration } from "./registration";
-
-export type ConstructorRegistrationOptions = {
-  token?: Token | undefined
-  bundle?: Bundle | undefined
-  mode?: Mode | undefined
-  access?: Access | undefined
-  lifetime?: Lifetime | undefined
+export type ConstructorRegistrationOptions<R extends object> = {
+  target: Types.Constructor<R>
+  bundle?: Bundle | undefined;
+  token?: Token | undefined;
+  access?: Access | undefined;
+  lifetime?: Lifetime | undefined;
 }
 
-export class ConstructorRegistration<R extends InstanceType<Types.Constructor>> implements Registration<R> {
-  public static create<R extends InstanceType<Types.Constructor>>(
-    options: ConstructorRegistrationOptions & { constructor: Types.Constructor<R> }
-  ): ConstructorRegistration<R> {
-    return new ConstructorRegistration(options.constructor, options)
+export class ConstructorRegistration<R extends object> implements Registration<R> {
+  public static create<R extends object>(options: ConstructorRegistrationOptions<R>): ConstructorRegistration<R> {
+    return new ConstructorRegistration(options)
   }
 
   private readonly singleton: { resolution?: R } = { }
-  
+
   private readonly target: Types.Constructor<R>
 
   private readonly bundle: Bundle
-  
-  public readonly mode: Mode
 
-  public readonly access: Access
+  private readonly proxy: Bundle
 
   public readonly lifetime: Lifetime
+  
+  public readonly access: Access
 
-  public readonly token: Token
+  public token: Token
 
-  private constructor(
-    target: Types.Constructor<R>,
-    options?: ConstructorRegistrationOptions
-  ) {
-    this.target = target
+  public constructor(options: ConstructorRegistrationOptions<R>) {
     this.token = options?.token ?? Symbol()
     this.bundle = options?.bundle ?? {}
-    this.mode = options?.mode ?? 'spread'
-    this.access = options?.access ?? 'public' 
+    this.access = options?.access ?? 'public'
     this.lifetime = options?.lifetime ?? 'singleton'
+    this.target = options.target
+
+    this.proxy = new Proxy(this.bundle ?? {}, {
+      set: (_target: Bundle, token: Token) => {
+        throw new Error(`Could not set bundle key "${token.toString()}". Targets are not allowed to assign bundle values.`)
+      }
+    })
   }
 
   public clone(bundle?: Bundle): Registration<R> {
-    return new ConstructorRegistration(this.target, {
-      lifetime: this.lifetime,
-      access: this.access,
+    return new ConstructorRegistration<R>({
       token: this.token,
-      mode: this.mode,
-      bundle: {
-        ...bundle,
-        ...this.bundle,
-      },
+      bundle: bundle,
+      target: this.target,
+      access: this.access,
+      lifetime: this.lifetime,
     })
   }
 
@@ -69,26 +63,29 @@ export class ConstructorRegistration<R extends InstanceType<Types.Constructor>> 
       return this.singleton.resolution
     }
 
-    const parameters = this.resolveTargetParameters({ ...bundle, ...this.bundle })
+    const resolutionBundle = this.createResolutionBundle(bundle)
 
     if(this.lifetime === 'singleton') {
-      return this.singleton.resolution = new this.target(...parameters)
+      return this.singleton.resolution = new this.target(resolutionBundle)
     }
 
-    return new this.target(...parameters)
-  }
+    return new this.target(resolutionBundle)
+  };
 
-  private resolveTargetParameters(bundle: Bundle): Array<unknown> {
-    if(this.mode === 'bundle') {
-      return [bundle]
-    }
-
-    const constructor = this.target.prototype.constructor ?? this.target
-          
-    const parameters = Utilities.FunctionUtils.extractArguments(constructor)
-
-    return parameters.map(parameter => {
-      return bundle[parameter]
+  private createResolutionBundle(bundle: Bundle = {}): Bundle {
+    return new Proxy(this.proxy, {
+      get: (target, token) => {
+        if(token  === this.token) {
+          throw new Error(`Could not access bundle key "${token.toString()}". Target should access its own token.`)
+        }
+        if(token in this.bundle) {
+          return this.bundle[token]
+        }
+        if(token in bundle) {
+          return bundle[token]
+        }
+        return target[token]
+      } 
     })
   }
 }

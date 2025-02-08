@@ -1,100 +1,133 @@
-import { Token } from '../token'
-import { Bundle } from '../bundle'
-import { Registration } from '../registration'
+import { Registration } from '../registration';
+import { Bundle } from '../bundle';
+import { Token } from '../token';
+import crypto from 'crypto';
+
+export type ContainerOptions = {
+  name?: string
+  bundle?: Bundle | undefined
+}
 
 export class Container {
 
-  private resolving = new Map()
+  private static createIdentifier = () => crypto.randomBytes(2).toString('hex').slice(0, 4) 
 
-  private readonly _bundle: Bundle = {}
+  private readonly registrations: Map<Token, Registration> = new Map()
+
+  private readonly resolving: Set<Token> = new Set()
   
-  private readonly _registrations: Map<Token, Registration> = new Map()
+  private readonly context: Bundle = {}
+
+  public readonly bundle: Bundle
+
+  public readonly symbol: Symbol
   
-  public readonly bundle: Bundle;
+  public readonly label: string
 
-  public get registrations(): Registration[] {
-    return Array.from(this._registrations.values())
-  }
+  public readonly name: string
 
-  public constructor() {
-    this.bundle = new Proxy(this._bundle, {
+  public readonly id = Container.createIdentifier()
+
+  public constructor(private readonly options: ContainerOptions = {}) {
+    
+    this.name = options.name ?? Container.createIdentifier()
+
+    this.label = `${this.id}:${this.name}`
+
+    this.symbol = Symbol(this.label)
+
+    this.bundle = new Proxy(options?.bundle ?? {}, {
       set: (_target: Bundle, token: Token) => {
-        throw new Error(`Could not set registration "${token.toString()}". Registration should not be done through bundle.`)
+        throw new Error(`Could not set bundle key "${token.toString()}". Targets are not allowed to assign bundle values.`)
+      },
+
+      get: (target, token) => {
+        return token in this.context
+          ? this.context[token] 
+          : target[token]
+      },
+
+      has: (target, token) => {
+        return false
+          || Reflect.ownKeys(this.context).includes(token)
+          || Reflect.ownKeys(target).includes(token)
+      },
+
+      ownKeys: (target) => {
+        return [
+          ...new Set([
+            ...Reflect.ownKeys(this.context),
+            ...Reflect.ownKeys(target)
+          ])
+        ];
+      },
+
+      getOwnPropertyDescriptor: (target, token) => {
+        return token in this.context 
+          ? Reflect.getOwnPropertyDescriptor(this.context, token)
+          : Reflect.getOwnPropertyDescriptor(target, token)
       },
     })
   }
 
-  public get(token: Token): Registration | undefined {
-    return this._registrations.get(token)
+  public exposes(token: Token): boolean {
+    return this.registrations.get(token)?.access === 'public'
   }
 
   public has(token: Token): boolean  {
-    return this._registrations.has(token)
+    return this.registrations.has(token)
   }
 
-  public push(...registrations: Registration[]): Registration[] {
-    return registrations.map(registration => {
+  public get(token: Token): Registration | undefined {
+    return this.registrations.get(token)
+  }
+
+  public clone(bundle?: Bundle): Container {
+    const containerClone = new Container({ ...this.options, bundle })
+    const registrationValues = [...this.registrations.values()]
+    registrationValues.filter(registration => registration.access === 'public')
+    containerClone.push(...this.registrations.values())
+    return containerClone
+  }
+
+  public push(...externalRegistration: Registration[]): Registration[] {
+    return externalRegistration.map(registration => {
       return this.register(registration)
     })
   }
 
-  public register(registration: Registration): Registration {
-    const scopedRegistration = registration.clone(
-      this.createResolutionProxy(registration.token)
-    )
-
-    if(scopedRegistration.token !== registration.token) {
-      throw new Error(`Could not register "${registration.token.toString()}". Registration clone has a different token "${scopedRegistration.token.toString()}".`)
-    }
-
-    this._registrations.set(scopedRegistration.token, scopedRegistration);
-
-    Object.defineProperty(this._bundle, scopedRegistration.token, {
-      get: () => this.resolve(scopedRegistration.token),
+  public register(externalRegistration: Registration): Registration {
+    const internalRegistration = externalRegistration.clone(this.bundle)
+    this.registrations.set(internalRegistration.token, internalRegistration)
+    Object.defineProperty(this.context, internalRegistration.token, {
+      get: () => this.resolve(internalRegistration.token),
       configurable: true,
       enumerable: true,
     });
-
-    return scopedRegistration
+    return internalRegistration
   }
 
-  public resolve<R>(token: Token): R | undefined {
+  public resolve(token: Token, bundle?: Bundle) {
+    if (!this.has(token)) {
+      return
+    }
+
     if (this.resolving.has(token)) {
-      return
+      return {}
     }
 
-    if (!this._registrations.has(token)) {
-      return
-    }
-
-    this.resolving.set(token, token);
-
-    const registration = this._registrations.get(token);
+    const registration = this.get(token);
 
     if (!registration) {
       throw new Error(`Token '${token.toString()}' is not a valid registration.`);
     }
 
-    const resolution = registration.resolve(
-      this.createResolutionProxy(token)
-    )
+    this.resolving.add(token)
+
+    const resolution = registration.resolve(bundle)
 
     this.resolving.delete(token);
 
     return resolution;
-  }
-
-  private createResolutionProxy(resolutionToken: Token): Bundle {
-    return new Proxy(this.bundle, {
-      ownKeys: (target) => {
-        return Reflect.ownKeys(target).filter(key => key !== resolutionToken);
-      },
-      getOwnPropertyDescriptor: (target, token) => {
-        return token !== resolutionToken ? Reflect.getOwnPropertyDescriptor(target, token) : undefined
-      },
-      get: (target, token, receiver) => {
-        return token !== resolutionToken ? Reflect.get(target, token, receiver) : undefined
-      },
-    })
   }
 }
