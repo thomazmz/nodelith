@@ -1,6 +1,13 @@
 {
   "typescript.updateImportsOnFileMove.enabled": "never",
   "javascript.updateImportsOnFileMove.enabled": "never",
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.coverage": true,
+    "**/.dist": true,
+    "**/.git": true,
+    "**/.tmp": true,
+  },
   "files.exclude": {
     "**/node_modules": true,
     "**/dist": true
