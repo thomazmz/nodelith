@@ -5,7 +5,7 @@
       "name": "Debug Current Test File",
       "type": "node",
       "request": "launch",
-      "console": "internalConsole",
+      "console": "integratedTerminal",
       "cwd": "${fileDirname}",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [
@@ -22,7 +22,7 @@
       "name": "Debug Selected Test Case",
       "type": "node",
       "request": "launch",
-      "console": "internalConsole",
+      "console": "integratedTerminal",
       "cwd": "${fileDirname}",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [
