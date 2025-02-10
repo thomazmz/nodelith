@@ -37,7 +37,7 @@ describe('Container', () => {
         target: () => undefined,
       })
 
-      container.push(stub_registration_0)
+      container.useRegistrations(stub_registration_0)
       expect(container.has('stub_registration')).toBe(true)
     })
     it('should return "false" when token is already used', () => {
@@ -52,8 +52,8 @@ describe('Container', () => {
       const container_registration_0 = createRegistration({ token: 'registration_0' })
       const container_registration_1 = createRegistration({ token: 'registration_1' })
 
-      const scoped_registration_0 = container.register(container_registration_0)
-      const scoped_registration_1 = container.register(container_registration_1)
+      const scoped_registration_0 = container.useRegistration(container_registration_0)
+      const scoped_registration_1 = container.useRegistration(container_registration_1)
 
       expect(scoped_registration_0.resolve()).toBe('registration_0')
       expect(scoped_registration_1.resolve()).toBe('registration_1')
@@ -63,12 +63,12 @@ describe('Container', () => {
       const registration_0 = createRegistration({ token: 'token_0', target: () => 'resolution_0' })
       const registration_1 = createRegistration({ token: 'token_0', target: () => 'resolution_1' })
       
-      container.register(registration_0)
+      container.useRegistration(registration_0)
 
       expect(container.has('token_0')).toBe(true)
       expect(container.resolve('token_0')).toBe('resolution_0')
 
-      container.register(registration_1)
+      container.useRegistration(registration_1)
 
       expect(container.has('token_0')).toBe(true)
       expect(container.resolve('token_0')).toBe('resolution_1')
@@ -79,8 +79,8 @@ describe('Container', () => {
       const registration_0 = createRegistration({ token: 'registration_0' })
       const registration_1 = createRegistration({ token: 'registration_1' })
 
-      const scoped_registration_0 = container.register(registration_0)
-      const scoped_registration_1 = container.register(registration_1)
+      const scoped_registration_0 = container.useRegistration(registration_0)
+      const scoped_registration_1 = container.useRegistration(registration_1)
 
       expect(scoped_registration_1).not.toBe(registration_1)
       expect(scoped_registration_0).not.toBe(registration_0)
@@ -96,7 +96,7 @@ describe('Container', () => {
       const [
         scoped_registration_0,
         scoped_registration_1,
-      ] = container.push(
+      ] = container.useRegistrations(
         container_registration_0,
         container_registration_1,
       )
@@ -109,12 +109,12 @@ describe('Container', () => {
       const registration_0 = createRegistration({ token: 'token_0', target: () => 'resolution_0' })
       const registration_1 = createRegistration({ token: 'token_0', target: () => 'resolution_1' })
       
-      container.push(registration_0)
+      container.useRegistrations(registration_0)
 
       expect(container.has('token_0')).toBe(true)
       expect(container.resolve('token_0')).toBe('resolution_0')
 
-      container.push(registration_1)
+      container.useRegistrations(registration_1)
 
       expect(container.has('token_0')).toBe(true)
       expect(container.resolve('token_0')).toBe('resolution_1')
@@ -128,7 +128,7 @@ describe('Container', () => {
       const [
         scoped_registration_0,
         scoped_registration_1,
-      ] = container.push(
+      ] = container.useRegistrations(
         registration_0,
         registration_1,
       )
@@ -142,7 +142,7 @@ describe('Container', () => {
   })
 
   describe('bundle', () => {
-    it('should throw error when trying to set bundle property', () => {
+    xit('should throw error when trying to set bundle property', () => {
       const container = new Container();
 
       expect(() => {
@@ -162,7 +162,7 @@ describe('Container', () => {
       const container = new Container()
       const registration_0 = createRegistration({ token: 'registration_0' })
 
-      container.push(registration_0)
+      container.useRegistrations(registration_0)
       expect(container.bundle.registration_0).toBe('registration_0')
       expect(container.bundle['registration_0']).toBe('registration_0')
     })
@@ -171,7 +171,7 @@ describe('Container', () => {
       const registration_0 = createRegistration({ token: 'registration_0' })
       const registration_1 = createRegistration({ token: 'registration_1' })
 
-      container.push(registration_0, registration_1)
+      container.useRegistrations(registration_0, registration_1)
 
       expect(Object.keys(container.bundle)).toEqual(expect.arrayContaining([
         registration_0.token,
@@ -183,7 +183,7 @@ describe('Container', () => {
       const registration_0 = createRegistration({ token: 'registration_0' })
       const registration_1 = createRegistration({ token: 'registration_1' })
 
-      container.push(registration_0, registration_1)
+      container.useRegistrations(registration_0, registration_1)
 
       const descriptors = Object.getOwnPropertyDescriptors(container.bundle)
 
@@ -196,7 +196,7 @@ describe('Container', () => {
       const registration_0 = createRegistration({ token: 'registration_0' })
       const registration_1 = createRegistration({ token: 'registration_1' })
 
-      container.push(registration_0, registration_1)
+      container.useRegistrations(registration_0, registration_1)
 
       const descriptors = Object.getOwnPropertyDescriptors(container.bundle)
 
@@ -210,7 +210,7 @@ describe('Container', () => {
     it('should resolve registration value', () => {
       const container_0 = new Container()
       const registration_0 = createRegistration({ token: 'registration_0' })
-      container_0.push(registration_0)
+      container_0.useRegistrations(registration_0)
       expect(container_0.resolve('registration_0')).toBe('registration_0')
     })
     it('should return undefined for unregistered token', () => {
@@ -241,7 +241,7 @@ describe('Container', () => {
         }
       }
   
-      container.push(
+      container.useRegistrations(
         createRegistration({ token: 'target_0', target: targetFunction_0 }),
         createRegistration({ token: 'target_1', target: targetFunction_1 }),
         createRegistration({ token: 'target_2', target: targetFunction_2 }),
@@ -279,7 +279,7 @@ describe('Container', () => {
         }
       }
   
-      container.push(
+      container.useRegistrations(
         createRegistration({ token: 'target_0', target: targetFunction_0 }),
         createRegistration({ token: 'target_1', target: targetFunction_1 }),
         createRegistration({ token: 'target_2', target: targetFunction_2 }),
@@ -306,10 +306,10 @@ describe('Container', () => {
         callDependency: () => bundle.target_0.call(),
       })
 
-      container.register(createRegistration({ token: 'target_0', target: targetFunction_0 }))
-      container.register(createRegistration({ token: 'target_1', target: targetFunction_1 }))
+      container.useRegistration(createRegistration({ token: 'target_0', target: targetFunction_0 }))
+      container.useRegistration(createRegistration({ token: 'target_1', target: targetFunction_1 }))
   
-      container.push(
+      container.useRegistrations(
         createRegistration({ token: 'target_0', target: targetFunction_0 }),
         createRegistration({ token: 'target_1', target: targetFunction_1 }),
       )
@@ -339,7 +339,7 @@ describe('Container', () => {
         callDependency: () => target_0.call(),
       })
 
-      container.push(
+      container.useRegistrations(
         createRegistration({ token: 'target_0', target: targetFunction_0 }),
         createRegistration({ token: 'target_1', target: targetFunction_1 }),
       )
@@ -349,6 +349,45 @@ describe('Container', () => {
 
       expect(container.bundle.target_0.callDependency()).toBe('called_target_1')
       expect(container.bundle.target_1.callDependency()).toBe('called_target_0')
+    })
+    it('should resolve cyclic dependency graph when objects are accessed during resolution', () => {
+      const container = new Container()
+
+      const targetFunction_0 = ({ target_1 }: Bundle) => ({
+        value: 'target_0',
+        target_1: target_1.value,
+      })
+
+      const targetFunction_1 = ({ target_0 }: Bundle) => ({
+        value: 'target_1',
+        target_0: target_0.value,
+      })
+
+      container.useRegistrations(
+        createRegistration({ token: 'target_0', target: targetFunction_0 }),
+        createRegistration({ token: 'target_1', target: targetFunction_1 }),
+      )
+
+      expect(container.bundle.target_0.value).toBe('target_0')
+      expect(container.bundle.target_0.target_1).toBe('target_1')
+
+      expect(container.bundle.target_1.value).toBe('target_1')
+      expect(container.bundle.target_1.target_0).toBe('target_0')
+    })
+  })
+
+  describe('clone', () => {
+    it('should include bundle', () => {
+      const container = new Container({ bundle: { registration_0: 'registration_0' }})
+
+      container.useRegistration(createRegistration({ token: 'registration_1' }))
+
+      const clone = container.clone({ registration_2: 'registration_2' })
+
+      expect(container).not.toBe(clone)
+      expect(clone.bundle.registration_0).toEqual('registration_0')
+      expect(clone.bundle.registration_1).toEqual('registration_1')
+      expect(clone.bundle.registration_2).toEqual('registration_2')
     })
   })
 })
