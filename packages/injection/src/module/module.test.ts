@@ -136,7 +136,7 @@ describe('Module', () => {
     it('should expose child public and external registrations to parent module', () => {
       const module_a = createTestModule('a')
       const module_b = createTestModule('b')
-      module_b.useModule(module_a)
+      module_b.extend(module_a)
   
       module_b.register('bundles', {
         'access': 'public',
@@ -173,7 +173,7 @@ describe('Module', () => {
     it('should expose parent public and internal registrations to child module', ()  => {
       const module_a = createTestModule('a')
       const module_b = createTestModule('b')
-      module_b.useModule(module_a)
+      module_b.extend(module_a)
   
       module_b.register('bundles', {
         'access': 'public',
@@ -210,7 +210,7 @@ describe('Module', () => {
     it('should not expose child private and internal registrations to parent module', () => {
       const module_a = createTestModule('a')
       const module_b = createTestModule('b')
-      module_b.useModule(module_a)
+      module_b.extend(module_a)
   
       module_b.register('bundles', {
         'access': 'public',
@@ -247,7 +247,7 @@ describe('Module', () => {
     it('should not expose parent private and external registrations to child module', ()  => {
       const module_a = createTestModule('a')
       const module_b = createTestModule('b')
-      module_b.useModule(module_a)
+      module_b.extend(module_a)
   
       module_b.register('bundles', {
         'access': 'public',
@@ -285,7 +285,7 @@ describe('Module', () => {
       const module_a = createTestModule('a')
       const module_b = createTestModule('b')
   
-      module_b.useModule(module_a)
+      module_b.extend(module_a)
   
       expect(module_b.exposes('publicRegistration_a')).toBe(false)
       expect(module_b.exposes('privateRegistration_a')).toBe(false)
@@ -336,7 +336,7 @@ describe('Module', () => {
         })
       })
 
-      module_b.useModule(module_a)
+      module_b.extend(module_a)
 
       const { bundle_a,  bundle_b } = module_b.resolve('bundles')
 

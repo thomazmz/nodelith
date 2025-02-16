@@ -32,18 +32,53 @@ export class Module {
 
   public clone(bundle?: Bundle): Module {
     const moduleClone = new Module({ container: this.container.clone(bundle) })
-    moduleClone.useModules(...this.modules)
+    moduleClone.extend(...this.modules)
     return moduleClone
   }
 
-  public useModules(...externalModules: Module[]): void {
-    externalModules.forEach(externalModule => this.useModule(externalModule))
+  public extend<R>(modules: Module): Module
+
+  public extend(...modules: Module[]): Module[]
+
+  public extend(...modules: Module[]): Module | Module[] {
+    if(modules.length > 1)  {
+      return modules.map(externalRegistration => {
+        return this.extend(externalRegistration)
+      })
+    }
+
+    if(!modules[0]) {
+      return []
+    }
+
+    const module = modules[0].clone(this.downstreamBundle)
+    this.useBundle(module.upstreamBundle)
+    this.modules.push(module)
+    return module
   }
 
-  public useModule(externalModule: Module): void {
-    const childModule = externalModule.clone(this.downstreamBundle)
-    this.useBundle(childModule.upstreamBundle)
-    this.modules.push(childModule)
+  public register<R extends ReturnType<Types.Factory>>(
+    token: Token,
+    options: Omit<FactoryRegistrationOptions<R>, 'token' | 'target'> & { factory: Types.Factory }
+  ): Registration<R> {
+    const registration = this.container.register<R>(
+      FactoryRegistration.create({
+        lifetime: options?.lifetime,
+        target: options?.factory,
+        access: options?.access,
+        token,
+      })
+    )
+
+    this.useRegistration(registration)
+ 
+    return registration
+  }
+
+  public resolve(token: Token) {
+    return this.exposes(token) 
+      ? this.container.resolve(token)
+      : undefined
   }
 
   public useBundle(bundle: Bundle): void {
@@ -73,29 +108,5 @@ export class Module {
     if(!(token in this.downstreamBundle) && ['internal', 'public'].includes(access)) {
       Object.defineProperty(this.downstreamBundle, token, registrationDescriptor)
     }
-  }
-
-  public register<R extends ReturnType<Types.Factory>>(
-    token: Token,
-    options: Omit<FactoryRegistrationOptions<R>, 'token' | 'target'> & { factory: Types.Factory }
-  ): Registration<R> {
-    const registration = this.container.register<R>(
-      FactoryRegistration.create({
-        lifetime: options?.lifetime,
-        target: options?.factory,
-        access: options?.access,
-        token,
-      })
-    )
-
-    this.useRegistration(registration)
- 
-    return registration
-  }
-
-  public resolve(token: Token) {
-    return this.exposes(token) 
-      ? this.container.resolve(token)
-      : undefined
   }
 }
