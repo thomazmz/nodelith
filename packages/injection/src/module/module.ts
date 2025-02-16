@@ -19,9 +19,9 @@ export class Module {
 
   private readonly modules: Module[] = []
 
-  public readonly container: Container
+  private readonly container: Container
 
-  constructor(options?: ModuleOptions)  {
+  public constructor(options?: ModuleOptions)  {
     this.container = options?.container ?? new Container()
     this.useRegistrations(...this.container.registrations)
   }
@@ -74,7 +74,7 @@ export class Module {
       Object.defineProperty(this.downstreamBundle, token, registrationDescriptor)
     }
   }
-  
+
   public register<R extends ReturnType<Types.Factory>>(
     token: Token,
     options: Omit<FactoryRegistrationOptions<R>, 'token' | 'target'> & { factory: Types.Factory }
