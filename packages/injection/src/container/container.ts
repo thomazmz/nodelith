@@ -39,7 +39,9 @@ export class Container {
 
   public register(...registrations: Registration[]): Registration | Registration[] {
     if(registrations.length > 1)  {
-      return registrations.map(externalRegistration => this.register(externalRegistration))
+      return registrations.map(externalRegistration => {
+        return this.register(externalRegistration)
+      })
     }
 
     if(!registrations[0]) {
