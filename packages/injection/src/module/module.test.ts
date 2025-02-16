@@ -1,681 +1,379 @@
+import { Bundle } from '../bundle'
 import { Module } from './module'
 
 describe('Module', () => {
-  describe('has', () => {
-    it('should return true when module contains public registration token', () => {
-      const module = new Module()
-      module.register('registration_0', {
-        access: 'public', 
-        factory: () => ({ value: 'registration_0' })
-      })
-      expect(module.has('registration_0')).toBe(true)
-    })
-    it('should return true when module contains private registration token', () => {
-      const module = new Module()
-      module.register('registration_0', {
-        access: 'public', 
-        factory: () => ({ value: 'registration_0' })
-      })
-      expect(module.has('registration_0')).toBe(true)
-    })
-    it('should return false when module does not contain registration token', () => {
-      const module = new Module()
-      expect(module.has('registration_0')).toBe(false)
-    })
-  })
-  describe('exposes', () => {
-    it('should return true when module contain public registration token', () => {
-      const module = new Module()
-      module.register('registration_0', {
-        access: 'public', 
-        factory: () => ({ value: 'registration_0' })
-      })
-      expect(module.exposes('registration_0')).toBe(true)
-    })
-    it('should return false when module contain private registration token', () => {
-      const module = new Module()
-      module.register('registration_0', {
-        access: 'private', 
-        factory: () => ({ value: 'registration_0' })
-      })
-      expect(module.exposes('registration_0')).toBe(false)
-    })
-    it('should return false when module does not contain registration token', () => {
-      const module = new Module()
-      expect(module.exposes('registration_0')).toBe(false)
-    })
-  })
-  describe('clone', () => {
-    it('should create new object reference', () => {
-      const module = new Module()
 
-      module.register('registration_0', { factory: () => {
-        return { value: 'registration_0'}
-      }})
+  const createTestModule = (name?:  string): Module => {
+    const suffix = name ? `_${name}` : ''
+    const module = new Module()
+
+    module.register(`bundle${suffix}`, {
+      access: 'public',
+      factory: (bundle: Bundle) => {
+        return {
+          [`publicRegistration${suffix}`]: bundle[`publicRegistration${suffix}`],
+          [`privateRegistration${suffix}`]: bundle[`privateRegistration${suffix}`],
+          [`internalRegistration${suffix}`]: bundle[`internalRegistration${suffix}`],
+          [`externalRegistration${suffix}`]: bundle[`externalRegistration${suffix}`],
+        }
+      },
+    })
+
+    module.register(`publicRegistration${suffix}`, {
+      access: 'public',
+      factory: (bundle: Bundle) => {
+        return {
+          value: `publicRegistration${suffix}`,
+          inspect(inspectFunction: (bundle: Bundle) => void) {
+            inspectFunction(bundle)
+          }
+        }
+      },
+    })
+
+    module.register(`externalRegistration${suffix}`, {
+      access: 'external',
+      factory: (bundle: Bundle) => {
+        return {
+          value: `externalRegistration${suffix}`,
+          inspect(inspectFunction: (bundle: Bundle) => void) {
+            inspectFunction(bundle)
+          }
+        }
+      },
+    })
+
+    module.register(`internalRegistration${suffix}`, {
+      access: 'internal',
+      factory: (bundle: Bundle) => {
+        return {
+          value: `internalRegistration${suffix}`,
+          inspect(inspectFunction: (bundle: Bundle) => void) {
+            inspectFunction(bundle)
+          }
+        }
+      },
+    })
+
+    module.register(`privateRegistration${suffix}`, {
+      access: 'private',
+      factory: (bundle: Bundle) => {
+        return {
+          value: `privateRegistration${suffix}`,
+          inspect(inspectFunction: (bundle: Bundle) => void) {
+            inspectFunction(bundle)
+          }
+        }
+      },
+    })
+    
+    return module;
+  }
+
+  describe('clone', () => {
+    it('should create new object reference to the cloned module', () => {
+      const module = createTestModule()
 
       const clone = module.clone()
       expect(clone).not.toBe(module)
     
-      const moduleResolution  = module.resolve('registration_0')
-      const cloneResolution = clone.resolve('registration_1')
+      const moduleResolution  = module.resolve('publicRegistration')
+      const cloneResolution = clone.resolve('publicRegistration')
+
       expect(moduleResolution).not.toBe(cloneResolution)
     })
-    it('should have all downstream public registrations', () => {
-      const module_0 = new Module()
-      module_0.register('registration_0', { access: 'public', factory: () => ({ value: 'registration_0'}) })
+  })
 
-      const module_1 = new Module()
-      module_1.register('registration_1', { access: 'public', factory: () => ({ value: 'registration_1'}) })
-      module_1.useModule(module_0)
-
-      const module_2 = new Module()
-      module_2.register('registration_2', { access: 'public', factory: () => ({ value: 'registration_2'}) })
-      module_2.useModule(module_1)
-
-      const clone = module_2.clone()
-
-      expect(clone.has('registration_0')).toBe(true)
-      expect(clone.has('registration_1')).toBe(true)
-      expect(clone.has('registration_2')).toBe(true)
+  describe('exposes', () => {
+    it('should return true when checking exposure of public registration token', () => {
+      const testModule = createTestModule()
+      expect(testModule.exposes('publicRegistration')).toBe(true)
     })
-    it('should have all downstream private registrations', () => {
-      const module_0 = new Module()
-      module_0.register('registration_0', { access: 'public', factory: () => ({ value: 'registration_0'}) })
-
-      const module_1 = new Module()
-      module_1.register('registration_1', { access: 'private', factory: () => ({ value: 'registration_1'}) })
-      module_1.useModule(module_0)
-
-      const module_2 = new Module()
-      module_2.register('registration_2', { access: 'private', factory: () => ({ value: 'registration_2'}) })
-      module_2.useModule(module_1)
-
-      const clone = module_2.clone()
-
-      expect(clone.has('registration_0')).toBe(true)
-      expect(clone.has('registration_1')).toBe(true)
-      expect(clone.has('registration_2')).toBe(true)
+    it('should return true when checking exposure of external registration token', () => {
+      const testModule = createTestModule()
+      expect(testModule.exposes('externalRegistration')).toBe(true)
     })
-    it('should expose all downstream public registrations', () => {
-      const module_0 = new Module()
-      module_0.register('registration_0', { access: 'public', factory: () => ({ value: 'registration_0'}) })
-
-      const module_1 = new Module()
-      module_1.register('registration_1', { access: 'public', factory: () => ({ value: 'registration_1'}) })
-      module_1.useModule(module_0)
-
-      const module_2 = new Module()
-      module_2.register('registration_2', { access: 'public', factory: () => ({ value: 'registration_2'}) })
-      module_2.useModule(module_1)
-
-      const clone = module_2.clone()
-
-      expect(clone.exposes('registration_0')).toBe(true)
-      expect(clone.exposes('registration_1')).toBe(true)
-      expect(clone.exposes('registration_2')).toBe(true)
+    it('should return false when checking exposure of private registration token', () => {
+      const testModule = createTestModule()
+      expect(testModule.exposes('privateRegistration')).toBe(false)
     })
-    it('should not expose downstream private registrations', () => {
-      const module_0 = new Module()
-      module_0.register('registration_0', { access: 'public', factory: () => ({ value: 'registration_0'}) })
-
-      const module_1 = new Module()
-      module_1.register('registration_1', { access: 'private', factory: () => ({ value: 'registration_1'}) })
-      module_1.useModule(module_0)
-
-      const module_2 = new Module()
-      module_2.register('registration_2', { access: 'private', factory: () => ({ value: 'registration_2'}) })
-      module_2.useModule(module_1)
-
-      const clone = module_2.clone()
-
-      expect(clone.exposes('registration_0')).toBe(true)
-      expect(clone.exposes('registration_1')).toBe(false)
-      expect(clone.exposes('registration_2')).toBe(false)
+    it('should return false when checking exposure of internal registration token', () => {
+      const testModule = createTestModule()
+      expect(testModule.exposes('internalRegistration')).toBe(false)
     })
   })
+
+  describe('access', () => {
+    it('should make registrations available to all module registrations', () => {
+      const module_a =  createTestModule('a')
+  
+      const bundle_a = module_a.resolve('bundle_a');
+      
+      bundle_a.publicRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.privateRegistration_a.value).toBe('privateRegistration_a')
+        expect(bundle.internalRegistration_a.value).toBe('internalRegistration_a')
+        expect(bundle.externalRegistration_a.value).toBe('externalRegistration_a')
+      })
+      
+      bundle_a.privateRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.publicRegistration_a.value).toBe('publicRegistration_a')
+        expect(bundle.internalRegistration_a.value).toBe('internalRegistration_a')
+        expect(bundle.externalRegistration_a.value).toBe('externalRegistration_a')
+      })
+      
+      bundle_a.internalRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.publicRegistration_a.value).toBe('publicRegistration_a')
+        expect(bundle.privateRegistration_a.value).toBe('privateRegistration_a')
+        expect(bundle.externalRegistration_a.value).toBe('externalRegistration_a')
+      })
+      
+      bundle_a.externalRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.publicRegistration_a.value).toBe('publicRegistration_a')
+        expect(bundle.privateRegistration_a.value).toBe('privateRegistration_a')
+        expect(bundle.internalRegistration_a.value).toBe('internalRegistration_a')
+      })
+    })
+    it('should expose child public and external registrations to parent module', () => {
+      const module_a = createTestModule('a')
+      const module_b = createTestModule('b')
+      module_b.useModule(module_a)
+  
+      module_b.register('bundles', {
+        'access': 'public',
+        factory: (bundle: Bundle) => {
+          return {
+            bundle_a: bundle.bundle_a,
+            bundle_b: bundle.bundle_b,
+          }
+        }
+      })
+  
+      const { bundle_b } = module_b.resolve('bundles');
+      
+      bundle_b.publicRegistration_b.inspect((bundle: Bundle) => {
+        expect(bundle.publicRegistration_a.value).toBe('publicRegistration_a')
+        expect(bundle.externalRegistration_a.value).toBe('externalRegistration_a')
+      })
+      
+      bundle_b.privateRegistration_b.inspect((bundle: Bundle) => {
+        expect(bundle.publicRegistration_a.value).toBe('publicRegistration_a')
+        expect(bundle.externalRegistration_a.value).toBe('externalRegistration_a')
+      })
+      
+      bundle_b.internalRegistration_b.inspect((bundle: Bundle) => {
+        expect(bundle.publicRegistration_a.value).toBe('publicRegistration_a')
+        expect(bundle.externalRegistration_a.value).toBe('externalRegistration_a')
+      })
+      
+      bundle_b.externalRegistration_b.inspect((bundle: Bundle) => {
+        expect(bundle.publicRegistration_a.value).toBe('publicRegistration_a')
+        expect(bundle.externalRegistration_a.value).toBe('externalRegistration_a')
+      })
+    })
+    it('should expose parent public and internal registrations to child module', ()  => {
+      const module_a = createTestModule('a')
+      const module_b = createTestModule('b')
+      module_b.useModule(module_a)
+  
+      module_b.register('bundles', {
+        'access': 'public',
+        factory: (bundle: Bundle) => {
+          return {
+            bundle_a: bundle.bundle_a,
+            bundle_b: bundle.bundle_b,
+          }
+        }
+      })
+  
+      const { bundle_a } = module_b.resolve('bundles')
+  
+      bundle_a.publicRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.publicRegistration_b.value).toEqual('publicRegistration_b')
+        expect(bundle.internalRegistration_b.value).toEqual('internalRegistration_b')
+      })
+  
+      bundle_a.privateRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.publicRegistration_b.value).toEqual('publicRegistration_b')
+        expect(bundle.internalRegistration_b.value).toEqual('internalRegistration_b')
+      })
+  
+      bundle_a.internalRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.publicRegistration_b.value).toEqual('publicRegistration_b')
+        expect(bundle.internalRegistration_b.value).toEqual('internalRegistration_b')
+      })
+  
+      bundle_a.externalRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.publicRegistration_b.value).toEqual('publicRegistration_b')
+        expect(bundle.internalRegistration_b.value).toEqual('internalRegistration_b')
+      })
+    })
+    it('should not expose child private and internal registrations to parent module', () => {
+      const module_a = createTestModule('a')
+      const module_b = createTestModule('b')
+      module_b.useModule(module_a)
+  
+      module_b.register('bundles', {
+        'access': 'public',
+        factory: (bundle: Bundle) => {
+          return {
+            bundle_a: bundle.bundle_a,
+            bundle_b: bundle.bundle_b,
+          }
+        }
+      })
+  
+      const { bundle_b } = module_b.resolve('bundles');
+      
+      bundle_b.publicRegistration_b.inspect((bundle: Bundle) => {
+        expect(bundle.privateRegistration_a).toBe(undefined)
+        expect(bundle.internalRegistration_a).toBe(undefined)
+      })
+      
+      bundle_b.privateRegistration_b.inspect((bundle: Bundle) => {
+        expect(bundle.privateRegistration_a).toBe(undefined)
+        expect(bundle.internalRegistration_a).toBe(undefined)
+      })
+      
+      bundle_b.internalRegistration_b.inspect((bundle: Bundle) => {
+        expect(bundle.privateRegistration_a).toBe(undefined)
+        expect(bundle.internalRegistration_a).toBe(undefined)
+      })
+      
+      bundle_b.externalRegistration_b.inspect((bundle: Bundle) => {
+        expect(bundle.privateRegistration_a).toBe(undefined)
+        expect(bundle.internalRegistration_a).toBe(undefined)
+      })
+    })
+    it('should not expose parent private and external registrations to child module', ()  => {
+      const module_a = createTestModule('a')
+      const module_b = createTestModule('b')
+      module_b.useModule(module_a)
+  
+      module_b.register('bundles', {
+        'access': 'public',
+        factory: (bundle: Bundle) => {
+          return {
+            bundle_a: bundle.bundle_a,
+            bundle_b: bundle.bundle_b,
+          }
+        }
+      })
+  
+      const { bundle_a } = module_b.resolve('bundles')
+  
+      bundle_a.publicRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.privateRegistration_b).toEqual(undefined)
+        expect(bundle.externalRegistration_b).toEqual(undefined)
+      })
+  
+      bundle_a.privateRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.privateRegistration_b).toEqual(undefined)
+        expect(bundle.externalRegistration_b).toEqual(undefined)
+      })
+  
+      bundle_a.internalRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.privateRegistration_b).toEqual(undefined)
+        expect(bundle.externalRegistration_b).toEqual(undefined)
+      })
+  
+      bundle_a.externalRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.privateRegistration_b).toEqual(undefined)
+        expect(bundle.externalRegistration_b).toEqual(undefined)
+      })
+    })
+    it('should not expose child public and external registrations through parent module', () => {
+      const module_a = createTestModule('a')
+      const module_b = createTestModule('b')
+  
+      module_b.useModule(module_a)
+  
+      expect(module_b.exposes('publicRegistration_a')).toBe(false)
+      expect(module_b.exposes('privateRegistration_a')).toBe(false)
+      expect(module_b.exposes('internalRegistration_a')).toBe(false)
+      expect(module_b.exposes('externalRegistration_a')).toBe(false)
+  
+      expect(module_b.resolve('publicRegistration_a')).toBe(undefined)
+      expect(module_b.resolve('privateRegistration_a')).toBe(undefined)
+      expect(module_b.resolve('internalRegistration_a')).toBe(undefined)
+      expect(module_b.resolve('externalRegistration_a')).toBe(undefined)
+    })
+  })
+
   describe('resolve', () => {
     it('should resolve registration value', () => {
-      const module = new Module()
-      module.register('registration', { factory: () => {
-        return { value: 'registration'}
-      }})
-      expect(module.resolve('registration')).toEqual({ value: 'registration' })
+      const module = createTestModule()
+
+      const publicResolution = module.resolve('publicRegistration')
+      const externalResolution = module.resolve('externalRegistration')
+
+      expect(publicResolution.value).toEqual('publicRegistration')
+      expect(externalResolution.value).toEqual('externalRegistration')
     })
     it('should return undefined for unregistered token', () => {
-      const container = new Module()
-      expect(container.resolve('registration')).toBe(undefined)
+      const module = createTestModule()
+      expect(module.resolve('unknownRegistration')).toBe(undefined)
     })
-    it('should resolve source modules public registrations', () => {
-      const targetModule = new Module()
-      targetModule.register('registration_0', { access: 'private', factory: () => {
-        return { value: 'registration_0' }
-      }})
+    it('should prioritize closest registration on module graph', () => {
+      const module_a = createTestModule('a')
+      const module_b = createTestModule('b')
 
-      const sourceModule_1 = new Module()
-      sourceModule_1.register('registration_1', { access: 'public',  factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      const sourceModule_2 = new Module()
-      sourceModule_2.register('registration_2', { access: 'public',  factory: () => {
-        return { value: 'registration_2'}
-      }})
-
-      targetModule.useModules(
-        sourceModule_1,
-        sourceModule_2,
-      )
-
-      expect(targetModule.resolve('registration_0')).toEqual(undefined)
-
-      expect(targetModule.resolve('registration_1')).toEqual({
-        value: 'registration_1'
+      module_a.register('registration', {
+        factory: () => ({
+          module: 'a'
+        })
       })
 
-      expect(targetModule.resolve('registration_2')).toEqual({
-        value: 'registration_2'
-      })
-    })
-    it('should resolve token through target module public registration', () => {
-      const targetModule = new Module()
-      targetModule.register('token', { access: 'public', factory: () => {
-        return { value: 'registration_0' }
-      }})
-
-      const sourceModule_1 = new Module()
-      sourceModule_1.register('token', { access: 'public',  factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      const sourceModule_2 = new Module()
-      sourceModule_2.register('token', { access: 'public',  factory: () => {
-        return { value: 'registration_2'}
-      }})
-
-      targetModule.useModules(
-        sourceModule_1,
-        sourceModule_2,
-      )
-
-      targetModule.useModules(
-        sourceModule_1,
-        sourceModule_2,
-      )
-
-      expect(targetModule.resolve('token')).toEqual({
-        value: 'registration_0'
-      })
-    })
-    it('should resolve token through source module when token is private on the target', () => {
-      const targetModule = new Module()
-      targetModule.register('token', { access: 'private', factory: () => {
-        return { value: 'registration_0' }
-      }})
-
-      const sourceModule_1 = new Module()
-      sourceModule_1.register('token', { access: 'private',  factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      const sourceModule_2 = new Module()
-      sourceModule_2.register('token', { access: 'public',  factory: () => {
-        return { value: 'registration_2'}
-      }})
-
-      targetModule.useModules(
-        sourceModule_1,
-        sourceModule_2,
-      )
-
-      expect(targetModule.resolve('token')).toEqual({
-        value: 'registration_2'
-      })
-    })
-    it('should return undefined when attempting to resolve target module private registrations', () => {
-      const targetModule = new Module()
-      targetModule.register('toke', { access: 'private', factory: () => {
-        return { value: 'registration_0' }
-      }})
-
-      const sourceModule = new Module()
-      sourceModule.register('token', { access: 'private',  factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      targetModule.useModule(sourceModule)
-
-      expect(targetModule.resolve('token')).toEqual(undefined)
-    })
-    it('should return undefined when attempting to resolve source module private registrations', () => {
-      const targetModule = new Module()
-      targetModule.register('registration_0', { access: 'public', factory: () => {
-        return { value: 'registration_0' }
-      }})
-
-      const sourceModule = new Module()
-      sourceModule.register('registration_1', { access: 'private',  factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      targetModule.useModule(sourceModule)
-
-      expect(targetModule.resolve('registration_1')).toEqual(undefined)
-    })
-  })
-  describe('useModule', () => {
-    it('should hold source module public registrations', () => {
-      const targetModule = new Module()
-      targetModule.register('registration_0', { access: 'public', factory: () => {
-        return { value: 'registration_0'}
-      }})
-
-      const sourceModule = new Module()
-      sourceModule.register('registration_1', { access: 'public', factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      targetModule.useModule(sourceModule)
-
-      expect(targetModule.has('registration_0')).toBe(true)
-      expect(targetModule.has('registration_1')).toBe(true)
-    })
-    it('should hold source module private registrations', () => {
-      const targetModule = new Module()
-      targetModule.register('registration_0', { access: 'private', factory: () => {
-        return { value: 'registration_0' }
-      }})
-
-      const sourceModule = new Module()
-      sourceModule.register('registration_1', { access: 'private',  factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      targetModule.useModule(sourceModule)
-
-      expect(targetModule.has('registration_0')).toBe(true)
-      expect(targetModule.has('registration_1')).toBe(true)
-    })
-    it('should expose source module public registrations', () => {
-      const targetModule = new Module()
-      targetModule.register('registration_0', { access: 'public', factory: () => {
-        return { value: 'registration_0'}
-      }})
-
-      const sourceModule = new Module()
-      sourceModule.register('registration_1', { access: 'public', factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      targetModule.useModule(sourceModule)
-
-      expect(targetModule.exposes('registration_0')).toBe(true)
-    })
-    it('should not expose source module private registrations', () => {
-      const targetModule = new Module()
-      targetModule.register('registration_0', { access: 'private', factory: () => {
-        return { value: 'registration_0' }
-      }})
-
-      const sourceModule = new Module()
-      sourceModule.register('registration_1', { access: 'public',  factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      targetModule.useModule(sourceModule)
-
-      expect(targetModule.exposes('registration_0')).toBe(false)
-    })
-    it('should resolve source module public registrations', () => {
-      const targetModule = new Module()
-      targetModule.register('registration_0', { access: 'public', factory: () => {
-        return { value: 'registration_0' }
-      }})
-
-      const sourceModule = new Module()
-      sourceModule.register('registration_1', { access: 'public',  factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      targetModule.useModule(sourceModule)
-
-      expect(targetModule.resolve('registration_1')).toEqual({
-        value: 'registration_1'
-      })
-    })
-    it('should resolve token through target module public registration', () => {
-      const targetModule = new Module()
-      targetModule.register('token', { access: 'public', factory: () => {
-        return { value: 'registration_0' }
-      }})
-
-      const sourceModule = new Module()
-      sourceModule.register('token', { access: 'public',  factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      targetModule.useModule(sourceModule)
-
-      expect(targetModule.resolve('token')).toEqual({
-        value: 'registration_0'
-      })
-    })
-    it('should resolve token through source target module public registration', () => {
-      const targetModule = new Module()
-      targetModule.register('token', { access: 'private', factory: () => {
-        return { value: 'registration_0' }
-      }})
-
-      const sourceModule = new Module()
-      sourceModule.register('token', { access: 'public',  factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      targetModule.useModule(sourceModule)
-
-      expect(targetModule.resolve('token')).toEqual({
-        value: 'registration_1'
-      })
-    })
-  })
-  describe.only('useModules', () => {
-    it('should hold source modules public registrations', () => {
-      const targetModule = new Module()
-      targetModule.register('registration_0', { access: 'public', factory: () => {
-        return { value: 'registration_0'}
-      }})
-
-      const sourceModule_1 = new Module()
-      sourceModule_1.register('registration_1', { access: 'public', factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      const sourceModule_2 = new Module()
-      sourceModule_2.register('registration_2', { access: 'public', factory: () => {
-        return { value: 'registration_2'}
-      }})
-
-      targetModule.useModules(
-        sourceModule_1,
-        sourceModule_2,
-      )
-
-      expect(targetModule.has('registration_0')).toBe(true)
-      expect(targetModule.has('registration_1')).toBe(true)
-      expect(targetModule.has('registration_2')).toBe(true)
-    })
-    it('should hold source modules private registrations', () => {
-      const targetModule = new Module()
-      targetModule.register('registration_0', { access: 'private', factory: () => {
-        return { value: 'registration_0' }
-      }})
-
-      const sourceModule_1 = new Module()
-      sourceModule_1.register('registration_1', { access: 'private', factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      const sourceModule_2 = new Module()
-      sourceModule_2.register('registration_2', { access: 'private', factory: () => {
-        return { value: 'registration_2'}
-      }})
-
-      targetModule.useModules(
-        sourceModule_1,
-        sourceModule_2,
-      )
-
-      expect(targetModule.has('registration_0')).toBe(true)
-      expect(targetModule.has('registration_1')).toBe(true)
-      expect(targetModule.has('registration_2')).toBe(true)
-    })
-    it('should expose source modules public registrations', () => {
-      const targetModule = new Module()
-      targetModule.register('registration_0', { access: 'private', factory: () => {
-        return { value: 'registration_0'}
-      }})
-
-      const sourceModule_1 = new Module()
-      sourceModule_1.register('registration_1', { access: 'public', factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      const sourceModule_2 = new Module()
-      sourceModule_2.register('registration_2', { access: 'public', factory: () => {
-        return { value: 'registration_2'}
-      }})
-
-      targetModule.useModules(
-        sourceModule_1,
-        sourceModule_2,
-      )
-
-      expect(targetModule.exposes('registration_0')).toBe(false)
-      expect(targetModule.exposes('registration_1')).toBe(true)
-      expect(targetModule.exposes('registration_2')).toBe(true)
-    })
-    it('should not expose source modules private registrations', () => {
-      const targetModule = new Module()
-      targetModule.register('registration_0', { access: 'public', factory: () => {
-        return { value: 'registration_0' }
-      }})
-
-      const sourceModule_1 = new Module()
-      sourceModule_1.register('registration_1', { access: 'private',  factory: () => {
-        return { value: 'registration_1'}
-      }})
-
-      const sourceModule_2 = new Module()
-      sourceModule_2.register('registration_2', { access: 'private',  factory: () => {
-        return { value: 'registration_2'}
-      }})
-
-      targetModule.useModules(
-        sourceModule_1,
-        sourceModule_2,
-      )
-
-      expect(targetModule.exposes('registration_0')).toBe(true)
-      expect(targetModule.exposes('registration_1')).toBe(false)
-      expect(targetModule.exposes('registration_2')).toBe(false)
-    })
-    it('should expose private registrations to downstream modules', () => {
-      const module_0 = new Module()
-      const module_1 = new Module()
-      const module_2 = new Module()
-
-      module_0.register('registration_0', { access: 'public', factory: (bundle) => {
-        return { 
-          value: 'registration_0',
-          registration_1: bundle.registration_1.value,
-          registration_2: bundle.registration_2.value,
-        }
-      }})
-
-      module_1.register('registration_1', { access: 'public', factory: (bundle) => {
-        return { 
-          value: 'registration_1',
-          registration_2: bundle.registration_2.value,
-        }
-      }})
-
-      module_2.register('registration_2', { access: 'private', factory: (bundle) => {
-        return {
-          value: 'registration_2',
-        }
-      }})
-
-      module_1.useModule(module_0)
-      module_2.useModule(module_1)
-
-      expect(module_2.resolve('registration_0')).toEqual({
-        value: 'registration_0',
-        registration_1: 'registration_1',
-        registration_2: 'registration_2',
+      module_b.register('registration', {
+        factory: () => ({
+          module: 'b'
+        })
       })
 
-      expect(module_2.resolve('registration_1')).toEqual({
-        value: 'registration_1',
-        registration_2: 'registration_2',
-      })
-    })
-    it('should expose private registrations to downstream modules', () => {
-      const module_0 = new Module()
-      const module_1 = new Module()
-      const module_2 = new Module()
-
-      module_0.register('registration_0', { access: 'public', factory: (bundle) => {
-        return { 
-          value: 'registration_0',
-          registration_1: bundle.registration_1.value,
-          registration_2: bundle.registration_2.value,
-        }
-      }})
-
-      module_1.register('registration_1', { access: 'public', factory: (bundle) => {
-        return { 
-          value: 'registration_1',
-          registration_2: bundle.registration_2.value,
-        }
-      }})
-
-      module_2.register('registration_2', { access: 'private', factory: (bundle) => {
-        return {
-          value: 'registration_2',
-        }
-      }})
-
-      module_1.useModule(module_0)
-      module_2.useModule(module_1)
-
-      expect(module_2.resolve('registration_0')).toEqual({
-        value: 'registration_0',
-        registration_1: 'registration_1',
-        registration_2: 'registration_2',
+      module_b.register('bundles', {
+        factory: (bundle: Bundle) => ({
+          bundle_a: bundle.bundle_a,
+          bundle_b: bundle.bundle_b,
+        })
       })
 
-      expect(module_2.resolve('registration_1')).toEqual({
-        value: 'registration_1',
-        registration_2: 'registration_2',
-      })
-    })
-    it('should expose public registrations to downstream modules', () => {
-      const module_0 = new Module()
-      const module_1 = new Module()
-      const module_2 = new Module()
+      module_b.useModule(module_a)
 
-      module_0.register('registration_0', { access: 'public', factory: (bundle) => {
-        return { 
-          value: 'registration_0',
-          registration_1: bundle.registration_1.value,
-          registration_2: bundle.registration_2.value,
-        }
-      }})
+      const { bundle_a,  bundle_b } = module_b.resolve('bundles')
 
-      module_1.register('registration_1', { access: 'public', factory: (bundle) => {
-        return { 
-          value: 'registration_1',
-          registration_2: bundle.registration_2.value,
-        }
-      }})
-
-      module_2.register('registration_2', { access: 'public', factory: (bundle) => {
-        return {
-          value: 'registration_2',
-        }
-      }})
-
-      module_1.useModule(module_0)
-      module_2.useModule(module_1)
-
-      expect(module_2.resolve('registration_0')).toEqual({
-        value: 'registration_0',
-        registration_1: 'registration_1',
-        registration_2: 'registration_2',
+      bundle_a.publicRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.registration.module).toBe('a')
       })
 
-      expect(module_2.resolve('registration_1')).toEqual({
-        value: 'registration_1',
-        registration_2: 'registration_2',
+      bundle_a.externalRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.registration.module).toBe('a')
       })
 
-      expect(module_2.resolve('registration_2')).toEqual({
-        value: 'registration_2',
+      bundle_a.privateRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.registration.module).toBe('a')
       })
-    })
-    xit('should expose public registrations to upstream modules', () => {
-      const module_0 = new Module()
-      const module_1 = new Module()
-      const module_2 = new Module()
 
-      module_0.register('registration_0', { access: 'public', factory: (bundle) => {
-        return { 
-          value: 'registration_0',
-          registration_1: bundle.registration_1.value,
-        }
-      }})
+      bundle_a.internalRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.registration.module).toBe('a')
+      })
 
-      module_1.register('registration_1', { access: 'public', factory: (bundle) => {
-        return { 
-          value: 'registration_1',
-          registration_0: bundle.registration_0.value,
-          // registration_2: bundle.registration_2.value,
-        }
-      }})
+      bundle_b.publicRegistration_b.inspect((bundle: Bundle) => {
+        expect(bundle.registration.module).toBe('b')
+      })
 
-      module_2.register('registration_2', { access: 'public', factory: (bundle) => {
-        return { 
-          value: 'registration_2',
-          registration_0: bundle.registration_0.value,
-          registration_1: bundle.registration_1.value,
-        }
-      }})
+      bundle_b.externalRegistration_b.inspect((bundle: Bundle) => {
+        expect(bundle.registration.module).toBe('b')
+      })
 
-      module_0.useModule(module_1)
-      module_0.useModule(module_2)
+      bundle_b.privateRegistration_b.inspect((bundle: Bundle) => {
+        expect(bundle.registration.module).toBe('b')
+      })
 
-      console.log(module_0.resolve('registration_1'))
-      // console.log(module_0.resolve('registration_2'))
+      bundle_b.internalRegistration_b.inspect((bundle: Bundle) => {
+        expect(bundle.registration.module).toBe('b')
+      })
+
+      
 
     })
-    it.only('should expose public registrations to downstream modules', () => {
-      const module_0 = new Module()
-      const module_1 = new Module()
-      // const module_2 = new Module()
-
-      module_0.register('registration_0', { access: 'public', factory: (bundle) => {
-        return { 
-          value: 'registration_0',
-          registration_1a: bundle.registration_1.value,
-        }
-      }})
-
-      module_0.register('registration_1', { access: 'public', factory: (bundle) => {
-        return { 
-          value: 'registration_1a',
-        }
-      }})
-
-      module_1.register('registration_1', { access: 'public', factory: (bundle) => {
-        return {
-          value: 'registration_1b',
-        }
-      }})
-
-      module_1.useModule(module_0)
-
-      expect(module_1.resolve('registration_0')).toEqual({
-        value: 'registration_0',
-        registration_1a: 'registration_1a',
-      })
-
-      expect(module_1.resolve('registration_1')).toEqual({
-        value: 'registration_1b',
-      })
-
-      // expect(module_1.resolve('registration_2')).toEqual({
-      //   value: 'registration_2',
-      // })
-    })
-    it.todo('should not expose private registrations to upstream modules')
   })
 })

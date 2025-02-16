@@ -1,133 +1,101 @@
 import { Registration } from '../registration';
 import { Bundle } from '../bundle';
 import { Token } from '../token';
-import crypto from 'crypto';
 
 export type ContainerOptions = {
-  name?: string
   bundle?: Bundle | undefined
 }
 
 export class Container {
 
-  private static createIdentifier = () => crypto.randomBytes(2).toString('hex').slice(0, 4) 
-
-  private readonly registrations: Map<Token, Registration> = new Map()
+  private readonly _registrations: Map<Token, Registration> = new Map()
 
   private readonly resolving: Set<Token> = new Set()
   
-  private readonly context: Bundle = {}
-
   public readonly bundle: Bundle
 
-  public readonly symbol: Symbol
-  
-  public readonly label: string
-
-  public readonly name: string
-
-  public readonly id = Container.createIdentifier()
-
-  public constructor(private readonly options: ContainerOptions = {}) {
-    
-    this.name = options.name ?? Container.createIdentifier()
-
-    this.label = `${this.id}:${this.name}`
-
-    this.symbol = Symbol(this.label)
-
-    this.bundle = new Proxy(options?.bundle ?? {}, {
-      set: (_target: Bundle, token: Token) => {
-        throw new Error(`Could not set bundle key "${token.toString()}". Targets are not allowed to assign bundle values.`)
-      },
-
-      get: (target, token) => {
-        return token in this.context
-          ? this.context[token] 
-          : target[token]
-      },
-
-      has: (target, token) => {
-        return false
-          || Reflect.ownKeys(this.context).includes(token)
-          || Reflect.ownKeys(target).includes(token)
-      },
-
-      ownKeys: (target) => {
-        return [
-          ...new Set([
-            ...Reflect.ownKeys(this.context),
-            ...Reflect.ownKeys(target)
-          ])
-        ];
-      },
-
-      getOwnPropertyDescriptor: (target, token) => {
-        return token in this.context 
-          ? Reflect.getOwnPropertyDescriptor(this.context, token)
-          : Reflect.getOwnPropertyDescriptor(target, token)
-      },
-    })
+  public get registrations(): Registration[] {
+    return [...this._registrations.values()]
   }
 
-  public exposes(token: Token): boolean {
-    return this.registrations.get(token)?.access === 'public'
+  public constructor(options: ContainerOptions = {}) {
+    this.bundle = options.bundle ?? {}
   }
 
   public has(token: Token): boolean  {
-    return this.registrations.has(token)
-  }
-
-  public get(token: Token): Registration | undefined {
-    return this.registrations.get(token)
+    return token in this.bundle;
   }
 
   public clone(bundle?: Bundle): Container {
-    const containerClone = new Container({ ...this.options, bundle })
-    const registrationValues = [...this.registrations.values()]
-    registrationValues.filter(registration => registration.access === 'public')
-    containerClone.push(...this.registrations.values())
+    const containerClone = new Container({ bundle })
+    containerClone.useBundle(this.bundle)
+    containerClone.register(...this.registrations)  
     return containerClone
   }
 
-  public push(...externalRegistration: Registration[]): Registration[] {
-    return externalRegistration.map(registration => {
-      return this.register(registration)
-    })
-  }
+  public register<R>(registrations: Registration): Registration<R>
 
-  public register(externalRegistration: Registration): Registration {
-    const internalRegistration = externalRegistration.clone(this.bundle)
-    this.registrations.set(internalRegistration.token, internalRegistration)
-    Object.defineProperty(this.context, internalRegistration.token, {
-      get: () => this.resolve(internalRegistration.token),
-      configurable: true,
-      enumerable: true,
-    });
-    return internalRegistration
-  }
+  public register(...registrations: Registration[]): Registration[]
 
-  public resolve(token: Token, bundle?: Bundle) {
-    if (!this.has(token)) {
-      return
+  public register(...registrations: Registration[]): Registration | Registration[] {
+    if(registrations.length > 1)  {
+      return registrations.map(externalRegistration => this.register(externalRegistration))
     }
 
+    if(!registrations[0]) {
+      return []
+    }
+
+    const registrationClone = registrations[0].clone(this.bundle)
+    this.useRegistration(registrationClone)
+    return registrationClone
+  }
+
+  public resolve<R = any>(token: Token, externalBundle?: Bundle): R | undefined {
     if (this.resolving.has(token)) {
-      return {}
+      // Prevent infinite recursion in case of circular dependencies.
+      // If the token is already being resolved, return an empty object to break
+      // the cycle. This ensures that partially constructed objects can still be
+      // referenced without causing a stack overflow due to recursive resolution.
+      return {} as R
     }
 
-    const registration = this.get(token);
+    if (!this.has(token)) {
+      return 
+    }
+
+    const registration = this._registrations.get(token)
 
     if (!registration) {
-      throw new Error(`Token '${token.toString()}' is not a valid registration.`);
+      // The container instance should never fulfill this condition if used
+      // correctly. At this point we should have already checked whether the 
+      // container contains a registration associated to the given token.
+      throw new Error(`Token "${token.toString()}" is not a valid registration.`);
     }
 
     this.resolving.add(token)
 
-    const resolution = registration.resolve(bundle)
+    const resolution = registration.resolve(externalBundle)
 
     this.resolving.delete(token);
 
     return resolution;
+  }
+
+  public useRegistration(registration: Registration): void {
+    this._registrations.set(registration.token, registration)
+    Object.defineProperty(this.bundle, registration.token, {
+      get: () => this.resolve(registration.token),
+      configurable: true,
+      enumerable: true,
+    });
+  }
+
+  public useBundle(externalBundle: Bundle): void {
+    const bundleDescriptors = Object.getOwnPropertyDescriptors(externalBundle)
+    const bundleEntries = Object.entries(bundleDescriptors)
+    for (const [token, descriptor] of bundleEntries) {
+      Object.defineProperty(this.bundle, token, descriptor);
+    }
   }
 }
