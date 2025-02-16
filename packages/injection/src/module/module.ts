@@ -23,7 +23,9 @@ export class Module {
 
   public constructor(options?: ModuleOptions)  {
     this.container = options?.container ?? new Container()
-    this.useRegistrations(...this.container.registrations)
+    this.container.registrations.forEach((registration) => {
+      this.useRegistration(registration)
+    })
   }
 
   public exposes(token: Token) {
@@ -88,10 +90,6 @@ export class Module {
         return !this.container.has(token)
       })
     ))
-  }
-
-  public useRegistrations(...registrations: Registration[]): void {
-    registrations.forEach(registration => this.useRegistration(registration))
   }
 
   public useRegistration({ token, access, resolve }: Registration): void {
