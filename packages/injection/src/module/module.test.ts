@@ -371,9 +371,6 @@ describe('Module', () => {
       bundle_b.internalRegistration_b.inspect((bundle: Bundle) => {
         expect(bundle.registration.module).toBe('b')
       })
-
-      
-
     })
   })
 })
