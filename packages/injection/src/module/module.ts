@@ -14,50 +14,50 @@ import { Container } from '../container'
 import { Bundle } from '../bundle'
 import { Token } from '../token'
 
-type ModuleOptions = {
-  container?: Container | undefined
-}
+// type ModuleOptions = {
+//   container?: Container | undefined
+// }
 
 export class Module {
 
-  private readonly downstreamBundle: Bundle = {}
+  // private readonly downstreamBundle: Bundle = {}
 
-  private readonly upstreamBundle: Bundle = {}
+  private readonly bundle: Bundle = {}
 
   private readonly modules: Module[] = []
 
-  private readonly container: Container
+  private readonly container: Container = new Container()
 
-  public constructor(options?: ModuleOptions)  {
-    this.container = options?.container ?? new Container()
-    this.container.registrations.forEach((registration) => {
-      this.setRegistration(registration)
-    })
-  }
+  // public constructor(options?: ModuleOptions)  {
+  //   this.container = options?.container ?? new Container()
+  //   this.container.registrations.forEach((registration) => {
+  //     this.setRegistration(registration)
+  //   })
+  // }
 
   public exposes(token: Token): boolean {
-    return token in this.upstreamBundle
+    return token in this.bundle
   }
 
-  public clone(bundle?: Bundle): Module {
-    const container = this.container.clone(bundle)
-    const module = new Module({ container })
-    module.extend(...this.modules)
-    return module
-  }
+  // public clone(bundle?: Bundle): Module {
+  //   const container = this.container.clone(bundle)
+  //   const module = new Module({ container })
+  //   module.extend(...this.modules)
+  //   return module
+  // }
 
   public resolve<R = any>(token: Token): R | undefined {
     return this.exposes(token) ? this.container.resolve<R>(token) : undefined
   }
 
-  public extend(modules: Module): Module
+  public import(modules: Module): Module
 
-  public extend(...modules: Module[]): Module[]
+  public import(...modules: Module[]): Module[]
 
-  public extend(...modules: Module[]): Module | Module[] {
+  public import(...modules: Module[]): Module | Module[] {
     if(modules.length > 1)  {
       return modules.map(externalRegistration => {
-        return this.extend(externalRegistration)
+        return this.import(externalRegistration)
       })
     }
 
@@ -65,8 +65,8 @@ export class Module {
       return []
     }
 
-    const module = modules[0].clone(this.downstreamBundle)
-    this.useBundle(module.upstreamBundle)
+    const module = modules[0]
+    this.useBundle(module.bundle)
     this.modules.push(module)
     return module
   }
@@ -207,13 +207,13 @@ export class Module {
       enumerable: true,
     }
 
-    if(!(token in this.upstreamBundle) && ['external', 'public'].includes(access)) {
-      Object.defineProperty(this.upstreamBundle, token, registrationDescriptor)
+    if(!(token in this.bundle) && ['external', 'public'].includes(access)) {
+      Object.defineProperty(this.bundle, token, registrationDescriptor)
     }
 
-    if(!(token in this.downstreamBundle) && ['internal', 'public'].includes(access)) {
-      Object.defineProperty(this.downstreamBundle, token, registrationDescriptor)
-    }
+    // if(!(token in this.downstreamBundle) && ['internal', 'public'].includes(access)) {
+    //   Object.defineProperty(this.downstreamBundle, token, registrationDescriptor)
+    // }
 
     return registration
   }

@@ -399,38 +399,38 @@ describe('Container', () => {
     })
   })
 
-  describe('clone', () => {
-    it('should merge bundle properties', () => {
-      const container = new Container({ bundle: { registration0: 'registration0' }})
+  // describe('clone', () => {
+  //   it('should merge bundle properties', () => {
+  //     const container = new Container({ bundle: { registration0: 'registration0' }})
 
-      container.register(TestRegistration.create({ token: 'registration1' }))
-      const clone = container.clone({ registration2: 'registration2' })
+  //     container.register(TestRegistration.create({ token: 'registration1' }))
+  //     const clone = container.clone({ registration2: 'registration2' })
 
-      expect(container).not.toBe(clone)
-      expect(clone.bundle.registration0).toEqual('registration0')
-      expect(clone.bundle.registration1).toEqual('registration1')
-      expect(clone.bundle.registration2).toEqual('registration2')
-    })
-    it('should not override bundle properties when cloning', () => {
-      const container = new Container({ bundle: { 
-        registration0: 'invalid_registration0',
-        registration1: 'registration1',
-      }})
+  //     expect(container).not.toBe(clone)
+  //     expect(clone.bundle.registration0).toEqual('registration0')
+  //     expect(clone.bundle.registration1).toEqual('registration1')
+  //     expect(clone.bundle.registration2).toEqual('registration2')
+  //   })
+  //   it('should not override bundle properties when cloning', () => {
+  //     const container = new Container({ bundle: { 
+  //       registration0: 'invalid_registration0',
+  //       registration1: 'registration1',
+  //     }})
 
-      const bundle = { 
-        registration0: 'invalid_registration0',
-        registration2: 'registration2',
-      }
+  //     const bundle = { 
+  //       registration0: 'invalid_registration0',
+  //       registration2: 'registration2',
+  //     }
 
-      container.register(TestRegistration.create({ token: 'registration0' }))
-      const clone = container.clone(bundle)
+  //     container.register(TestRegistration.create({ token: 'registration0' }))
+  //     const clone = container.clone(bundle)
 
-      expect(container).not.toBe(clone)
-      expect(clone.bundle.registration0).toEqual('registration0')
-      expect(clone.bundle.registration1).toEqual('registration1')
-      expect(clone.bundle.registration2).toEqual('registration2')
-    })
-  })
+  //     expect(container).not.toBe(clone)
+  //     expect(clone.bundle.registration0).toEqual('registration0')
+  //     expect(clone.bundle.registration1).toEqual('registration1')
+  //     expect(clone.bundle.registration2).toEqual('registration2')
+  //   })
+  // })
 
   describe('useBundle', () => {
     it('should use external bundle as is', () => {

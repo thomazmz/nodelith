@@ -26,13 +26,6 @@ export class Container {
     return token in this.bundle;
   }
 
-  public clone(bundle?: Bundle): Container {
-    const containerClone = new Container({ bundle })
-    containerClone.useBundle(this.bundle)
-    containerClone.register(...this.registrations)  
-    return containerClone
-  }
-
   public register<R>(registrations: Registration): Registration<R>
 
   public register(...registrations: Registration[]): Registration[]
