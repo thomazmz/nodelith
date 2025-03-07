@@ -6,7 +6,6 @@ import { Access } from '../../access';
 import { Lifetime } from '../../lifetime';
 import { Registration } from '../registration'
 
-
 export type FunctionRegistrationOptions = {
   bundle?: Bundle | undefined;
   token?: Token | undefined;
@@ -15,22 +14,51 @@ export type FunctionRegistrationOptions = {
 }
 
 export class FunctionRegistration<R extends any> implements Registration<R> {
-  public static create<R extends any>(target: Types.Function<R>, options: FunctionRegistrationOptions): FunctionRegistration<R> {
-    throw new Error('Static method FunctionRegistration:create is mot Implemented')
+  public static create<R extends any>(target: Types.Function<R>, options?: FunctionRegistrationOptions): FunctionRegistration<R> {
+    return new FunctionRegistration(target, options)
   }
 
-  public get token(): Token {
-    throw new Error('FunctionRegistration class is mot Implemented')
-  }
+  private readonly singleton: { resolution?: R } = { }
 
-  public get access(): Access {
-    throw new Error('FunctionRegistration class is mot Implemented')
+  private readonly target: Types.Function<R>
+
+  public readonly access: Access
+
+  private readonly bundle: Bundle
+
+  public readonly lifetime: Lifetime
+
+  public token: Token
+
+  public constructor(target: Types.Function<R>, options?: FunctionRegistrationOptions) {
+    this.token = options?.token ?? Symbol()
+    this.bundle = options?.bundle ?? {}
+    this.access = options?.access ?? 'public'
+    this.lifetime = options?.lifetime ?? 'singleton'
+    this.target = target
   }
 
   public clone(bundle?: Bundle): Registration<R> {
-    throw new Error('FunctionRegistration.clone method is mot Implemented')
+    return new FunctionRegistration<R>(this.target, {
+      token: this.token,
+      access: this.access,
+      lifetime: this.lifetime,
+      bundle,
+    })
   }
+
   public resolve(bundle?: Bundle): R {
-    throw new Error('FunctionRegistration.resolve method is mot Implemented')
-  }
+    if('resolution' in this.singleton) {
+      return this.singleton.resolution
+    }
+
+    if(this.lifetime === 'singleton') {
+      return this.singleton.resolution = this.target({
+        ...this.bundle,
+        ...bundle,
+      })
+    }
+
+    return this.target(this.bundle)
+  };
 }
