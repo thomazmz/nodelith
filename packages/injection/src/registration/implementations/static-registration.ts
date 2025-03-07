@@ -1,3 +1,5 @@
+import * as Types from '@nodelith/types'
+
 import { Token } from '../../token';
 import { Bundle } from '../../bundle';
 import { Access } from '../../access';
@@ -9,22 +11,30 @@ export type StaticRegistrationOptions = {
 }
 
 export class StaticRegistration<R> implements Registration<R> {
-  public static create<R>(target: any, options: StaticRegistrationOptions): StaticRegistration<R> {
-    throw new Error('Static method StaticRegistration:create is mot Implemented')
+  public static create<R>(target: any, options?: StaticRegistrationOptions): StaticRegistration<R> {
+    return new StaticRegistration(target, options)
   }
 
-  public get token(): Token {
-    throw new Error('StaticRegistration class is mot Implemented')
+  private readonly target: any
+
+  public readonly access: Access
+
+  public token: Token
+
+  public constructor(target: Types.Function<R>, options?: StaticRegistrationOptions) {
+    this.target = target
+    this.token = options?.token ?? Symbol()
+    this.access = options?.access ?? 'public'
   }
 
-  public get access(): Access {
-    throw new Error('StaticRegistration class is mot Implemented')
+  public clone(): Registration<R> {
+    return new StaticRegistration<R>(this.target, {
+      token: this.token,
+      access: this.access,
+    })
   }
 
-  public clone(bundle?: Bundle): Registration<R> {
-    throw new Error('StaticRegistration.clone method is mot Implemented')
-  }
-  public resolve(bundle?: Bundle): R {
-    throw new Error('StaticRegistration.resolve method is mot Implemented')
+  public resolve(): R {
+    return this.target
   }
 }
