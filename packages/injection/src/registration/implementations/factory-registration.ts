@@ -6,7 +6,6 @@ import { Access } from '../../access';
 import { Lifetime } from '../../lifetime';
 import { Registration } from '../registration'
 
-
 export type FactoryRegistrationOptions = {
   bundle?: Bundle | undefined;
   token?: Token | undefined;
@@ -15,7 +14,7 @@ export type FactoryRegistrationOptions = {
 }
 
 export class FactoryRegistration<R extends object> implements Registration<R> {
-  public static create<R extends object>(target: Types.Factory<R>, options: FactoryRegistrationOptions): FactoryRegistration<R> {
+  public static create<R extends object>(target: Types.Factory<R>, options?: FactoryRegistrationOptions): FactoryRegistration<R> {
     return new FactoryRegistration(target, options)
   }
 
@@ -31,7 +30,7 @@ export class FactoryRegistration<R extends object> implements Registration<R> {
 
   public token: Token
 
-  public constructor(target: Types.Factory<R>, options: FactoryRegistrationOptions) {
+  public constructor(target: Types.Factory<R>, options?: FactoryRegistrationOptions) {
     this.token = options?.token ?? Symbol()
     this.bundle = options?.bundle ?? {}
     this.access = options?.access ?? 'public'
@@ -49,15 +48,15 @@ export class FactoryRegistration<R extends object> implements Registration<R> {
   }
 
   public resolve(bundle?: Bundle): R {
-    // if('resolution' in this.singleton) {
-    //   return this.singleton.resolution
-    // }
+    if('resolution' in this.singleton) {
+      return this.singleton.resolution
+    }
 
     const resolutionBundle = this.createResolutionBundle(bundle)
 
-    // if(this.lifetime === 'singleton') {
-    //   return this.singleton.resolution = this.target(resolutionBundle)
-    // }
+    if(this.lifetime === 'singleton') {
+      return this.singleton.resolution = this.target(resolutionBundle)
+    }
 
     return this.target(resolutionBundle)
   };
