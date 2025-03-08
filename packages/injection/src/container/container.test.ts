@@ -333,7 +333,7 @@ describe('Container', () => {
 
       container.register(TestRegistration.create({ token: 'token' }))
 
-      Object.defineProperty(container, '_registrations', {
+      Object.defineProperty(container, 'map', {
         value: new Map([ ['token', undefined] ])
       });
 
@@ -432,38 +432,39 @@ describe('Container', () => {
   //   })
   // })
 
-  describe('useBundle', () => {
-    it('should use external bundle as is', () => {
-      const container0 = new Container()
+  // describe('useBundle', () => {
+  //   it('should use external bundle as is', () => {
+  //     const container0 = new Container()
 
-      container0.register(TestRegistration.create({
-        token: 'target0',
-        target: (bundle) => ({
-          value: 'target0',  
-          target1: bundle.target1.value,
-        })
-      }))
+  //     container0.register(TestRegistration.create({
+  //       token: 'target0',
+  //       target: (bundle) => ({
+  //         value: 'target0',  
+  //         target1: bundle.target1.value,
+  //       })
+  //     }))
 
-      container0.register(TestRegistration.create({
-        token: 'target1',
-        target: (bundle) => ({
-          value: 'target1',
-          target0: bundle.target0.value,
-          target2: bundle.target2.value,
-        })
-      }))
+  //     container0.register(TestRegistration.create({
+  //       token: 'target1',
+  //       target: (bundle) => ({
+  //         value: 'target1',
+  //         target0: bundle.target0.value,
+  //         target2: bundle.target2.value,
+  //       })
+  //     }))
 
-      container0.useBundle({
-        target2: { value: 'target2' }
-      })
+  //     container0.useBundle({
+  //       target2: { value: 'target2' }
+  //     })
 
-      expect(container0.resolve('target0').value).toBe('target0')
-      expect(container0.resolve('target1').value).toBe('target1')
-      expect(container0.resolve('target1').target0).toBe('target0')
-      expect(container0.resolve('target0').target1).toBe('target1')
-      expect(container0.resolve('target1').target2).toBe('target2')
-    })
-  })
+  //     expect(container0.resolve('target0').value).toBe('target0')
+  //     expect(container0.resolve('target1').value).toBe('target1')
+  //     expect(container0.resolve('target1').target0).toBe('target0')
+  //     expect(container0.resolve('target0').target1).toBe('target1')
+  //     expect(container0.resolve('target1').target2).toBe('target2')
+  //   })
+  // })
+
   describe('useRegistration', () => {
     it('should use external registration as is', () => {
       const container0 = new Container()

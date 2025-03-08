@@ -8,14 +8,14 @@ export type ContainerOptions = {
 
 export class Container {
 
-  private readonly _registrations: Map<Token, Registration> = new Map()
+  private readonly map: Map<Token, Registration> = new Map()
 
   private readonly resolving: Set<Token> = new Set()
   
   public readonly bundle: Bundle
 
   public get registrations(): Registration[] {
-    return [...this._registrations.values()]
+    return [...this.map.values()]
   }
 
   public constructor(options: ContainerOptions = {}) {
@@ -59,7 +59,7 @@ export class Container {
       return 
     }
 
-    const registration = this._registrations.get(token)
+    const registration = this.map.get(token)
 
     if (!registration) {
       // The container instance should never fulfill this condition if used
@@ -78,19 +78,11 @@ export class Container {
   }
 
   public useRegistration(registration: Registration): void {
-    this._registrations.set(registration.token, registration)
+    this.map.set(registration.token, registration)
     Object.defineProperty(this.bundle, registration.token, {
       get: () => this.resolve(registration.token),
       configurable: true,
       enumerable: true,
     });
-  }
-
-  public useBundle(externalBundle: Bundle): void {
-    const bundleDescriptors = Object.getOwnPropertyDescriptors(externalBundle)
-    const bundleEntries = Object.entries(bundleDescriptors)
-    for (const [token, descriptor] of bundleEntries) {
-      Object.defineProperty(this.bundle, token, descriptor);
-    }
   }
 }
