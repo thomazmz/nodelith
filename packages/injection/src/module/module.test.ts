@@ -72,19 +72,21 @@ describe('Module', () => {
     it('should expose public registrations when imported', () => {
       const module_a = createTestModule('a')
       const module_b = createTestModule('b')
+
       module_b.import(module_a)
   
-      module_b.register('bundles', {
-        'access': 'public',
-        factory: (bundle: Bundle) => {
-          return {
-            bundle_a: bundle.bundle_a,
-            bundle_b: bundle.bundle_b,
-          }
-        }
-      })
+      // module_b.register('bundles', {
+      //   'access': 'public',
+      //   factory: (bundle: Bundle) => {
+      //     return {
+      //       bundle_a: bundle.bundle_a,
+      //       bundle_b: bundle.bundle_b,
+      //     }
+      //   }
+      // })
   
-      const { bundle_b } = module_b.resolve({ token: 'bundles' });
+      // const bundle_a = module_b.resolve({ token: 'bundle_a' });
+      const bundle_b = module_b.resolve({ token: 'bundle_b' });
       
       bundle_b.publicRegistration_b.inspect((bundle: Bundle) => {
         expect(bundle.publicRegistration_a.value).toBe('publicRegistration_a')
@@ -120,6 +122,15 @@ describe('Module', () => {
       bundle_b.privateRegistration_b.inspect((bundle: Bundle) => {
         expect(bundle.privateRegistration_a).toBe(undefined)
       })
+    })
+    it('should not expose registrations from imported module', () => {
+      const module_a = createTestModule('a')
+      const module_b = createTestModule('b')
+      
+      module_b.import(module_a)
+  
+      expect(module_b.exposes('publicRegistration_a')).toBe(false)
+      expect(module_b.exposes('privateRegistration_a')).toBe(false)
     })
   })
 

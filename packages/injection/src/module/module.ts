@@ -15,22 +15,11 @@ import { Container } from '../container'
 import { Bundle } from '../bundle'
 import { Token } from '../token'
 
-type ModuleOptions = {
-  container?: Container | undefined
-}
-
 export class Module {
-
-  private readonly bundle: Bundle = {}
 
   private readonly container: Container = new Container()
 
-  public constructor(options?: ModuleOptions)  {
-    this.container = options?.container ?? new Container()
-    this.container.registrations.forEach((registration) => {
-      this.setRegistration(registration)
-    })
-  }
+  public readonly bundle: Bundle = {}
 
   public get registrations() {
     return this.container.registrations.filter(registration => {
@@ -44,37 +33,37 @@ export class Module {
 
   public import(module: Module): void {
     module.registrations.forEach(registration => {
-      this.container.register(registration)
+      this.container.useRegistration(registration)
     })
   }
 
   public register<R>(
     token: Token,
-    options: Omit<StaticRegistrationOptions, 'token'> & { static: any }
+    options: Omit<StaticRegistrationOptions, 'token' | 'bundle'> & { static: any }
   ): Registration<R>
 
   public register<R extends object>(
     token: Token,
-    options: Omit<FactoryRegistrationOptions, 'token'> & { factory: Types.Factory<R> }
+    options: Omit<FactoryRegistrationOptions, 'token' | 'bundle'> & { factory: Types.Factory<R> }
   ): Registration<R>
 
   public register<R extends ReturnType<Types.Function>>(
     token: Token, 
-    options: Omit<FunctionRegistrationOptions, 'token'> & { function: Types.Function<R> } 
+    options: Omit<FunctionRegistrationOptions, 'token' | 'bundle'> & { function: Types.Function<R> } 
   ): Registration<R>
 
   public register<R extends object>(
     token: Token, 
-    options: Omit<ConstructorRegistrationOptions, 'token'> & { constructor: Types.Constructor<R> }
+    options: Omit<ConstructorRegistrationOptions, 'token' | 'bundle'> & { constructor: Types.Constructor<R> }
   ): Registration<R>
 
   public register(token: Token, 
     options:
-      | { static: any } & Omit<StaticRegistrationOptions, 'token'>
-      | { factory: Types.Factory } & Omit<FactoryRegistrationOptions, 'token'>
-      | { function: Types.Function } & Omit<FunctionRegistrationOptions, 'token'>
-      | { constructor: Types.Constructor } & Omit<FactoryRegistrationOptions, 'token'>
-  ):  Registration {
+      | { static: any } & Omit<StaticRegistrationOptions, 'token' | 'bundle'>
+      | { factory: Types.Factory } & Omit<FactoryRegistrationOptions, 'token' | 'bundle'>
+      | { function: Types.Function } & Omit<FunctionRegistrationOptions, 'token' | 'bundle'>
+      | { constructor: Types.Constructor } & Omit<FactoryRegistrationOptions, 'token' | 'bundle'>
+  ): Registration {
 
     if('static' in options) {
       return this.setRegistration(StaticRegistration.create(options.static, {
@@ -87,7 +76,6 @@ export class Module {
       return this.setRegistration(FactoryRegistration.create(options.factory, {
         lifetime: options?.lifetime,
         access: options?.access,
-        bundle: options?.bundle,
         token,
       }))
     }
@@ -96,7 +84,6 @@ export class Module {
       return this.setRegistration(FunctionRegistration.create(options.function, {
         lifetime: options?.lifetime,
         access: options?.access,
-        bundle: options?.bundle,
         token,
       }))
     }
@@ -105,7 +92,6 @@ export class Module {
       return this.setRegistration(ConstructorRegistration.create(options.constructor, {
         lifetime: options?.lifetime,
         access: options?.access,
-        bundle: options?.bundle,
         token,
       }))
     }
@@ -129,7 +115,7 @@ export class Module {
   ) {
 
     if('token' in options) {
-      return this.bundle[options.token]
+      return this.container.resolve(options.token)
     }
 
     if('factory' in options) {
@@ -166,13 +152,13 @@ export class Module {
   public registerInitializer(token: Token, 
     options:
       | { factory: Types.Factory<Core.Initializer> } & Omit<FactoryRegistrationOptions, 'token'>
-      | { constructor: Types.Constructor<Core.Initializer> } & Omit<FactoryRegistrationOptions, 'token'>
+      | { constructor: Types.Constructor<Core.Initializer> } & Omit<ConstructorRegistrationOptions, 'token'>
   ): Registration {
 
     if('factory' in options) {
       return this.setRegistration(InitializableRegistration.create(
         FactoryRegistration.create(options.factory, {
-          bundle: this.bundle,
+          bundle: options.bundle,
           token,
         })
       ))
@@ -181,32 +167,25 @@ export class Module {
     if('constructor' in options) {
       return this.setRegistration(InitializableRegistration.create(
         ConstructorRegistration.create(options.constructor, {
-          bundle: this.bundle,
+          bundle: options.bundle,
           token,
         })
       ))
     }
 
     throw new Error(`Could not resolve.`)
-
   }
 
-  // private useBundle(bundle: Bundle): void {
-  //   const bundleDescriptors = Object.getOwnPropertyDescriptors(bundle)
-  //   Object.defineProperties(this.container.bundle, Object.fromEntries(
-  //     Object.entries(bundleDescriptors).filter(([token]) => {
-  //       return !this.container.has(token)
-  //     })
-  //   ))
-  // }
+  private setRegistration<R>(registration: Registration<R>): Registration<R> {
+    if(this.container.has(registration.token)) {
+      throw new Error('TODO')
+    }
 
-  private setRegistration<R>(externalRegistration: Registration<R>): Registration<R> {
-    const registration = this.container.register<R>(externalRegistration)
-    const { token, access } = registration
+    const containerRegistration = this.container.setRegistration<R>(registration)
 
-    if(!(token in this.bundle) && ['external', 'public'].includes(access)) {
-      Object.defineProperty(this.bundle, token, {
-        get: () => this.container.resolve(token),
+    if(containerRegistration.access === 'public') {
+      Object.defineProperty(this.bundle, registration.token, {
+        get: () => registration.resolve(),
         configurable: true,
         enumerable: true,
       })
