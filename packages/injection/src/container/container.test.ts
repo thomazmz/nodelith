@@ -333,7 +333,7 @@ describe('Container', () => {
 
       container.register(TestRegistration.create({ token: 'token' }))
 
-      Object.defineProperty(container, 'map', {
+      Object.defineProperty(container, '_registrations', {
         value: new Map([ ['token', undefined] ])
       });
 

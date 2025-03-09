@@ -8,14 +8,14 @@ export type ContainerOptions = {
 
 export class Container {
 
-  private readonly map: Map<Token, Registration> = new Map()
+  private readonly _registrations: Map<Token, Registration> = new Map()
 
-  private readonly resolving: Set<Token> = new Set()
+  private readonly _resolving: Set<Token> = new Set()
   
   public readonly bundle: Bundle
 
   public get registrations(): Registration[] {
-    return [...this.map.values()]
+    return [...this._registrations.values()]
   }
 
   public constructor(options: ContainerOptions = {}) {
@@ -47,7 +47,7 @@ export class Container {
   }
 
   public resolve<R = any>(token: Token, externalBundle?: Bundle): R | undefined {
-    if (this.resolving.has(token)) {
+    if (this._resolving.has(token)) {
       // Prevent infinite recursion in case of circular dependencies.
       // If the token is already being resolved, return an empty object to break
       // the cycle. This ensures that partially constructed objects can still be
@@ -59,7 +59,7 @@ export class Container {
       return 
     }
 
-    const registration = this.map.get(token)
+    const registration = this._registrations.get(token)
 
     if (!registration) {
       // The container instance should never fulfill this condition if used
@@ -68,17 +68,17 @@ export class Container {
       throw new Error(`Token "${token.toString()}" is not a valid registration.`);
     }
 
-    this.resolving.add(token)
+    this._resolving.add(token)
 
     const resolution = registration.resolve(externalBundle)
 
-    this.resolving.delete(token);
+    this._resolving.delete(token);
 
     return resolution;
   }
 
   public useRegistration(registration: Registration): void {
-    this.map.set(registration.token, registration)
+    this._registrations.set(registration.token, registration)
     Object.defineProperty(this.bundle, registration.token, {
       get: () => this.resolve(registration.token),
       configurable: true,
