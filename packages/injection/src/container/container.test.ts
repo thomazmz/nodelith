@@ -59,10 +59,8 @@ describe('Container', () => {
     it('should return "true" when token is registered', () => {
       const container = new Container()
 
-      container.register(
-        TestRegistration.create({ token: 'target0', target: () => ({}) }),
-        TestRegistration.create({ token: 'target1', target: () => ({}) }),
-      )
+      container.register(TestRegistration.create({ token: 'target0', target: () => ({}) }))
+      container.register(TestRegistration.create({ token: 'target1', target: () => ({}) }))
 
       expect(container.has('target0')).toBe(true)
       expect(container.has('target1')).toBe(true)
@@ -111,12 +109,10 @@ describe('Container', () => {
           callTarget1: () => dependencies.target1.call(),
         }
       }
-  
-      container.register(
-        TestRegistration.create({ token: 'target0', target: target0 }),
-        TestRegistration.create({ token: 'target1', target: target1 }),
-        TestRegistration.create({ token: 'target2', target: target2 }),
-      )
+
+      container.register(TestRegistration.create({ token: 'target0', target: target0 }))
+      container.register(TestRegistration.create({ token: 'target1', target: target1 }))
+      container.register(TestRegistration.create({ token: 'target2', target: target2 }))
 
       expect(container.bundle.target0.call()).toBe('calledTarget0')
       expect(container.bundle.target1.call()).toBe('calledTarget1')
@@ -150,11 +146,11 @@ describe('Container', () => {
         }
       }
   
-      container.register(
-        TestRegistration.create({ token: 'target0', target: target0 }),
-        TestRegistration.create({ token: 'target1', target: target1 }),
-        TestRegistration.create({ token: 'target2', target: target2 }),
-      )
+      
+      container.register(TestRegistration.create({ token: 'target0', target: target0 })),
+      container.register(TestRegistration.create({ token: 'target1', target: target1 })),
+      container.register(TestRegistration.create({ token: 'target2', target: target2 })),
+      
 
       expect(container.bundle.target0.call()).toBe('calledTarget0')
       expect(container.bundle.target1.call()).toBe('calledTarget1')
@@ -176,11 +172,9 @@ describe('Container', () => {
         call: () => 'calledTarget1',
         callDependency: () => bundle.target0.call(),
       })
-  
-      container.register(
-        TestRegistration.create({ token: 'target0', target: target0 }),
-        TestRegistration.create({ token: 'target1', target: target1 }),
-      )
+
+      container.register(TestRegistration.create({ token: 'target0', target: target0 }))
+      container.register(TestRegistration.create({ token: 'target1', target: target1 }))
 
       expect(container.resolve('target0').call()).toBe('calledTarget0')
       expect(container.resolve('target1').call()).toBe('calledTarget1')
@@ -207,10 +201,9 @@ describe('Container', () => {
         callDependency: () => target0.call(),
       })
 
-      container.register(
-        TestRegistration.create({ token: 'target0', target: target0 }),
-        TestRegistration.create({ token: 'target1', target: target1 }),
-      )
+
+      container.register(TestRegistration.create({ token: 'target0', target: target0 }))
+      container.register(TestRegistration.create({ token: 'target1', target: target1 }))
 
       expect(container.bundle.target0.call()).toBe('called_target0')
       expect(container.bundle.target1.call()).toBe('called_target1')
@@ -234,12 +227,9 @@ describe('Container', () => {
       const scopedRegistration0 = TestRegistration.create({ token: 'target0', target: target0 })
       const scopedRegistration1 = TestRegistration.create({ token: 'target1', target: target1 })
 
-      
-      container.register(
-        scopedRegistration0,
-        scopedRegistration1,
-      )
-  
+      container.register(scopedRegistration0),
+      container.register(scopedRegistration1),
+
       expect(container.bundle.target0.value).toBe('target0')
       // expect(container.bundle.target0.target1).toBe('target1')
   
@@ -267,7 +257,8 @@ describe('Container', () => {
       const registration0 = TestRegistration.create({ token: 'registration0' })
       const registration1 = TestRegistration.create({ token: 'registration1' })
 
-      container.register(registration0, registration1)
+      container.register(registration0)
+      container.register(registration1)
 
       expect(Object.keys(container.bundle)).toEqual(expect.arrayContaining([
         registration0.token,
@@ -279,7 +270,8 @@ describe('Container', () => {
       const registration0 = TestRegistration.create({ token: 'registration0' })
       const registration1 = TestRegistration.create({ token: 'registration1' })
 
-      container.register(registration0, registration1)
+      container.register(registration0)
+      container.register(registration1)
 
       const descriptors = Object.getOwnPropertyDescriptors(container.bundle)
 
@@ -292,7 +284,8 @@ describe('Container', () => {
       const registration0 = TestRegistration.create({ token: 'registration0' })
       const registration1 = TestRegistration.create({ token: 'registration1' })
 
-      container.register(registration0, registration1)
+      container.register(registration0)
+      container.register(registration1)
 
       const descriptors = Object.getOwnPropertyDescriptors(container.bundle)
 
@@ -315,18 +308,13 @@ describe('Container', () => {
     it('should register multiple registrations', () => {
       const container = new Container()
 
-      const scopedRegistrations = container.register(
-        TestRegistration.create({ token: 'target0' }),
-        TestRegistration.create({ token: 'target1' }),
-      )
+      const scopedRegistrations = [
+        container.register(TestRegistration.create({ token: 'target0' })),
+        container.register(TestRegistration.create({ token: 'target1' })),
+      ]
 
       expect(scopedRegistrations[0]?.resolve()).toBe('target0')
       expect(scopedRegistrations[1]?.resolve()).toBe('target1')
-    })
-    it('should return empty array when registering empty array', () => {
-      const container = new Container()
-      const scopedRegistrations = container.register(...[])
-      expect(scopedRegistrations.length).toBe(0)
     })
     it('should throw error if registration map does not contain registration', () => {
       const container = new Container()
@@ -357,10 +345,10 @@ describe('Container', () => {
       const registration0 = TestRegistration.create({ token: 'target0' })
       const registration1 = TestRegistration.create({ token: 'target1' })
 
-      const scopedRegistrations = container.register(
-        registration0,
-        registration1,
-      )
+      const scopedRegistrations = [
+        container.register(registration0),
+        container.register(registration1),
+      ]
 
       expect(scopedRegistrations[0]).not.toBe(registration0)
       expect(scopedRegistrations[1]).not.toBe(registration1)

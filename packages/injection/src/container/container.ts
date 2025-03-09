@@ -26,22 +26,8 @@ export class Container {
     return token in this.bundle;
   }
 
-  public register<R>(registrations: Registration): Registration<R>
-
-  public register(...registrations: Registration[]): Registration[]
-
-  public register(...registrations: Registration[]): Registration | Registration[] {
-    if(registrations.length > 1)  {
-      return registrations.map(externalRegistration => {
-        return this.register(externalRegistration)
-      })
-    }
-
-    if(!registrations[0]) {
-      return []
-    }
-
-    const registrationClone = registrations[0].clone(this.bundle)
+  public register<R>(registrations: Registration<R>): Registration<R> {
+    const registrationClone = registrations.clone(this.bundle)
     this.useRegistration(registrationClone)
     return registrationClone
   }
