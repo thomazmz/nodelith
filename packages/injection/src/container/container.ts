@@ -26,12 +26,6 @@ export class Container {
     return token in this.bundle;
   }
 
-  public register<R>(registrations: Registration<R>): Registration<R> {
-    const registrationClone = registrations.clone(this.bundle)
-    this.useRegistration(registrationClone)
-    return registrationClone
-  }
-
   public resolve<R = any>(token: Token, externalBundle?: Bundle): R | undefined {
     if (this._resolving.has(token)) {
       // Prevent infinite recursion in case of circular dependencies.
@@ -61,6 +55,12 @@ export class Container {
     this._resolving.delete(token);
 
     return resolution;
+  }
+
+  public setRegistration<R>(registrations: Registration<R>): Registration<R> {
+    const registrationClone = registrations.clone(this.bundle)
+    this.useRegistration(registrationClone)
+    return registrationClone
   }
 
   public useRegistration(registration: Registration): void {
