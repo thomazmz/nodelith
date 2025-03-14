@@ -56,19 +56,6 @@ describe('Module', () => {
   })
 
   describe('access', () => {
-    it('should make registrations available to all module registrations', () => {
-      const module_a =  createTestModule('a')
-  
-      const bundle_a = module_a.resolve({ token: 'bundle_a' });
-      
-      bundle_a.publicRegistration_a.inspect((bundle: Bundle) => {
-        expect(bundle.privateRegistration_a.value).toBe('privateRegistration_a')
-      })
-      
-      bundle_a.privateRegistration_a.inspect((bundle: Bundle) => {
-        expect(bundle.publicRegistration_a.value).toBe('publicRegistration_a')
-      })
-    })
     it('should expose public registrations when imported', () => {
       const module_a = createTestModule('a')
       const module_b = createTestModule('b')
@@ -98,6 +85,15 @@ describe('Module', () => {
         expect(bundle.publicRegistration_b.value).toBe('publicRegistration_b')
       })
     })
+    it('should not expose registrations from imported module', () => {
+      const module_a = createTestModule('a')
+      const module_b = createTestModule('b')
+      
+      module_b.import(module_a)
+  
+      expect(module_b.exposes('publicRegistration_a')).toBe(false)
+      expect(module_b.exposes('privateRegistration_a')).toBe(false)
+    })
     it('should not expose private registrations when imported', () => {
       const module_a = createTestModule('a')
       const module_b = createTestModule('b')
@@ -123,14 +119,18 @@ describe('Module', () => {
         expect(bundle.privateRegistration_a).toBe(undefined)
       })
     })
-    it('should not expose registrations from imported module', () => {
-      const module_a = createTestModule('a')
-      const module_b = createTestModule('b')
-      
-      module_b.import(module_a)
+    it('should make registrations available to all module registrations', () => {
+      const module_a =  createTestModule('a')
   
-      expect(module_b.exposes('publicRegistration_a')).toBe(false)
-      expect(module_b.exposes('privateRegistration_a')).toBe(false)
+      const bundle_a = module_a.resolve({ token: 'bundle_a' });
+      
+      bundle_a.publicRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.privateRegistration_a.value).toBe('privateRegistration_a')
+      })
+      
+      bundle_a.privateRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.publicRegistration_a.value).toBe('publicRegistration_a')
+      })
     })
   })
 
@@ -139,10 +139,6 @@ describe('Module', () => {
       const module = createTestModule()
       const publicResolution = module.resolve({ token: 'publicRegistration' })
       expect(publicResolution.value).toEqual('publicRegistration')
-    })
-    it('should return undefined for unregistered token', () => {
-      const module = createTestModule()
-      expect(module.resolve({ token: 'unknownRegistration' })).toBe(undefined)
     })
     it('should resolve circular dependencies', () => {
       const module_a = createTestModule('a')
@@ -174,5 +170,57 @@ describe('Module', () => {
         expect(bundle.publicRegistration_a.value).toBe('publicRegistration_a')
       })
     })
+    it('should return undefined for unregistered token', () => {
+      const module = createTestModule()
+      expect(module.resolve({ token: 'unknownRegistration' })).toBe(undefined)
+    })
+  })
+
+  describe('initialize', () =>  {
+    it('should initialize initializable registrations', async ()  => {
+      const module_a = createTestModule('a')
+
+      module_a.registerInitializer('initializer_a', { 
+        factory: () => ({
+          initialize() {
+            return { value:  'initializer_a' }
+          }
+        })
+      })
+
+      await module_a.initialize()
+
+      const bundle_a = module_a.resolve({ token: 'bundle_a' })
+
+      bundle_a.publicRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.initializer_a.value).toBe('initializer_a')
+      })
+      
+      bundle_a.privateRegistration_a.inspect((bundle: Bundle) => {
+        expect(bundle.initializer_a.value).toBe('initializer_a')
+      })
+    })
+    it('should throw when initializable registrations were not initialized', async ()  => {
+      const module_a = createTestModule('a')
+  
+      module_a.registerInitializer('initializer_a', { 
+        factory: () => ({
+          initialize() {
+            return { value:  'initializer_a' }
+          }
+        })
+      })
+  
+      const bundle_a = module_a.resolve({ token: 'bundle_a' })
+  
+      bundle_a.publicRegistration_a.inspect((bundle: Bundle) => {
+        expect(() => void bundle.initializer_a).toThrow()
+      })
+  
+      bundle_a.privateRegistration_a.inspect((bundle: Bundle) => {
+        expect(() => void bundle.initializer_a).toThrow()
+      })
+    })
   })
 })
+

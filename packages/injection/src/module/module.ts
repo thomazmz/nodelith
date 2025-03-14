@@ -15,9 +15,11 @@ import { Container } from '../container'
 import { Bundle } from '../bundle'
 import { Token } from '../token'
 
-export class Module {
+export class Module implements Core.Initializer {
 
   private readonly container: Container = new Container()
+
+  private readonly modules: Set<Module> = new Set()
 
   public readonly bundle: Bundle = {}
 
@@ -35,6 +37,36 @@ export class Module {
     module.registrations.forEach(registration => {
       this.container.useRegistration(registration)
     })
+
+    this.modules.add(module)
+  }
+
+  public async initialize(): Promise<void> {
+    for (const module of this.modules) {
+      await module.initialize()
+    }
+
+    const initializers = this.registrations.filter(registration => {
+      return InitializableRegistration.isInitializable(registration)
+    })
+
+    for (const initializer of initializers) {
+      await initializer.initialize()
+    }
+  }
+
+  public async terminate(): Promise<void> {
+    for (const module of this.modules) {
+      await module.terminate()
+    }
+
+    const initializers = this.registrations.filter(registration => {
+      return InitializableRegistration.isInitializable(registration)
+    })
+
+    for (const initializer of initializers) {
+      initializer.terminate()
+    }
   }
 
   public register<R>(
