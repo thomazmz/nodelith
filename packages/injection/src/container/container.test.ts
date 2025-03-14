@@ -86,6 +86,22 @@ describe('Container', () => {
       const container = new Container()
       expect(container.resolve('registration')).toBe(undefined)
     })
+    it('should throw error in case the registration throws while resolving', () => {
+      const container = new Container()
+
+      const registration = {
+        token: 'someToken',
+        resolve: (bundle?: Bundle) => { 
+          throw  new  Error('Resolution Error!!!')
+        }
+      } as any as Registration
+
+      container.useRegistration(registration)
+
+      expect(() => {
+        container.resolve('someToken')
+      }).toThrow('Resolution Error!!!')
+    })
     it('should resolve acyclic dependency graph with target dependencies when not destructuring bundle', () => {
       const container = new Container()
 

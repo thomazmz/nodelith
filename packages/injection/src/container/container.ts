@@ -50,11 +50,14 @@ export class Container {
 
     this._resolving.add(token)
 
-    const resolution = registration.resolve(externalBundle)
-
-    this._resolving.delete(token);
-
-    return resolution;
+    try {
+      const resolution = registration.resolve(externalBundle)
+      this._resolving.delete(token);
+      return resolution;
+    } catch(error) {
+      this._resolving.clear()
+      throw error;
+    }
   }
 
   public setRegistration<R>(registrations: Registration<R>): Registration<R> {
