@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto"
 import { FactoryRegistration } from "./factory-registration"
+import { Bundle } from "bundle"
 
 describe('FactoryRegistration',  () => {
   it('Should resolve factory dynamically', () => {
@@ -83,5 +84,28 @@ describe('FactoryRegistration',  () => {
 
     expect(resolution_0).toBeDefined()
     expect(resolution_1).toBeDefined()
+  })
+  
+  it('should expose bundle registration keys', () => {
+    const testFactory = (bundle: Bundle) => {
+      return { bundle }
+    }
+
+    const registration = FactoryRegistration.create(testFactory, {
+      bundle: { key0: 'key0' }
+    })
+
+    const resolution = registration.resolve({
+      key1: 'key1'
+    })
+
+    expect(resolution.bundle.key0).toBe('key0')
+    expect(resolution.bundle.key1).toBe('key1')
+
+    const t = Object.keys(resolution.bundle)
+
+    expect(Object.keys(resolution.bundle).length).toBe(2)
+    expect(Object.keys(resolution.bundle)[0]).toBe('key0')
+    expect(Object.keys(resolution.bundle)[1]).toBe('key1')
   })
 })

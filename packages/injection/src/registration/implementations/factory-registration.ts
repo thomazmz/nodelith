@@ -63,6 +63,18 @@ export class FactoryRegistration<R extends object> implements Registration<R> {
 
   private createResolutionBundle(bundle: Bundle = {}): Bundle {
     return new Proxy(bundle, {
+      ownKeys: (target) => {
+        return [
+          ...Reflect.ownKeys(this.bundle).filter(key => key !== this.token),
+          ...Reflect.ownKeys(target).filter(key => key !== this.token),
+        ];
+      },
+      getOwnPropertyDescriptor: (target, token) => {
+        return token !== this.token ? (
+          Reflect.getOwnPropertyDescriptor(this.bundle, token)
+            ?? Reflect.getOwnPropertyDescriptor(target, token)
+        ) : undefined
+      },
       set: (_target: Bundle, token: Token) => {
         throw new Error(`Could not set bundle key "${token.toString()}". Targets are not allowed to assign bundle values.`)
       },
