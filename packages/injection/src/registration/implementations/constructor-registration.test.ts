@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto"
 import { ConstructorRegistration } from "./constructor-registration"
+import { Bundle } from "bundle"
 
 describe('ConstructorRegistration',  () => {
   it('Should resolve constructor dynamically', () => {
@@ -86,6 +87,32 @@ describe('ConstructorRegistration',  () => {
 
     expect(resolution_0).toBeDefined()
     expect(resolution_1).toBeDefined()
+  })
+
+  it('should expose bundle registration keys', () => {
+    class TestClass {
+      public readonly bundle: Bundle
+      constructor(bundle: Bundle) {
+        this.bundle = bundle
+      }
+    }
+
+    const registration = ConstructorRegistration.create(TestClass, {
+      bundle: { key0: 'key0' }
+    })
+
+    const resolution = registration.resolve({
+      key1: 'key1'
+    })
+
+    expect(resolution.bundle.key0).toBe('key0')
+    expect(resolution.bundle.key1).toBe('key1')
+
+    const t = Object.keys(resolution.bundle)
+
+    expect(Object.keys(resolution.bundle).length).toBe(2)
+    expect(Object.keys(resolution.bundle)[0]).toBe('key0')
+    expect(Object.keys(resolution.bundle)[1]).toBe('key1')
   })
 
   // it('should inject parameters in positional order by default', () => {
