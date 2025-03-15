@@ -1,7 +1,6 @@
 import * as Types from '@nodelith/types'
 
 import { Token } from '../../token';
-import { Bundle } from '../../bundle';
 import { Access } from '../../access';
 import { Registration } from '../registration'
 
