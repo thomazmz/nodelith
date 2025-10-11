@@ -1,0 +1,24 @@
+{
+  "moduleFileExtensions": ["ts", "js"],
+  "maxWorkers": 1,
+  "rootDir": "./src",
+  "testMatch": ["**/*.test.ts"],
+  "testEnvironment": "node",
+  "globals": {
+    "ts-jest": {
+      "tsconfig": "./tsconfig.json"
+    }
+  },
+  "transform": {
+    "^.+\\.ts$": "ts-jest"
+  },
+  "coverageReporters": ["text", "lcov"],
+  "coverageDirectory": "<rootDir>/../coverage",
+  "moduleNameMapper": {
+    "^@refresh/domain/(.+)$": "<rootDir>/$1/library.ts"
+  },
+  "collectCoverageFrom": [
+    "**/*.ts",
+    "!**/index.ts"
+  ]
+}

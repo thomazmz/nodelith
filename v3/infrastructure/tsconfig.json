@@ -1,0 +1,35 @@
+{
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "inlineSources": true,
+    "sourceMap": true,
+    "target": "ES2022",
+    "module": "node16",
+    "moduleResolution": "node16",
+    "rootDir": "src",
+    "outDir": "dist",
+    "baseUrl": "src",
+    "types": ["node", "jest"],
+    "tsBuildInfoFile": "cache/tsbuild.json",
+    "declaration": true,
+    "declarationMap": true,
+    "allowSyntheticDefaultImports": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": false,
+    "incremental": true,
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "removeComments": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strictBindCallApply": false,
+    "strictNullChecks": true,
+    "paths": {
+      "@refresh/infrastructure/*": ["*/module.ts"]
+    }
+  }
+}

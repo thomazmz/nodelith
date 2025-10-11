@@ -1,0 +1,1 @@
+export { ExpressModule as Module } from './express-module'

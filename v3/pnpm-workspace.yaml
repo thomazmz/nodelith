@@ -1,0 +1,5 @@
+packages: 
+  - 'domain/**'
+  - 'framework/**'
+  - 'applications/**'
+  - 'infrastructure/**'

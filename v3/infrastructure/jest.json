@@ -1,0 +1,17 @@
+{
+  "moduleFileExtensions": ["ts", "js"],
+  "maxWorkers": 1,
+  "rootDir": "./src",
+  "testMatch": ["**/*.test.ts"],
+  "testEnvironment": "node",
+  "transform": {
+    "^.+\\.ts$": ["ts-jest", {
+      "tsconfig": {
+        "isolatedModules": true
+      }
+    }]
+  },
+  "moduleNameMapper": {
+    "^@refresh/infrastructure/(.+)$": "<rootDir>/$1/module.ts"
+  }
+}

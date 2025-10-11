@@ -1,0 +1,12 @@
+{
+  "name": "@refresh/root",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "pnpm --recursive --if-present run test",
+    "test:watch": "pnpm --recursive --if-present run test:watch",
+    "build": "pnpm --recursive --if-present run build",
+    "build:watch": "pnpm --parallel --if-present run build:watch",
+    "start": "pnpm --recursive --if-present run start",
+    "start:watch": "pnpm --parallel --if-present run start:watch"
+  }
+}
