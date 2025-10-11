@@ -1,0 +1,5 @@
+## Node Specific
+**/node_modules
+
+## Darwin OS Specific
+**/.DS_Store

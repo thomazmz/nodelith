@@ -1,0 +1,37 @@
+{
+  "name": "@nodelith/jwt",
+  "license": "MIT",
+  "version": "0.7.4",
+  "author": "Thomaz Zandonotto <thomaz.zandonotto@gmail.com>",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "./lib"
+  ],
+  "keywords": [
+    "typescript",
+    "javascript",
+    "jwt"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "start": "node lib/index.js",
+    "test": "jest --passWithNoTests --config ./jest.json",
+    "build": "rimraf ./lib/* && tsc --project build.json"
+  },
+  "devDependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "@nodelith/context": "^0.7.5",
+    "@nodelith/utilities": "^0.7.4"
+  },
+  "peerDependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "@nodelith/context": "^0.7.5",
+    "@nodelith/utilities": "^0.7.4"
+  }
+}

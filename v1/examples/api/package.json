@@ -1,0 +1,48 @@
+{
+  "name": "@nodelith/api",
+  "license": "MIT",
+  "version": "0.8.0",
+  "author": "Thomaz Zandonotto <thomaz.zandonotto@gmail.com>",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "./dist"
+  ],
+  "private": true,
+  "keywords": [
+    "typescript",
+    "javascript",
+    "controller",
+    "container",
+    "example",
+    "express",
+    "ioc",
+    "di"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node dist/api.start.js",
+    "build": "rimraf ./dist/* && tsc",
+    "build:watch": "rimraf ./dist/* && tsc --watch"
+  },
+  "dependencies": {
+    "@nodelith/config": "workspace:*",
+    "@nodelith/container": "workspace:*",
+    "@nodelith/controller": "workspace:*",
+    "@nodelith/core": "workspace:*",
+    "@nodelith/express": "workspace:*",
+    "@nodelith/http": "workspace:*",
+    "@nodelith/mongodb": "workspace:*",
+    "@nodelith/utilities": "workspace:*",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.4.0",
+    "@types/node": "^22.9.0",
+    "rimraf": "^5.0.1",
+    "typescript": "^5.6.3"
+  }
+}

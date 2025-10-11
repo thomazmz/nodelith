@@ -1,0 +1,10 @@
+{
+  "moduleFileExtensions": [ "ts", "js" ],
+  "maxWorkers": 1,
+  "rootDir": "./src",
+  "testRegex": "test.ts$",
+  "testEnvironment": "node",
+  "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+  }
+}
