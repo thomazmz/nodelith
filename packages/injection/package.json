@@ -1,0 +1,28 @@
+{
+  "name": "@nodelith/injection",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "types": "./dist/library.d.ts",
+      "import": "./dist/library.js",
+      "require": "./dist/library.js"
+    }
+  },
+  "scripts": {
+    "test": "jest --config ./jest.json",
+    "build": "tsc --project ./build.json",
+    "build:watch": "tsc --watch --project ./build.json"
+  },
+  "peerDependencies": {
+    "@nodelith/utils": "workspace:^",
+    "@nodelith/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.2.1",
+    "typescript": "^5.9.2",
+    "ts-jest": "^29.4.1",
+    "jest": "^30.0.5"
+  }
+}
