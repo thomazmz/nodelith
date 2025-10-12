@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "type": "commonjs",
   "exports": {
-    "./*": {
-      "types": "./dist/*/library.d.ts",
-      "import": "./dist/*/library.js",
-      "require": "./dist/*/library.js"
+    ".": {
+      "types": "./dist/library.d.ts",
+      "import": "./dist/library.js",
+      "require": "./dist/library.js"
     }
   },
   "scripts": {
@@ -14,7 +14,7 @@
     "build": "tsc --project ./build.json",
     "build:watch": "tsc --watch --project ./build.json"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@nodelith/injection": "workspace:^",
     "@nodelith/utils": "workspace:^",
     "@nodelith/http": "workspace:^",

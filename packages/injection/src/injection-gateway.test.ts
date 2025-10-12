@@ -1,16 +1,16 @@
 import { InjectionModule } from '@nodelith/injection'
-import { ControllerActions } from './controller-actions'
+import { InjectionGateway } from './injection-gateway'
 
 class TestDependency {
-  private readonly name: string = 'TestController'
+  private readonly name: string = 'TestFacade'
 
   public getMessage(): string {
     return `Hello from ${this.name}`
   }
 }
 
-class TestController {
-  private readonly name: string = 'TestController'
+class TestFacade {
+  private readonly name: string = 'TestFacade'
 
   private readonly dependency: TestDependency
 
@@ -43,72 +43,71 @@ class TestController {
   }
 }
 
-describe('ControllerActions', () => {
+describe('InjectionGateway', () => {
   const injectionModule = InjectionModule.create()
 
   injectionModule.registerClass('dependency', TestDependency)
 
   const injectionModuleSpy = jest.spyOn(InjectionModule, 'resolveClass')
-
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it('should create an actions object that contains expected controller methods', () => {
-    const controllerActions = ControllerActions.extract(TestController, injectionModule)
+  it('should create an actions object that contains expected constructor methods', () => {
+    const injectionGateway = InjectionGateway.create(TestFacade, injectionModule)
 
-    const result = controllerActions.getMessage()
+    const result = injectionGateway.getMessage()
 
-    expect(result).toBe('Hello from TestController')
+    expect(result).toBe('Hello from TestFacade')
   })
 
   it('should handle method arguments', () => {
-    const controllerActions = ControllerActions.extract(TestController, injectionModule)
+    const injectionGateway = InjectionGateway.create(TestFacade, injectionModule)
 
-    const result = controllerActions.add(5, 3)
+    const result = injectionGateway.add(5, 3)
 
     expect(result).toBe(8)
   })
 
   it('should preserve this context', () => {
-    const controllerActions = ControllerActions.extract(TestController, injectionModule)
+    const injectionGateway = InjectionGateway.create(TestFacade, injectionModule)
 
-    const result = controllerActions.getName()
+    const result = injectionGateway.getName()
 
-    expect(result).toBe('TestController')
+    expect(result).toBe('TestFacade')
   })
 
   it('should resolve a new instance for each method call', () => {
-    const controllerActions = ControllerActions.extract(TestController, injectionModule)
+    const injectionGateway = InjectionGateway.create(TestFacade, injectionModule)
 
-    controllerActions.getMessage()
-    controllerActions.getMessage()
-    controllerActions.getMessage()
+    injectionGateway.getMessage()
+    injectionGateway.getMessage()
+    injectionGateway.getMessage()
 
     expect(injectionModuleSpy).toHaveBeenCalledTimes(3)
-    expect(injectionModuleSpy).toHaveBeenCalledWith(TestController, injectionModule)
+    expect(injectionModuleSpy).toHaveBeenCalledWith(TestFacade, injectionModule)
   })
 
   it('should handle methods that throw errors', () => {
-    const controllerActions = ControllerActions.extract(TestController, injectionModule)
+    const injectionGateway = InjectionGateway.create(TestFacade, injectionModule)
 
     expect(() => {
-      controllerActions.throwError()
+      injectionGateway.throwError()
     }).toThrow('Method error')
   })
 
   it('should handle methods that return undefined', () => {
-    const controllerActions = ControllerActions.extract(TestController, injectionModule)
+    const injectionGateway = InjectionGateway.create(TestFacade, injectionModule)
 
-    const result = controllerActions.doNothing()
+    const result = injectionGateway.doNothing()
 
     expect(result).toBeUndefined()
   })
 
   it('should handle async methods', async () => {
-    const controllerActions = ControllerActions.extract(TestController, injectionModule)
+    const injectionGateway = InjectionGateway.create(TestFacade, injectionModule)
 
-    const result = await controllerActions.doAsync()
+    const result = await injectionGateway.doAsync()
 
     expect(result).toBe('data')
   })
