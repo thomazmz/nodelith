@@ -13,6 +13,9 @@ importers:
       '@nodelith/core':
         specifier: workspace:^
         version: link:../core
+      '@nodelith/http':
+        specifier: workspace:^
+        version: link:../http
       '@nodelith/injection':
         specifier: workspace:^
         version: link:../injection
