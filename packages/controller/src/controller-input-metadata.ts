@@ -1,4 +1,4 @@
-import { Utils } from '@nodelith/utils'
+import { FunctionUtils } from '@nodelith/utils'
 
 const CONTROLLER_INPUT_METADATA_KEY = Symbol('__controller_input_metadata')
 
@@ -10,13 +10,13 @@ export const ControllerInputMetadata = Object.freeze({
   extract: extractInputMetadata,
 })
 
-export function extractInputMetadata(descriptor: TypedPropertyDescriptor<Utils.Function>): ControllerInputMetadata {
+export function extractInputMetadata(descriptor: TypedPropertyDescriptor<FunctionUtils>): ControllerInputMetadata {
   if (descriptor.value && descriptor.value[CONTROLLER_INPUT_METADATA_KEY]) {
     return descriptor.value[CONTROLLER_INPUT_METADATA_KEY]
   }
 
   if(typeof descriptor.value === 'function') {
-    const parameters = Utils.Function.extractParameters(descriptor.value)
+    const parameters = FunctionUtils.extractParameters(descriptor.value)
 
     return Object.freeze({
       ...Object.fromEntries(parameters.entries()),

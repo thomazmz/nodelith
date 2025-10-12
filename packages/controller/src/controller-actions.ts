@@ -1,12 +1,12 @@
-import { UtilsConstructor } from '@nodelith/utils'
+import { ConstructorUtils } from '@nodelith/utils'
+import { ObjectUtils } from '@nodelith/utils'
 import { InjectionModule } from '@nodelith/injection'
-import { UtilsObject } from '@nodelith/utils'
 
 type ControllerActions<T> = Pick<T, { [K in keyof T]: T[K] extends Function ? K : never }[keyof T]>
 
-export function extractControllerActions<T extends object>(constructor: UtilsConstructor<T>, module: InjectionModule): ControllerActions<T> {
-  return Object.freeze(UtilsObject.extractMembers(constructor.prototype).reduce((controllerWrapper, member) => {
-    if(UtilsObject.isConstructorMember(member) || !UtilsObject.isFunctionMember(member)) {
+export function extractControllerActions<T extends object>(constructor: ConstructorUtils<T>, module: InjectionModule): ControllerActions<T> {
+  return Object.freeze(ObjectUtils.extractMembers(constructor.prototype).reduce((controllerWrapper, member) => {
+    if(ObjectUtils.isConstructorMember(member) || !ObjectUtils.isFunctionMember(member)) {
       return controllerWrapper
     }
 

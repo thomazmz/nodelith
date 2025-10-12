@@ -1,10 +1,10 @@
-import { UtilsFunction } from "./utils-function"
+import { FunctionUtils } from "./utils-function"
 
-export type UtilsObject = object
+export type ObjectUtils = object
 
-export declare namespace UtilsObject {
-  export type FunctionMember = Member<UtilsFunction> & {
-    value: UtilsFunction
+export declare namespace ObjectUtils {
+  export type FunctionMember = Member<FunctionUtils> & {
+    value: FunctionUtils
   }
 
   export type Member<T = any> = TypedPropertyDescriptor<T> & {
@@ -12,28 +12,28 @@ export declare namespace UtilsObject {
   }
 }
 
-export function extractMember<T extends UtilsObject>(object: T, key: keyof T): UtilsObject.Member | undefined {
+export function extractMember<T extends ObjectUtils>(object: T, key: keyof T): ObjectUtils.Member | undefined {
   const descriptor = Object.getOwnPropertyDescriptor(object, key)
   return descriptor ? { ...descriptor, key } : undefined
 }
 
-export function extractMembers<T extends UtilsObject>(object: T): UtilsObject.Member[] {
+export function extractMembers<T extends ObjectUtils>(object: T): ObjectUtils.Member[] {
   const descriptors = Object.getOwnPropertyDescriptors(object)
   return Object.entries(descriptors).map(([key, descriptor]) => {
     return ({ ...descriptor, key })
   })
 }
 
-export function isConstructorMember(member: UtilsObject.Member): boolean {
+export function isConstructorMember(member: ObjectUtils.Member): boolean {
   return isFunctionMember(member)
      && member.key === 'constructor'
 }
 
-export function isFunctionMember(member: UtilsObject.Member): boolean {
+export function isFunctionMember(member: ObjectUtils.Member): boolean {
   return typeof member.value === 'function'
 }
 
-export const UtilsObject = {
+export const ObjectUtils = {
   extractMember,
   extractMembers,
   isFunctionMember,

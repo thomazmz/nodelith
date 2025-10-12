@@ -1,7 +1,7 @@
 import { CoreIdentity } from '@nodelith/core'
-import { UtilsFactory } from '@nodelith/utils'
-import { UtilsFunction } from '@nodelith/utils'
-import { UtilsConstructor } from '@nodelith/utils'
+import { FactoryUtils } from '@nodelith/utils'
+import { FunctionUtils } from '@nodelith/utils'
+import { ConstructorUtils } from '@nodelith/utils'
 import { InjectionBundle } from './injection-bundle'
 import { InjectionContext } from './injection-context'
 import { InjectionRegistration } from './injection-registration'
@@ -21,7 +21,7 @@ export class InjectionContainer {
     return new InjectionContainer(context ?? InjectionContext.create())
   }
   
-  public static resolveClass<C extends UtilsConstructor<R>, R extends object = InstanceType<C>>(constructor: C, container: InjectionContainer): R {
+  public static resolveClass<C extends ConstructorUtils<R>, R extends object = InstanceType<C>>(constructor: C, container: InjectionContainer): R {
     return InjectionRegistration.create<R>({ class: constructor }).resolve({
       bundle: InjectionBundle.create({
         entries: container.entries,
@@ -29,7 +29,7 @@ export class InjectionContainer {
     })
   }
   
-  public static resolveFactory<F extends UtilsFactory<R>, R extends object = ReturnType<F>>(fk: F, container: InjectionContainer): R {
+  public static resolveFactory<F extends FactoryUtils<R>, R extends object = ReturnType<F>>(fk: F, container: InjectionContainer): R {
     return InjectionRegistration.create<R>({ factory: fk }).resolve({
       bundle: InjectionBundle.create({
         entries: container.entries,
@@ -37,7 +37,7 @@ export class InjectionContainer {
     })
   }
   
-  public static resolveFunction<F extends UtilsFunction<R>, R = ReturnType<F>>(fn: F, container: InjectionContainer): R {
+  public static resolveFunction<F extends FunctionUtils<R>, R = ReturnType<F>>(fn: F, container: InjectionContainer): R {
     return InjectionRegistration.create<R>({ function: fn }).resolve({
       bundle: InjectionBundle.create({
         entries: container.entries,
@@ -91,15 +91,15 @@ export class InjectionContainer {
     return this
   }
 
-  public useFunction<T>(target: UtilsFunction<T>, options?: Omit<InjectionContainer.FunctionOptions<T>, 'function'>): this {
+  public useFunction<T>(target: FunctionUtils<T>, options?: Omit<InjectionContainer.FunctionOptions<T>, 'function'>): this {
     return this.useRegistration(InjectionRegistration.create({ ...options, function: target, context: this.context }))
   }
 
-  public useFactory<T extends object>(target: UtilsFactory<T>, options?: Omit<InjectionContainer.FactoryOptions<T>, 'factory'>): this {
+  public useFactory<T extends object>(target: FactoryUtils<T>, options?: Omit<InjectionContainer.FactoryOptions<T>, 'factory'>): this {
     return this.useRegistration(InjectionRegistration.create({ ...options, factory: target, context: this.context }))
   }
 
-  public useClass<T extends object>(target: UtilsConstructor<T>, options?: Omit<InjectionContainer.ClassOptions<T>, 'class'>): this {
+  public useClass<T extends object>(target: ConstructorUtils<T>, options?: Omit<InjectionContainer.ClassOptions<T>, 'class'>): this {
     return this.useRegistration(InjectionRegistration.create({ ...options, class: target, context: this.context }))
   }
 
@@ -109,15 +109,15 @@ export class InjectionContainer {
     return container
   }
 
-  public registerFunction<T>(token: InjectionRegistration.Token, target: UtilsFunction<T>, options?: Omit<InjectionContainer.FunctionOptions<T>, 'token' | 'function'>): void {
+  public registerFunction<T>(token: InjectionRegistration.Token, target: FunctionUtils<T>, options?: Omit<InjectionContainer.FunctionOptions<T>, 'token' | 'function'>): void {
     return this.register(token, { ...options, function: target })
   }
 
-  public registerFactory<T extends object>(token: InjectionRegistration.Token, target: UtilsFactory<T>, options?: Omit<InjectionContainer.FactoryOptions<T>, 'token' | 'factory'>): void {
+  public registerFactory<T extends object>(token: InjectionRegistration.Token, target: FactoryUtils<T>, options?: Omit<InjectionContainer.FactoryOptions<T>, 'token' | 'factory'>): void {
     return this.register(token, { ...options, factory: target })
   }
 
-  public registerClass<T extends object>(token: InjectionRegistration.Token, target: UtilsConstructor<T>, options?: Omit<InjectionContainer.ClassOptions<T>, 'token' | 'class'>): void {
+  public registerClass<T extends object>(token: InjectionRegistration.Token, target: ConstructorUtils<T>, options?: Omit<InjectionContainer.ClassOptions<T>, 'token' | 'class'>): void {
     return this.register(token, { ...options, class: target })
   }
 
@@ -142,11 +142,11 @@ export class InjectionContainer {
 
   public resolve<T = any>(token: InjectionRegistration.Token<T>, options?: InjectionRegistration.ResolutionOptions): T
 
-  public resolve<T = any>(token: UtilsFunction<T>, options?: InjectionRegistration.ResolutionOptions): T
+  public resolve<T = any>(token: FunctionUtils<T>, options?: InjectionRegistration.ResolutionOptions): T
 
-  public resolve<T extends object = any>(token: UtilsFactory<T>, options?: InjectionRegistration.ResolutionOptions): T
+  public resolve<T extends object = any>(token: FactoryUtils<T>, options?: InjectionRegistration.ResolutionOptions): T
 
-  public resolve<T extends object = any>(token: UtilsConstructor<T>, options?: InjectionRegistration.ResolutionOptions): T
+  public resolve<T extends object = any>(token: ConstructorUtils<T>, options?: InjectionRegistration.ResolutionOptions): T
 
   public resolve<T = any>(token: InjectionRegistration.Token<T> | object, options?: InjectionRegistration.ResolutionOptions): T {
     if(typeof token === 'function' || typeof token === 'object') {

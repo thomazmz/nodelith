@@ -1,9 +1,9 @@
 import { CoreInitializer } from '@nodelith/core'
-import { UtilsConstructor } from '@nodelith/utils'
+import { ConstructorUtils } from '@nodelith/utils'
 import { InjectionRegistration } from './injection-registration'
 
 export declare namespace InjectionInitializer {
-  export type DeclarationTarget<T> = UtilsConstructor<CoreInitializer<T>>
+  export type DeclarationTarget<T> = ConstructorUtils<CoreInitializer<T>>
 
   export type DeclarationOptions<T> = {
     token: InjectionRegistration.Token

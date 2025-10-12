@@ -1,6 +1,7 @@
-import { Utils } from '@nodelith/utils'
 import { HttpStatus } from '@nodelith/http'
 import { HttpMethod } from '@nodelith/http'
+import { ObjectUtils } from '@nodelith/utils'
+import { ConstructorUtils } from '@nodelith/utils'
 import { ControllerInputMetadata } from './controller-input-metadata'
 import { ControllerRouteMetadata } from './controller-route-metadata'
 import { ControllerRouterMetadata } from './controller-router-metadata'
@@ -20,12 +21,12 @@ export const ControllerRootMetadata = Object.freeze({
   extract: extractControllerRootMetadata
 })
 
-export function extractControllerRootMetadata(controller: Utils.Constructor): ControllerRootMetadata {
+export function extractControllerRootMetadata(controller: ConstructorUtils): ControllerRootMetadata {
   const routerMetadata = ControllerRouterMetadata.extract(controller)
 
-  const routerMembers = Utils.Object.extractMembers(controller.prototype).filter((member) => {
-    return !Utils.Object.isConstructorMember(member)
-      && Utils.Object.isFunctionMember(member)
+  const routerMembers = ObjectUtils.extractMembers(controller.prototype).filter((member) => {
+    return !ObjectUtils.isConstructorMember(member)
+      && ObjectUtils.isFunctionMember(member)
   })
 
   const routerRoutes = routerMembers.map((member) => {

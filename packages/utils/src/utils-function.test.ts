@@ -1,20 +1,20 @@
-import { UtilsFunction } from './utils-function'
+import { FunctionUtils } from './utils-function'
 
-describe('UtilsFunction', () => {
+describe('FunctionUtils', () => {
   describe('extractParameters', () => {
     it('should return regular function declaration parameters', () => {
      const arrowFunction = (param1: string, param2: number) => {
         throw new Error('Not to be called!')
      }
 
-     const result = UtilsFunction.extractParameters(arrowFunction)
+     const result = FunctionUtils.extractParameters(arrowFunction)
      expect(result.length).toBe(2)
      expect(result[0]).toEqual('param1')
      expect(result[1]).toEqual('param2')
     })
 
     it('should return anonymous regular function declaration parameters', () => {
-      const result = UtilsFunction.extractParameters((param1: string, param2: number) => {
+      const result = FunctionUtils.extractParameters((param1: string, param2: number) => {
         throw new Error('Not to be called!')
      })
 
@@ -28,14 +28,14 @@ describe('UtilsFunction', () => {
         throw new Error('Not to be called!')
       }
 
-      const result = UtilsFunction.extractParameters(regularFunction)
+      const result = FunctionUtils.extractParameters(regularFunction)
       expect(result.length).toBe(2)
       expect(result[0]).toEqual('param1')
       expect(result[1]).toEqual('param2')
     })
 
     it('should return anonymous arrow function declaration parameters', () => {
-      const result = UtilsFunction.extractParameters(function regularFunction(param1: string, param2: number) {
+      const result = FunctionUtils.extractParameters(function regularFunction(param1: string, param2: number) {
         throw new Error('Not to be called!')
       })
 
@@ -52,7 +52,7 @@ describe('UtilsFunction', () => {
       };
     
       const desc = Object.getOwnPropertyDescriptor(obj, 'foo')!;
-      const result = UtilsFunction.extractParameters(desc.value as any);
+      const result = FunctionUtils.extractParameters(desc.value as any);
     
       expect(result.length).toBe(2);
       expect(result[0]).toEqual('param1');
@@ -66,7 +66,7 @@ describe('UtilsFunction', () => {
         }
       }
       const desc = Object.getOwnPropertyDescriptor(C.prototype, 'bar')!;
-      const result = UtilsFunction.extractParameters(desc.value as any);
+      const result = FunctionUtils.extractParameters(desc.value as any);
     
       expect(result.length).toBe(2);
       expect(result[0]).toEqual('param1');

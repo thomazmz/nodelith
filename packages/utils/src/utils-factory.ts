@@ -1,14 +1,14 @@
-import { UtilsFunction } from './utils-function'
+import { FunctionUtils } from './utils-function'
 
-export type UtilsFactory<R extends object = object, P extends Array<any> = any[]> = UtilsFunction<R, P>
+export type FactoryUtils<R extends object = object, P extends Array<any> = any[]> = FunctionUtils<R, P>
 
-export declare namespace UtilsFactory {
-  export type Return<F extends UtilsFunction> = ReturnType<F>
-  export type Params<F extends UtilsFunction> = Parameters<F>
+export declare namespace FactoryUtils {
+  export type Return<F extends FunctionUtils> = ReturnType<F>
+  export type Params<F extends FunctionUtils> = Parameters<F>
 }
 
-export const UtilsFactory = Object.freeze({
-  extractParameters(target: UtilsFactory): string[] {
-    return UtilsFunction.extractParameters(target)
+export const FactoryUtils = Object.freeze({
+  extractParameters(target: FactoryUtils): string[] {
+    return FunctionUtils.extractParameters(target)
   }
 })

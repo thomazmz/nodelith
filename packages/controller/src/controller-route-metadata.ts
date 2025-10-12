@@ -1,5 +1,6 @@
-import { Utils } from '@nodelith/utils'
-import { Http } from '@nodelith/http'
+import { HttpStatus } from '@nodelith/http'
+import { HttpMethod } from '@nodelith/http'
+import { FunctionUtils } from '@nodelith/utils'
 
 const CONTROLLER_ROUTE_METADATA_KEY = Symbol('__controller_method_metadata')
 
@@ -7,8 +8,8 @@ export type ControllerRouteMetadata = Readonly<{
   readonly description?: string | undefined
   readonly operation?: string | undefined
   readonly summary?: string | undefined
-  readonly success?: Http.Status | undefined
-  readonly method?: Http.Method | undefined
+  readonly success?: HttpStatus | undefined
+  readonly method?: HttpMethod | undefined
   readonly path?: string | undefined
   readonly key?: string | undefined
 }>
@@ -18,7 +19,7 @@ export const ControllerRouteMetadata = Object.freeze({
   extract: extractRouteMetadata,
 })
 
-export function attachRouteMetadata(descriptor: TypedPropertyDescriptor<Utils.Function>, metadata: ControllerRouteMetadata): void {
+export function attachRouteMetadata(descriptor: TypedPropertyDescriptor<FunctionUtils>, metadata: ControllerRouteMetadata): void {
   if (descriptor.value) descriptor.value[CONTROLLER_ROUTE_METADATA_KEY] = { ...descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY],
     description: metadata.description ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.description,
     operation: metadata.operation ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.operation,
@@ -30,7 +31,7 @@ export function attachRouteMetadata(descriptor: TypedPropertyDescriptor<Utils.Fu
   }
 }
 
-export function extractRouteMetadata(descriptor: TypedPropertyDescriptor<Utils.Function>): ControllerRouteMetadata {
+export function extractRouteMetadata(descriptor: TypedPropertyDescriptor<FunctionUtils>): ControllerRouteMetadata {
   return Object.freeze({
     description: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.description,
     operation: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.operation,
@@ -43,37 +44,37 @@ export function extractRouteMetadata(descriptor: TypedPropertyDescriptor<Utils.F
 }
 
 export function Summary(summary: string) {
-  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<Utils.Function>) => {
+  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) => {
     attachRouteMetadata({ ...descriptor }, { key, summary });
   };
 }
 
 export function Description(description: string) {
-  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<Utils.Function>) => {
+  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) => {
     return attachRouteMetadata({ ...descriptor }, { key, description });
   };
 }
 
 export function Operation(operation?: string) {
-  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<Utils.Function>) => {
+  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) => {
     return attachRouteMetadata({ ...descriptor }, { key, operation });
   };
 }
 
-export function Success(success: Http.Status) {
-  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<Utils.Function>) => {
+export function Success(success: HttpStatus) {
+  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) => {
     return attachRouteMetadata({ ...descriptor }, { key, success });
   };
 }
 
-export function Method(method: Http.Method) {
-  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<Utils.Function>) => {
+export function Method(method: HttpMethod) {
+  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) => {
     attachRouteMetadata({ ...descriptor }, { key, method });
   };
 }
 
 export function Path(path?: string) {
-  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<Utils.Function>) => {
+  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) => {
     attachRouteMetadata({ ...descriptor }, { key, path });
   };
 }
