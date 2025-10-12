@@ -1,4 +1,3 @@
-export * as Core from './core'
 export { CoreValue } from './core-value'
 export { CoreLogger } from './core-logger'
 export { CoreEntity } from './core-entity'

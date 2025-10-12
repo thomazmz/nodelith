@@ -1,9 +1,9 @@
-import { Core } from '@nodelith/core'
-import { Utils } from '@nodelith/utils'
+import { CoreInitializer } from '@nodelith/core'
+import { UtilsConstructor } from '@nodelith/utils'
 import { InjectionRegistration } from './injection-registration'
 
 export declare namespace InjectionInitializer {
-  export type DeclarationTarget<T> = Utils.Constructor<Core.Initializer<T>>
+  export type DeclarationTarget<T> = UtilsConstructor<CoreInitializer<T>>
 
   export type DeclarationOptions<T> = {
     token: InjectionRegistration.Token
@@ -12,14 +12,14 @@ export declare namespace InjectionInitializer {
   }
 }
 
-export class InjectionInitializer<T = any> implements Core.Initializer<InjectionRegistration<T>> {
+export class InjectionInitializer<T = any> implements CoreInitializer<InjectionRegistration<T>> {
   public static create<T>(options: InjectionInitializer.DeclarationOptions<T>): InjectionInitializer<T> {
     return new InjectionInitializer(options)
   }
 
-  private readonly registration: InjectionRegistration<Core.Initializer<T>>
+  private readonly registration: InjectionRegistration<CoreInitializer<T>>
 
-  private instance?: Core.Initializer<T> | undefined
+  private instance?: CoreInitializer<T> | undefined
 
   protected constructor(private readonly options: InjectionInitializer.DeclarationOptions<T>) {
     this.registration = InjectionRegistration.create({

@@ -1,12 +1,11 @@
 import { InjectionInitializer } from './injection-initializer'
 import { InjectionRegistration } from './injection-registration'
 import { InjectionBundle } from './injection-bundle'
-import { InjectionContext } from './injection-context'
-import { Core } from '@nodelith/core'
+import { CoreInitializer } from '@nodelith/core'
 
 describe('InjectionInitializer', () => {
   it('should create a new initializer instance', () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'initialized'
       }
@@ -22,7 +21,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should create an initializer with token', () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'initialized'
       }
@@ -37,7 +36,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should create an initializer with visibility option', () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'initialized'
       }
@@ -53,7 +52,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should initialize and return a registration', async () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'initialized-value'
       }
@@ -76,7 +75,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should handle async initialization', async () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public async initialize() {
         await new Promise(resolve => setTimeout(resolve, 10))
         return 'async-initialized-value'
@@ -97,7 +96,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should resolve initializer class with dependencies', async () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       constructor(private readonly config: string) {}
 
       public initialize() {
@@ -121,7 +120,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should return registration with correct visibility', async () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'value'
       }
@@ -143,7 +142,7 @@ describe('InjectionInitializer', () => {
   it('should store initialized instance', async () => {
     const spy = jest.fn()
 
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       constructor() {
         spy()
       }
@@ -170,7 +169,7 @@ describe('InjectionInitializer', () => {
   it('should call terminate on the initializer instance', async () => {
     const terminateSpy = jest.fn()
 
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'initialized'
       }
@@ -194,7 +193,7 @@ describe('InjectionInitializer', () => {
   it('should call async terminate on the initializer instance', async () => {
     const terminateSpy = jest.fn()
 
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'initialized'
       }
@@ -220,7 +219,7 @@ describe('InjectionInitializer', () => {
     const terminateSpy = jest.fn()
     const initializeSpy = jest.fn()
 
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         initializeSpy()
         return 'initialized'
@@ -244,7 +243,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should handle terminate without initialization', async () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'initialized'
       }
@@ -263,7 +262,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should handle initializer without terminate method', async () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'initialized'
       }
@@ -282,7 +281,7 @@ describe('InjectionInitializer', () => {
   it('should handle multiple terminate calls', async () => {
     const terminateSpy = jest.fn()
 
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'initialized'
       }
@@ -309,7 +308,7 @@ describe('InjectionInitializer', () => {
     const initializeSpy = jest.fn()
     const terminateSpy = jest.fn()
 
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         initializeSpy()
         return 'initialized'
@@ -334,7 +333,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should handle initialization of primitives', async () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'string-primitive'
       }
@@ -354,7 +353,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should handle initialization of objects', async () => {
-    class TestInitializer implements Core.Initializer<{ value: string; count: number }> {
+    class TestInitializer implements CoreInitializer<{ value: string; count: number }> {
       public initialize() {
         return { value: 'test', count: 42 }
       }
@@ -374,7 +373,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should accept multiple dependencies in initializer target', async () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       constructor(
         private readonly host: string,
         private readonly port: number,
@@ -406,7 +405,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should create a new instance of the initializer', () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'initialized'
       }
@@ -424,7 +423,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should preserve token in cloned initializer', async () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'initialized'
       }
@@ -443,7 +442,7 @@ describe('InjectionInitializer', () => {
   })
 
   it('should preserve visibility in cloned initializer', async () => {
-    class TestInitializer implements Core.Initializer<string> {
+    class TestInitializer implements CoreInitializer<string> {
       public initialize() {
         return 'initialized'
       }

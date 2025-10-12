@@ -1,5 +1,5 @@
 import { InjectionContext } from './injection-context'
-import { Core } from '@nodelith/core'
+import { CoreIdentity } from '@nodelith/core'
 
 describe('InjectionContext', () => {
   it('should create a new context instance', () => {
@@ -207,11 +207,11 @@ describe('InjectionContext', () => {
 
     const target = () => 'result'
 
-    expect(Core.Identity.extract(target)).toBeUndefined()
+    expect(CoreIdentity.extract(target)).toBeUndefined()
 
     context.resolve(target)
 
-    expect(Core.Identity.extract(target)).toBeDefined()
+    expect(CoreIdentity.extract(target)).toBeDefined()
   })
 
   it('should handle arrow functions', () => {

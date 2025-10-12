@@ -1,4 +1,4 @@
-import { Core } from '@nodelith/core'
+import { CoreInitializer } from '@nodelith/core'
 import { InjectionModule } from './injection-module'
 import { InjectionContext } from './injection-context'
 import { InjectionInitializer } from './injection-initializer'
@@ -105,7 +105,7 @@ describe('InjectionModule', () => {
 
   describe('useInitializer', () => {
     it('should add an initializer', () => {
-      class TestInitializer implements Core.Initializer<string> {
+      class TestInitializer implements CoreInitializer<string> {
         public initialize() {
           return 'initialized'
         }
@@ -123,7 +123,7 @@ describe('InjectionModule', () => {
     })
 
     it('should clone the initializer', () => {
-      class TestInitializer implements Core.Initializer<string> {
+      class TestInitializer implements CoreInitializer<string> {
         public initialize() {
           return 'initialized'
         }
@@ -143,13 +143,13 @@ describe('InjectionModule', () => {
 
   describe('useInitializers', () => {
     it('should add multiple initializers', () => {
-      class InitializerA implements Core.Initializer<string> {
+      class InitializerA implements CoreInitializer<string> {
         public initialize() {
           return 'a'
         }
       }
 
-      class InitializerB implements Core.Initializer<string> {
+      class InitializerB implements CoreInitializer<string> {
         public initialize() {
           return 'b'
         }
@@ -219,7 +219,7 @@ describe('InjectionModule', () => {
     })
 
     it('should clone all initializers', async () => {
-      class TestInitializer implements Core.Initializer<string> {
+      class TestInitializer implements CoreInitializer<string> {
         public initialize() {
           return 'initialized'
         }
@@ -251,7 +251,7 @@ describe('InjectionModule', () => {
 
   describe('initialize', () => {
     it('should initialize the module', async () => {
-      class TestInitializer implements Core.Initializer<string> {
+      class TestInitializer implements CoreInitializer<string> {
         public initialize() {
           return 'initialized'
         }
@@ -266,13 +266,13 @@ describe('InjectionModule', () => {
     })
 
     it('should initialize all child modules', async () => {
-      class ParentInitializer implements Core.Initializer<string> {
+      class ParentInitializer implements CoreInitializer<string> {
         public initialize() {
           return 'parent-initialized'
         }
       }
 
-      class ChildInitializer implements Core.Initializer<string> {
+      class ChildInitializer implements CoreInitializer<string> {
         public initialize() {
           return 'child-initialized'
         }
@@ -302,14 +302,14 @@ describe('InjectionModule', () => {
     it('should initialize all initializers in order', async () => {
       const order: string[] = []
 
-      class InitializerA implements Core.Initializer<string> {
+      class InitializerA implements CoreInitializer<string> {
         public initialize() {
           order.push('A')
           return 'a'
         }
       }
 
-      class InitializerB implements Core.Initializer<string> {
+      class InitializerB implements CoreInitializer<string> {
         public initialize() {
           order.push('B')
           return 'b'
@@ -326,7 +326,7 @@ describe('InjectionModule', () => {
     })
 
     it('should handle async initialization', async () => {
-      class AsyncInitializer implements Core.Initializer<string> {
+      class AsyncInitializer implements CoreInitializer<string> {
         public async initialize() {
           await new Promise(resolve => setTimeout(resolve, 10))
           return 'async-initialized'
@@ -342,7 +342,7 @@ describe('InjectionModule', () => {
     })
 
     it('should provide dependencies to initializers', async () => {
-      class DependentInitializer implements Core.Initializer<string> {
+      class DependentInitializer implements CoreInitializer<string> {
         public constructor(private readonly config: string) {}
 
         public initialize() {
@@ -360,7 +360,7 @@ describe('InjectionModule', () => {
     })
 
     it('should pass bundle to initializers', async () => {
-      class BundleInitializer implements Core.Initializer<string> {
+      class BundleInitializer implements CoreInitializer<string> {
         public constructor(private readonly value: string) {}
 
         public initialize() {
@@ -382,7 +382,7 @@ describe('InjectionModule', () => {
     it('should terminate the module', async () => {
       const spy = jest.fn()
 
-      class TestInitializer implements Core.Initializer<string> {
+      class TestInitializer implements CoreInitializer<string> {
         public initialize() {
           return 'initialized'
         }
@@ -405,7 +405,7 @@ describe('InjectionModule', () => {
       const parentSpy = jest.fn()
       const childSpy = jest.fn()
 
-      class ParentInitializer implements Core.Initializer<string> {
+      class ParentInitializer implements CoreInitializer<string> {
         public initialize() {
           return 'parent'
         }
@@ -415,7 +415,7 @@ describe('InjectionModule', () => {
         }
       }
 
-      class ChildInitializer implements Core.Initializer<string> {
+      class ChildInitializer implements CoreInitializer<string> {
         public initialize() {
           return 'child'
         }
@@ -443,7 +443,7 @@ describe('InjectionModule', () => {
     it('should terminate all initializers in order', async () => {
       const order: string[] = []
 
-      class InitializerA implements Core.Initializer<string> {
+      class InitializerA implements CoreInitializer<string> {
         public initialize() {
           return 'a'
         }
@@ -453,7 +453,7 @@ describe('InjectionModule', () => {
         }
       }
 
-      class InitializerB implements Core.Initializer<string> {
+      class InitializerB implements CoreInitializer<string> {
         public initialize() {
           return 'b'
         }
@@ -476,7 +476,7 @@ describe('InjectionModule', () => {
     it('should handle async termination', async () => {
       const spy = jest.fn()
 
-      class AsyncInitializer implements Core.Initializer<string> {
+      class AsyncInitializer implements CoreInitializer<string> {
         public initialize() {
           return 'initialized'
         }
@@ -497,7 +497,7 @@ describe('InjectionModule', () => {
     })
 
     it('should handle modules without terminate method', async () => {
-      class TestInitializer implements Core.Initializer<string> {
+      class TestInitializer implements CoreInitializer<string> {
         public initialize() {
           return 'initialized'
         }

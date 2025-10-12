@@ -1,7 +1,9 @@
-import { InjectionBundle } from './injection-bundle'
+import { CoreIdentity } from  '@nodelith/core'
+import { UtilsFactory } from '@nodelith/utils'
+import { UtilsFunction } from '@nodelith/utils'
+import { UtilsConstructor } from '@nodelith/utils'
 import { InjectionContext } from './injection-context'
-import { Utils } from '@nodelith/utils'
-import { Core } from  '@nodelith/core'
+import { InjectionBundle } from './injection-bundle'
 
 export declare namespace InjectionRegistration {
   export type Token<T = any> = string & { __brand: T } | string
@@ -32,7 +34,7 @@ export declare namespace InjectionRegistration {
   )
 
   export type ClassOptions<T extends object> = {
-    class: Utils.Constructor<T>
+    class: UtilsConstructor<T>
     token?: InjectionRegistration.Token,
     context?: InjectionContext | undefined,
     lifecycle?: InjectionRegistration.LifecycleMode | undefined
@@ -42,7 +44,7 @@ export declare namespace InjectionRegistration {
   }
 
   export type FactoryOptions<T extends object> = {
-    factory: Utils.Factory<T>
+    factory: UtilsFactory<T>
     token?: InjectionRegistration.Token,
     context?: InjectionContext | undefined,
     lifecycle?: InjectionRegistration.LifecycleMode | undefined
@@ -52,7 +54,7 @@ export declare namespace InjectionRegistration {
   }
 
   export type FunctionOptions<T> = {
-    function: Utils.Function<T>
+    function: UtilsFunction<T>
     token?: InjectionRegistration.Token,
     context?: InjectionContext | undefined,
     lifecycle?: InjectionRegistration.LifecycleMode | undefined
@@ -62,7 +64,7 @@ export declare namespace InjectionRegistration {
   }
 
   export type ResolverOptions<T> = {
-    resolver: Utils.Function<T>
+    resolver: UtilsFunction<T>
     token?: InjectionRegistration.Token,
     parameters?: string[] | undefined
     context?: InjectionContext | undefined,
@@ -105,14 +107,14 @@ export class InjectionRegistration<T = any> {
 
   public static readonly RESOLUTION_MODES = ['proxy', 'eager'] as const
 
-  protected static proxy<T extends object = any>(resolver: Utils.Function<T>, prototype?: object): Utils.Function<T> {
+  protected static proxy<T extends object = any>(resolver: UtilsFunction<T>, prototype?: object): UtilsFunction<T> {
     let instance: undefined | T = undefined
   
     const getInstance = (args: any[]): T => {
       return instance ? instance : instance = resolver(...args)
     }
   
-    return Core.Identity.bind(resolver, (...args: any[]) => {
+    return CoreIdentity.bind(resolver, (...args: any[]) => {
       return new Proxy<T>(Object.create(prototype ?? null), {
         get(_target, property, receiver) {
           const instance = getInstance(args)
@@ -142,29 +144,29 @@ export class InjectionRegistration<T = any> {
     })
   }
 
-  protected static createClassResolver<T extends object = any>(target: Utils.Constructor<T>) {
-    return Core.Identity.bind(target, (...args: any[]) => new target(...args))
+  protected static createClassResolver<T extends object = any>(target: UtilsConstructor<T>) {
+    return CoreIdentity.bind(target, (...args: any[]) => new target(...args))
   }
 
-  protected static createClassResolverProxy<T extends object = any>(target: Utils.Constructor<T>) {
+  protected static createClassResolverProxy<T extends object = any>(target: UtilsConstructor<T>) {
     return InjectionRegistration.proxy(this.createClassResolver(target), target?.prototype)
   }
 
-  protected static createFactoryResolver<T extends object>(target: Utils.Factory<T>) {
-    return Core.Identity.bind(target, (...args: any[]) => target(...args))
+  protected static createFactoryResolver<T extends object>(target: UtilsFactory<T>) {
+    return CoreIdentity.bind(target, (...args: any[]) => target(...args))
   }
 
-  protected static createFactoryResolverProxy<T extends object>(target: Utils.Factory<T>) {
+  protected static createFactoryResolverProxy<T extends object>(target: UtilsFactory<T>) {
     return InjectionRegistration.proxy(this.createFactoryResolver(target), target?.prototype)
   }
 
-  protected static createFunctionResolver<T = any >(target: Utils.Function<T>) {
-    return Core.Identity.bind(target, (...args: any[]) => target(...args))
+  protected static createFunctionResolver<T = any >(target: UtilsFunction<T>) {
+    return CoreIdentity.bind(target, (...args: any[]) => target(...args))
   }
 
   protected static createValueResolver<T = any >(value: T) {
     const resolver = () => value
-    Core.Identity.assign(resolver)
+    CoreIdentity.assign(resolver)
     return resolver
   }
 
@@ -185,27 +187,27 @@ export class InjectionRegistration<T = any> {
 
     if('value' in options ) {
       this.resolver = InjectionRegistration.createValueResolver(options.value)
-      this.token = options.token ?? Core.Identity.obtain(this.resolver)
+      this.token = options.token ?? CoreIdentity.obtain(this.resolver)
       return
     }
 
     if('resolver' in options) {
       this.resolver = options.resolver
       this.parameters = options.parameters,
-      this.token = options.token ?? Core.Identity.obtain(this.resolver)
+      this.token = options.token ?? CoreIdentity.obtain(this.resolver)
       return
     }
 
     if('function' in options ) {
       this.resolver = InjectionRegistration.createFunctionResolver(options.function)
-      this.parameters = Utils.Function.extractParameters(options.function)
-      this.token = options.token ?? Core.Identity.obtain(this.resolver)
+      this.parameters = UtilsFunction.extractParameters(options.function)
+      this.token = options.token ?? CoreIdentity.obtain(this.resolver)
       return 
     }
 
     if('factory' in options) {
-      this.parameters = Utils.Factory.extractParameters(options.factory)
-      this.token = options.token ?? Core.Identity.obtain(options.factory)
+      this.parameters = UtilsFactory.extractParameters(options.factory)
+      this.token = options.token ?? CoreIdentity.obtain(options.factory)
 
       if(this.resolution === 'proxy') {
         this.resolver = InjectionRegistration.createFactoryResolverProxy(options.factory)
@@ -219,8 +221,8 @@ export class InjectionRegistration<T = any> {
     }
 
     if('class' in options) {
-      this.parameters = Utils.Constructor.extractParameters(options.class)
-      this.token = options.token ?? Core.Identity.obtain(options.class)
+      this.parameters = UtilsConstructor.extractParameters(options.class)
+      this.token = options.token ?? CoreIdentity.obtain(options.class)
 
       if(this.resolution === 'proxy') {
         this.resolver = InjectionRegistration.createClassResolverProxy(options.class)
@@ -236,7 +238,7 @@ export class InjectionRegistration<T = any> {
     throw new Error(`Could not create registration. Invalid options provided: ${JSON.stringify(options)}`)
   }
   
-  private readonly resolver: Utils.Function<T>
+  private readonly resolver: UtilsFunction<T>
   
   private readonly context: InjectionContext
   

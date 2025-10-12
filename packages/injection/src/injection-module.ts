@@ -1,11 +1,11 @@
-import { Core } from '@nodelith/core'
+import { CoreInitializer } from '@nodelith/core'
 import { InjectionBundle } from './injection-bundle'
 import { InjectionContext } from './injection-context'
 import { InjectionContainer } from './injection-container'
 import { InjectionInitializer } from './injection-initializer'
 import { InjectionRegistration } from './injection-registration'
 
-export class InjectionModule extends InjectionContainer implements Core.Initializer {
+export class InjectionModule extends InjectionContainer implements CoreInitializer {
   public static create(context?: InjectionContext): InjectionModule {
     return new InjectionModule(context ?? InjectionContext.create())
   }
