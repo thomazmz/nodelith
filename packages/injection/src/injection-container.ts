@@ -18,6 +18,30 @@ export class InjectionContainer {
   public static create(context?: InjectionContext): InjectionContainer {
     return new InjectionContainer(context ?? InjectionContext.create())
   }
+  
+  public static resolveClass<C extends Utils.Constructor<R>, R extends object = InstanceType<C>>(constructor: C, container: InjectionContainer): R {
+    return InjectionRegistration.create<R>({ class: constructor }).resolve({
+      bundle: InjectionBundle.create({
+        entries: container.entries,
+      })
+    })
+  }
+  
+  public static resolveFactory<F extends Utils.Factory<R>, R extends object = ReturnType<F>>(fk: F, container: InjectionContainer): R {
+    return InjectionRegistration.create<R>({ factory: fk }).resolve({
+      bundle: InjectionBundle.create({
+        entries: container.entries,
+      })
+    })
+  }
+  
+  public static resolveFunction<F extends Utils.Function<R>, R = ReturnType<F>>(fn: F, container: InjectionContainer): R {
+    return InjectionRegistration.create<R>({ function: fn }).resolve({
+      bundle: InjectionBundle.create({
+        entries: container.entries,
+      })
+    })
+  }
 
   protected constructor(context: InjectionContext) {
     this.context = context
@@ -28,12 +52,6 @@ export class InjectionContainer {
   protected readonly stack: InjectionRegistration.Token[] = []
 
   protected readonly context: InjectionContext
-
-  protected get bundle(): InjectionBundle {
-    return InjectionBundle.create({
-      entries: this.entries
-    })
-  }
 
   protected get entries(): [InjectionRegistration.Token, InjectionRegistration][] {
     return [...this.registrations.entries()].map(([token, registration]) => {

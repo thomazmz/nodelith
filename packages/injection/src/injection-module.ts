@@ -6,7 +6,6 @@ import { InjectionInitializer } from './injection-initializer'
 import { InjectionRegistration } from './injection-registration'
 
 export class InjectionModule extends InjectionContainer implements Core.Initializer {
-
   public static create(context?: InjectionContext): InjectionModule {
     return new InjectionModule(context ?? InjectionContext.create())
   }
