@@ -1,10 +1,11 @@
-import { ObjectUtils } from '@nodelith/utils'
-import { ConstructorUtils } from '@nodelith/utils'
+import { ObjectUtils, ConstructorUtils } from '@nodelith/utils'
 import { InjectionModule } from '@nodelith/injection'
 
-export type InjectionGateway<T> = Pick<T, { [K in keyof T]: T[K] extends Function ? K : never }[keyof T]>
+export type InjectionGateway<T extends object> = Pick<T, {
+  [K in keyof T]-?: T[K] extends (this: any, ...a: any[]) => any ? K : never
+}[keyof T]>;
 
-export function createInjectionGateway<T extends object>(constructor: ConstructorUtils<T>, module: InjectionModule): InjectionGateway<T> {
+export function createInjectionGateway<T extends ConstructorUtils<any>>(constructor: T, module: InjectionModule): InjectionGateway<InstanceType<T>> {
   return Object.freeze(ObjectUtils.extractMembers(constructor.prototype).reduce((gateway, member) => {
     if(ObjectUtils.isConstructorMember(member) || !ObjectUtils.isFunctionMember(member)) {
       return gateway
@@ -21,9 +22,9 @@ export function createInjectionGateway<T extends object>(constructor: Constructo
       enumerable: true,
       writable: false,
     })
-  }, {} as InjectionGateway<T>))
+  }, {} as InjectionGateway<InstanceType<T>>))
 }
 
 export const InjectionGateway = Object.freeze({
-  create: createInjectionGateway
-})
+  create: createInjectionGateway,
+});
