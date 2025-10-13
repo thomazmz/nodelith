@@ -20,25 +20,24 @@ export class InjectionContainer {
   public static create(context?: InjectionContext): InjectionContainer {
     return new InjectionContainer(context ?? InjectionContext.create())
   }
-  
-  public static resolveClass<C extends ConstructorUtils<R>, R extends object = InstanceType<C>>(constructor: C, container: InjectionContainer): R {
-    return InjectionRegistration.create<R>({ class: constructor }).resolve({
-      bundle: InjectionBundle.create({
-        entries: container.entries,
-      })
-    })
-  }
-  
-  public static resolveFactory<F extends FactoryUtils<R>, R extends object = ReturnType<F>>(fk: F, container: InjectionContainer): R {
-    return InjectionRegistration.create<R>({ factory: fk }).resolve({
-      bundle: InjectionBundle.create({
-        entries: container.entries,
-      })
-    })
-  }
-  
-  public static resolveFunction<F extends FunctionUtils<R>, R = ReturnType<F>>(fn: F, container: InjectionContainer): R {
-    return InjectionRegistration.create<R>({ function: fn }).resolve({
+
+  public static resolve<T extends object>(container: InjectionContainer, options: (
+    & Omit<InjectionContainer.ClassOptions<T>, 'token' | 'lifecycle' | 'resolution' | 'visibility'>
+    & InjectionRegistration.ResolutionOptions
+  )): T
+
+  public static resolve<T extends object>(container: InjectionContainer, options: (
+    & Omit<InjectionContainer.FactoryOptions<T>, 'token' | 'lifecycle' | 'resolution' | 'visibility'>
+    & InjectionRegistration.ResolutionOptions 
+  )): T
+
+  public static resolve<T>(container: InjectionContainer, options: (
+    & Omit<InjectionContainer.FunctionOptions<T>, 'token' | 'lifecycle' | 'resolution' | 'visibility'>
+    & InjectionRegistration.ResolutionOptions
+  )): T
+
+  public static resolve<T>(container: InjectionContainer, options: any): T {
+    return InjectionRegistration.create<T>(options).resolve({
       bundle: InjectionBundle.create({
         entries: container.entries,
       })
