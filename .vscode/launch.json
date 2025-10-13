@@ -1,0 +1,42 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Current Test File",
+      "type": "node",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "cwd": "${fileDirname}/..",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "exec",
+        "jest",
+        "--config=./jest.json",
+        "--runInBand",
+        "--testPathPatterns=${fileBasename}"
+      ],
+      "env": {
+        "NODE_OPTIONS": "--inspect"
+      }
+    },
+    {
+      "name": "Debug Selected Test Case",
+      "type": "node",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "cwd": "${fileDirname}/..",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "exec",
+        "jest",
+        "--config=./jest.json",
+        "--runInBand",
+        "--testPathPatterns=${fileBasename}",
+        "--testNamePattern=${selectedText}"
+      ],
+      "env": {
+        "NODE_OPTIONS": "--inspect"
+      }
+    }
+  ]
+}
