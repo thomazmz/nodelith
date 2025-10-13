@@ -18,7 +18,7 @@ describe('InjectionModule', () => {
       const parentModule = InjectionModule.create()
       const childModule = InjectionModule.create()
 
-      childModule.registerValue('config', 'test-config')
+      childModule.register('config', { value: 'test-config' })
 
       parentModule.useModule(childModule)
 
@@ -47,8 +47,8 @@ describe('InjectionModule', () => {
       const middleModule = InjectionModule.create()
       const leafModule = InjectionModule.create()
 
-      leafModule.registerValue('leafConfig', 'leaf-value')
-      middleModule.registerValue('middleConfig', 'middle-value')
+      leafModule.register('leafConfig', { value: 'leaf-value' })
+      middleModule.register('middleConfig', { value: 'middle-value' })
 
       middleModule.useModule(leafModule)
       rootModule.useModule(middleModule)
@@ -75,9 +75,9 @@ describe('InjectionModule', () => {
       const moduleB = InjectionModule.create()
       const moduleC = InjectionModule.create()
 
-      moduleA.registerValue('a', 'value-a')
-      moduleB.registerValue('b', 'value-b')
-      moduleC.registerValue('c', 'value-c')
+      moduleA.register('a', { value: 'value-a' })
+      moduleB.register('b', { value: 'value-b' })
+      moduleC.register('c', { value: 'value-c' })
 
       parentModule.useModules([moduleA, moduleB, moduleC])
 
@@ -180,9 +180,9 @@ describe('InjectionModule', () => {
   describe('clone', () => {
     it('should create a copy of the module', () => {
       const original = InjectionModule.create()
-      original.registerValue('test', 'value')
+      original.register('test', { value: 'value' })
 
-      const cloned = original.clone()
+      const cloned = original.clone({})
 
       expect(cloned).toBeInstanceOf(InjectionModule)
       expect(cloned).not.toBe(original)
@@ -193,7 +193,7 @@ describe('InjectionModule', () => {
       const original = InjectionModule.create()
       const newContext = InjectionContext.create()
 
-      const cloned = original.clone(newContext)
+      const cloned = original.clone({ context: newContext })
 
       expect(cloned).toBeInstanceOf(InjectionModule)
       expect(cloned).not.toBe(original)
@@ -203,10 +203,10 @@ describe('InjectionModule', () => {
       const parent = InjectionModule.create()
       const child = InjectionModule.create()
 
-      child.registerValue('childValue', 'test')
+      child.register('childValue', { value: 'test' })
       parent.useModule(child)
 
-      const cloned = parent.clone()
+      const cloned = parent.clone({})
 
       class TestService {
         constructor(public readonly childValue: string) {}
@@ -226,9 +226,9 @@ describe('InjectionModule', () => {
       }
 
       const module = InjectionModule.create()
-      module.registerInitializer('test', TestInitializer)
+      module.register('test', { initializer: TestInitializer })
 
-      const cloned = module.clone()
+      const cloned = module.clone({})
 
       await cloned.initialize()
 
@@ -237,11 +237,11 @@ describe('InjectionModule', () => {
 
     it('should clone all registrations', () => {
       const original = InjectionModule.create()
-      original.registerValue('a', 'value-a')
-      original.registerValue('b', 'value-b')
-      original.registerValue('c', 'value-c')
+      original.register('a', { value: 'value-a' })
+      original.register('b', { value: 'value-b' })
+      original.register('c', { value: 'value-c' })
 
-      const cloned = original.clone()
+      const cloned = original.clone({})
 
       expect(cloned.resolve('a')).toBe('value-a')
       expect(cloned.resolve('b')).toBe('value-b')
@@ -258,7 +258,7 @@ describe('InjectionModule', () => {
       }
 
       const module = InjectionModule.create()
-      module.registerInitializer('test', TestInitializer)
+      module.register('test', { initializer: TestInitializer })
 
       await module.initialize()
 
@@ -281,8 +281,8 @@ describe('InjectionModule', () => {
       const parent = InjectionModule.create()
       const child = InjectionModule.create()
 
-      parent.registerInitializer('parentValue', ParentInitializer)
-      child.registerInitializer('childValue', ChildInitializer)
+      parent.register('parentValue', { initializer: ParentInitializer })
+      child.register('childValue', { initializer: ChildInitializer })
 
       parent.useModule(child)
 
@@ -317,8 +317,8 @@ describe('InjectionModule', () => {
       }
 
       const module = InjectionModule.create()
-      module.registerInitializer('a', InitializerA)
-      module.registerInitializer('b', InitializerB)
+      module.register('a', { initializer: InitializerA })
+      module.register('b', { initializer: InitializerB })
 
       await module.initialize()
 
@@ -334,7 +334,7 @@ describe('InjectionModule', () => {
       }
 
       const module = InjectionModule.create()
-      module.registerInitializer('test', AsyncInitializer)
+      module.register('test', { initializer: AsyncInitializer })
 
       await module.initialize()
 
@@ -351,8 +351,8 @@ describe('InjectionModule', () => {
       }
 
       const module = InjectionModule.create()
-      module.registerValue('config', 'test-config')
-      module.registerInitializer('test', DependentInitializer)
+      module.register('config', { value: 'test-config' })
+      module.register('test', { initializer: DependentInitializer })
 
       await module.initialize()
 
@@ -369,8 +369,8 @@ describe('InjectionModule', () => {
       }
 
       const module = InjectionModule.create()
-      module.registerValue('value', 'test')
-      module.registerInitializer('test', BundleInitializer)
+      module.register('value', { value: 'test' })
+      module.register('test', { initializer: BundleInitializer })
 
       await module.initialize()
 
@@ -393,7 +393,7 @@ describe('InjectionModule', () => {
       }
 
       const module = InjectionModule.create()
-      module.registerInitializer('test', TestInitializer)
+      module.register('test', { initializer: TestInitializer })
 
       await module.initialize()
       await module.terminate()
@@ -428,8 +428,8 @@ describe('InjectionModule', () => {
       const parent = InjectionModule.create()
       const child = InjectionModule.create()
 
-      parent.registerInitializer('parent', ParentInitializer)
-      child.registerInitializer('child', ChildInitializer)
+      parent.register('parent', { initializer: ParentInitializer })
+      child.register('child', { initializer: ChildInitializer })
 
       parent.useModule(child)
 
@@ -464,8 +464,8 @@ describe('InjectionModule', () => {
       }
 
       const module = InjectionModule.create()
-      module.registerInitializer('a', InitializerA)
-      module.registerInitializer('b', InitializerB)
+      module.register('a', { initializer: InitializerA })
+      module.register('b', { initializer: InitializerB })
 
       await module.initialize()
       await module.terminate()
@@ -488,7 +488,7 @@ describe('InjectionModule', () => {
       }
 
       const module = InjectionModule.create()
-      module.registerInitializer('test', AsyncInitializer)
+      module.register('test', { initializer: AsyncInitializer })
 
       await module.initialize()
       await module.terminate()
@@ -504,7 +504,7 @@ describe('InjectionModule', () => {
       }
 
       const module = InjectionModule.create()
-      module.registerInitializer('test', TestInitializer)
+      module.register('test', { initializer: TestInitializer })
 
       await module.initialize()
 

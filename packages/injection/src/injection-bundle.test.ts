@@ -1,6 +1,6 @@
-import { InjectionBundle } from '../injection-bundle'
-import { InjectionContext } from '../injection-context'
-import { InjectionRegistration } from '../injection-registration'
+import { InjectionBundle } from './injection-bundle'
+import { InjectionContext } from './injection-context'
+import { InjectionRegistration } from './injection-registration'
 
 describe('InjectionBundle', () => {
   it('should create an empty bundle with no options', () => {

@@ -1,7 +1,6 @@
 import { InjectionRegistration } from './injection-registration'
 import { InjectionContext } from './injection-context'
 import { InjectionBundle } from './injection-bundle'
-import { Registration } from './injection'
 
 describe('InjectionRegistration', () => {
   describe('FunctionRegistration', () => {

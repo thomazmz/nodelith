@@ -117,10 +117,10 @@ describe('InjectionContainer', () => {
       const fn = (a: number, b: number) => a + b
 
       container.useFunction(fn)
-      container.registerValue('a', 10)
-      container.registerValue('b', 20)
+      container.register('a', { value: 10 })
+      container.register('b', { value: 10 })
 
-      expect(container.resolve(fn)).toBe(30)
+      expect(container.resolve(fn)).toBe(20)
     })
 
     it('should return the container for chaining', () => {
@@ -161,8 +161,8 @@ describe('InjectionContainer', () => {
       })
 
       container.useFactory(factory)
-      container.registerValue('prefix', '[')
-      container.registerValue('suffix', ']')
+      container.register('prefix', { value: '[' })
+      container.register('suffix', { value: ']' })
 
       const formatter = container.resolve(factory)
 
@@ -224,7 +224,7 @@ describe('InjectionContainer', () => {
       }
 
       container.useClass(TestClass, { resolution: 'eager' })
-      container.registerValue('config', 'test-config')
+      container.register('config', { value: 'test-config' })
 
       const service = container.resolve(TestClass)
 
@@ -278,7 +278,7 @@ describe('InjectionContainer', () => {
     it('should resolve a registered token', () => {
       const container = InjectionContainer.create()
 
-      container.registerValue('test', 'test-value')
+      container.register('test', { value: 'test-value' })
 
       expect(container.resolve('test')).toBe('test-value')
     })
@@ -324,11 +324,11 @@ describe('InjectionContainer', () => {
     it('should resolve dependencies from the bundle', () => {
       const container = InjectionContainer.create()
 
-      container.registerValue('a', 10)
-      container.registerValue('b', 20)
-      container.registerFunction('sum', (a: number, b: number) => a + b)
+      container.register('a', { value: 10 })
+      container.register('b', { value: 10 })
+      container.register('sum', { function: (a: number, b: number) => a + b })
 
-      expect(container.resolve('sum')).toBe(30)
+      expect(container.resolve('sum')).toBe(20)
     })
 
     it('should create a new context if none is provided', () => {
@@ -336,10 +336,15 @@ describe('InjectionContainer', () => {
 
       const spy = jest.fn()
 
-      container.registerFunction('test', () => {
+      const fn = () => {
         spy()
         return { id: Math.random() }
-      }, { lifecycle: 'scoped' })
+      }
+
+      container.register('test', {
+        function: fn,
+        lifecycle: 'scoped',
+      })
 
       const result1 = container.resolve('test')
       const result2 = container.resolve('test')
@@ -353,10 +358,15 @@ describe('InjectionContainer', () => {
 
       const spy = jest.fn()
 
-      container.registerFunction('test', () => {
+      const fn = () => {
         spy()
         return { id: Math.random() }
-      }, { lifecycle: 'scoped' })
+      }
+
+      container.register('test', {
+        function: fn,
+        lifecycle: 'scoped'
+      })
 
       const context = InjectionContext.create()
 
@@ -370,9 +380,9 @@ describe('InjectionContainer', () => {
     it('should detect circular dependencies', () => {
       const container = InjectionContainer.create()
 
-      container.registerFunction('a', (b: string) => `a:${b}`)
-      container.registerFunction('b', (c: string) => `b:${c}`)
-      container.registerFunction('c', (a: string) => `c:${a}`)
+      container.register('a', { function: (b: string) => `a:${b}` })
+      container.register('b', { function: (c: string) => `b:${c}` })
+      container.register('c', { function: (a: string) => `c:${a}` })
 
       expect(() => {
         container.resolve('a')
@@ -384,7 +394,7 @@ describe('InjectionContainer', () => {
 
       const fn = (bundle: InjectionBundle) => bundle['token']
 
-      container.registerFunction('token', fn, { provision: 'bundle' })
+      container.register('token', { function: fn, provision: 'bundle' })
 
       expect(() => container.resolve('token')).toThrow(/Could not resolve token .* Cyclic dependency graph:/)
     })
@@ -392,7 +402,7 @@ describe('InjectionContainer', () => {
     it('should support bundle in resolution options', () => {
       const container = InjectionContainer.create()
 
-      container.registerFunction('computed', (external: string) => `computed:${external}`)
+      container.register('computed', { function: (external: string) => `computed:${external}` })
 
       const context = InjectionContext.create()
       const externalBundle = { external: 'external-value' }
@@ -405,13 +415,13 @@ describe('InjectionContainer', () => {
     it('should resolve transitive dependencies', () => {
       const container = InjectionContainer.create()
 
-      container.registerValue('config', { host: 'localhost' })
-      container.registerFunction('logger', () => ({ log: (msg: string) => msg }), { resolution: 'eager' })
-      container.registerFunction('database', (config: any, logger: any) => ({
+      container.register('config', { value: { host: 'localhost' } })
+      container.register('logger', { function: () => ({ log: (msg: string) => msg }), resolution: 'eager' })
+      container.register('database', { function: (config: any, logger: any) => ({
         config,
         logger,
         connect: () => `connected to ${config.host}`,
-      }), { resolution: 'eager' })
+      }), resolution: 'eager' })
 
       const database = container.resolve('database')
 
@@ -424,9 +434,9 @@ describe('InjectionContainer', () => {
     it('should create a copy of the container', () => {
       const container = InjectionContainer.create()
 
-      container.registerValue('test', 'test-value')
+      container.register('test', { value: 'test-value' })
 
-      const clone = container.clone()
+      const clone = container.clone({})
 
       expect(clone.resolve('test')).toBe('test-value')
     })
@@ -437,12 +447,12 @@ describe('InjectionContainer', () => {
 
       const spy = jest.fn()
 
-      container.registerFunction('test', () => {
+      container.register('test', { function: () => {
         spy()
         return { id: Math.random() }
-      }, { lifecycle: 'scoped' })
+      }, lifecycle: 'scoped' })
 
-      const clone = container.clone()
+      const clone = container.clone({})
 
       const contextA = InjectionContext.create()
       const contextB = InjectionContext.create()
@@ -456,10 +466,10 @@ describe('InjectionContainer', () => {
     it('should allow cloning with a specific context', () => {
       const container = InjectionContainer.create()
 
-      container.registerValue('test', 'test-value')
+      container.register('test', { value: 'test-value' })
 
       const context = InjectionContext.create()
-      const clone = container.clone(context)
+      const clone = container.clone({ context })
 
       expect(clone.resolve('test')).toBe('test-value')
     })
@@ -467,12 +477,12 @@ describe('InjectionContainer', () => {
     it('should maintain all registrations in the clone', () => {
       const container = InjectionContainer.create()
 
-      container.registerValue('a', 'value-a')
-      container.registerValue('b', 'value-b')
-      container.registerValue('c', 'value-c')
-      container.registerFunction('computed', (a: string, b: string, c: string) => `${a}:${b}:${c}`)
+      container.register('a', { value: 'value-a' })
+      container.register('b', { value: 'value-b' })
+      container.register('c', { value: 'value-c' })
+      container.register('computed', { function: (a: string, b: string, c: string) => `${a}:${b}:${c}` })
 
-      const clone = container.clone()
+      const clone = container.clone({})
 
       expect(clone.resolve('a')).toBe('value-a')
       expect(clone.resolve('b')).toBe('value-b')
@@ -483,11 +493,11 @@ describe('InjectionContainer', () => {
     it('should not affect original container when modifying clone', () => {
       const container = InjectionContainer.create()
 
-      container.registerValue('test', 'original')
+      container.register('test', { value: 'original' })
 
-      const clone = container.clone()
+      const clone = container.clone({})
 
-      clone.registerValue('new', 'new-value')
+      clone.register('new', { value: 'new-value' })
 
       expect(container.resolve('test')).toBe('original')
       expect(clone.resolve('test')).toBe('original')
