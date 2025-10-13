@@ -108,22 +108,6 @@ export class InjectionContainer {
     return container
   }
 
-  public registerFunction<T>(token: InjectionRegistration.Token, target: FunctionUtils<T>, options?: Omit<InjectionContainer.FunctionOptions<T>, 'token' | 'function'>): void {
-    return this.register(token, { ...options, function: target })
-  }
-
-  public registerFactory<T extends object>(token: InjectionRegistration.Token, target: FactoryUtils<T>, options?: Omit<InjectionContainer.FactoryOptions<T>, 'token' | 'factory'>): void {
-    return this.register(token, { ...options, factory: target })
-  }
-
-  public registerClass<T extends object>(token: InjectionRegistration.Token, target: ConstructorUtils<T>, options?: Omit<InjectionContainer.ClassOptions<T>, 'token' | 'class'>): void {
-    return this.register(token, { ...options, class: target })
-  }
-
-  public registerValue<T>(token: InjectionRegistration.Token, target: T, options?: Omit<InjectionRegistration.ValueOptions<T>, 'token' | 'value'>): void {
-    return this.register(token, { ...options, value: target })
-  }
-
   public register<T extends object>(token: InjectionRegistration.Token, options: Omit<InjectionContainer.FactoryOptions<T>, 'token'>): void
 
   public register<T extends object>(token: InjectionRegistration.Token, options: Omit<InjectionContainer.ClassOptions<T>, 'token'>): void

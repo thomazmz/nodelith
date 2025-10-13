@@ -48,10 +48,6 @@ export class InjectionModule extends InjectionContainer implements CoreInitializ
     return module
   }
 
-  public registerInitializer<T>(token: InjectionRegistration.Token, target: InjectionInitializer.DeclarationTarget<T>, options?: Omit<InjectionInitializer.DeclarationOptions<T>, 'initializer' | 'token'>): void {
-    this.useInitializer(InjectionInitializer.create({ ...options, token, initializer: target }))
-  }
-
   public register<T extends object>(token: InjectionRegistration.Token, options: Omit<InjectionContainer.FactoryOptions<T>, 'token'>): void
 
   public register<T extends object>(token: InjectionRegistration.Token, options: Omit<InjectionContainer.ClassOptions<T>, 'token'>): void
