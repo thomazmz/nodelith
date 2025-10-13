@@ -102,8 +102,8 @@ export class InjectionContainer {
     return this.useRegistration(InjectionRegistration.create({ ...options, class: target, context: this.context }))
   }
 
-  public clone(context?: InjectionContext | undefined): InjectionContainer {
-    const container = InjectionContainer.create(context)
+  public clone(options: { context?: InjectionContext | undefined }): InjectionContainer {
+    const container = InjectionContainer.create(options.context)
     container.useRegistrations([...this.registrations.values()])
     return container
   }

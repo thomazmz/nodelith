@@ -25,7 +25,9 @@ export class InjectionModule extends InjectionContainer implements CoreInitializ
   }
 
   public useModule(module: InjectionModule): void {
-    this.modules.add(module.clone(this.context))
+    this.modules.add(module.clone({
+      context: this.context
+    }))
   }
 
   public useModules(modules: InjectionModule[]): void {
@@ -40,8 +42,8 @@ export class InjectionModule extends InjectionContainer implements CoreInitializ
     initializers.forEach(initializer => this.useInitializer(initializer))
   }
 
-  public clone(context?: InjectionContext | undefined): InjectionModule {
-    const module = InjectionModule.create(context)
+  public clone(options: { context?: InjectionContext | undefined }): InjectionModule {
+    const module = InjectionModule.create(options.context)
     module.useModules([...this.modules.values()])
     module.useInitializers([...this.initializers.values()])
     module.useRegistrations([...this.registrations.values()])
