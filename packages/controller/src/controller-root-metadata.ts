@@ -1,3 +1,4 @@
+import z from 'zod'
 import { HttpStatus } from '@nodelith/http'
 import { HttpMethod } from '@nodelith/http'
 import { ObjectUtils } from '@nodelith/utils'
@@ -14,6 +15,10 @@ export type ControllerRootMetadata = ControllerRouterMetadata & {
     readonly method: HttpMethod
     readonly path: string,
     readonly key: string,
+    readonly response?: z.ZodJSONSchema,
+    readonly header?: z.ZodJSONSchema,
+    readonly query?: z.ZodJSONSchema,
+    readonly body?: z.ZodJSONSchema,
   })[]
 }
 

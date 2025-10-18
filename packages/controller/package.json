@@ -16,15 +16,17 @@
   },
   "dependencies": {
     "@nodelith/injection": "workspace:^",
+    "@nodelith/contract": "workspace:^",
     "@nodelith/utils": "workspace:^",
+    "@nodelith/core": "workspace:^",
     "@nodelith/http": "workspace:^",
-    "@nodelith/core": "workspace:^"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^24.2.1",
-    "typescript": "^5.9.2",
+    "jest": "^30.0.5",
     "ts-jest": "^29.4.1",
-    "jest": "^30.0.5"
+    "typescript": "^5.9.2"
   }
 }

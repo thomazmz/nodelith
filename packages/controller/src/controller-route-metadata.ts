@@ -1,3 +1,4 @@
+import z from 'zod'
 import { HttpStatus } from '@nodelith/http'
 import { HttpMethod } from '@nodelith/http'
 import { FunctionUtils } from '@nodelith/utils'
@@ -12,6 +13,10 @@ export type ControllerRouteMetadata = Readonly<{
   readonly method?: HttpMethod | undefined
   readonly path?: string | undefined
   readonly key?: string | undefined
+  readonly response?: z.ZodType<z.util.JSONType> | undefined
+  readonly header?: z.ZodType<z.util.JSONType> | undefined
+  readonly query?: z.ZodType<z.util.JSONType> | undefined
+  readonly body?: z.ZodType<z.util.JSONType> | undefined
 }>
 
 export const ControllerRouteMetadata = Object.freeze({
@@ -28,6 +33,10 @@ export function attachRouteMetadata(descriptor: TypedPropertyDescriptor<Function
     method: metadata.method ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.method,
     path: metadata.path ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.path,
     key: metadata.key ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.key,
+    response: metadata.response ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.response,
+    header: metadata.header ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.header,
+    query: metadata.query ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.query,
+    body: metadata.body ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.body,
   }
 }
 
@@ -40,6 +49,10 @@ export function extractRouteMetadata(descriptor: TypedPropertyDescriptor<Functio
     method: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.method,
     path: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.path,
     key: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.key,
+    response: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.response,
+    header: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.header,
+    query: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.query,
+    body: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.body,
   })
 }
 
@@ -61,10 +74,10 @@ export function Operation(operation?: string) {
   };
 }
 
-export function Success(success: HttpStatus) {
-  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) => {
-    return attachRouteMetadata({ ...descriptor }, { key, success });
-  };
+export function Success<T extends z.ZodType<z.util.JSONType> | undefined>(success: HttpStatus, response?: T) {
+  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils<T extends undefined ? void : z.output<T>>>) {
+    attachRouteMetadata({ ...descriptor }, { key, success, response });
+  }
 }
 
 export function Method(method: HttpMethod) {
@@ -73,8 +86,26 @@ export function Method(method: HttpMethod) {
   };
 }
 
-export function Path(path?: string) {
+export function Path(path: string) {
   return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) => {
     attachRouteMetadata({ ...descriptor }, { key, path });
   };
+}
+
+export function Body<T extends z.ZodType<z.util.JSONType>>(body?: T) {
+  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) {
+    attachRouteMetadata({ ...descriptor }, { key, body });
+  }
+}
+
+export function Query<T extends z.ZodType<z.util.JSONType>>(query?: T) {
+  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) {
+    attachRouteMetadata({ ...descriptor }, { key, query });
+  }
+}
+
+export function Header<T extends z.ZodType<z.util.JSONType>>(header?: T) {
+  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) {
+    attachRouteMetadata({ ...descriptor }, { key, header });
+  }
 }

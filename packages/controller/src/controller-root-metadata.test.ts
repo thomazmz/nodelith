@@ -1,3 +1,4 @@
+import z from 'zod'
 import { HttpMethod } from '@nodelith/http'
 import { HttpStatus } from '@nodelith/http'
 import { Router } from './controller-router-metadata'
@@ -80,4 +81,24 @@ describe('ControllerAggregate', () => {
       3: 'id'
     })
   });
+
+  it('should expose json schemas in root routes', () => {
+
+    @Router('/routee')
+    class SomeController {
+      @Path('/json')
+      @Method(HttpMethod.Post)
+      @Success(HttpStatus.Created, z.object({
+        id: z.string(),
+        tags: z.array(z.string()),
+        meta: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null(), z.array(z.string())]))
+      }))
+      public createJSON(headers: string, query: string, body: string, id: string): any {
+        throw new Error('Should not be called')
+      }
+    }
+
+    const rootMetadata = ControllerRootMetadata.extract(SomeController)
+    expect(rootMetadata.routes?.[0]?.response).toBeDefined()
+  })
 });

@@ -1,3 +1,4 @@
+import z from 'zod'
 import { Path } from './controller-route-metadata'
 import { Method } from './controller-route-metadata'
 import { Success } from './controller-route-metadata'
@@ -246,5 +247,52 @@ describe('Metadata', () => {
       path: '/bar',
       key: 'k1',
     })
+  });
+
+  it('should attach response schema with Success decorator', () => {
+    const descriptor = { value: function() {} }
+    const schema = z.object({
+      id: z.string(),
+      tags: z.array(z.string()),
+      meta: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null(), z.array(z.string())]))
+    })
+    Success(200, schema)(null as any, 'k1', descriptor as any)
+    const extracted = ControllerRouteMetadata.extract(descriptor)
+    expect(extracted.response).toBe(schema)
+  });
+
+  it('should attach body schema with Body decorator', () => {
+    const descriptor = { value: function() {} }
+    const schema = z.array(z.object({
+      name: z.string(),
+      count: z.number(),
+      flags: z.array(z.boolean())
+    }))
+    require('./controller-route-metadata').Body(schema)(null as any, 'k1', descriptor as any)
+    const extracted = ControllerRouteMetadata.extract(descriptor)
+    expect(extracted.body).toBe(schema)
+  });
+
+  it('should attach query schema with Query decorator', () => {
+    const descriptor = { value: function() {} }
+    const schema = z.object({
+      page: z.number(),
+      filter: z.object({ q: z.string().optional() }).optional(),
+      include: z.array(z.string()).optional()
+    })
+    require('./controller-route-metadata').Query(schema)(null as any, 'k1', descriptor as any)
+    const extracted = ControllerRouteMetadata.extract(descriptor)
+    expect(extracted.query).toBe(schema)
+  });
+
+  it('should attach header schema with Header decorator', () => {
+    const descriptor = { value: function() {} }
+    const schema = z.object({
+      'x-request-id': z.string(),
+      'x-flags': z.array(z.string())
+    })
+    require('./controller-route-metadata').Header(schema)(null as any, 'k1', descriptor as any)
+    const extracted = ControllerRouteMetadata.extract(descriptor)
+    expect(extracted.header).toBe(schema)
   });
 })
