@@ -1,6 +1,6 @@
 import { ObjectUtils } from '@nodelith/utils'
 import { ConstructorUtils } from '@nodelith/utils'
-import { InjectionModule, InjectionRegistration } from '@nodelith/injection'
+import { InjectionModule } from '@nodelith/injection'
 import { InjectionBundle } from '@nodelith/injection'
 
 export type InjectionFacade<T extends object> = Pick<T, {
