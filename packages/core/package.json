@@ -14,6 +14,9 @@
     "build": "tsc --project ./build.json",
     "build:watch": "tsc --watch --project ./build.json"
   },
+  "dependencies": {
+    "@nodelith/utils": "workspace:^"
+  },
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^24.2.1",
