@@ -87,8 +87,8 @@ export function Path(path: string) {
   };
 }
 
-export function Success<T extends z.ZodType<z.util.JSONType> | undefined>(success: HttpStatus, response?: T) {
-  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils<T extends undefined ? void : z.output<T>>>) {
+export function Success<T extends z.ZodType<z.util.JSONType> | undefined, R extends z.output<T>>(success: HttpStatus, response?: T) {
+  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils<T extends undefined ? void | Promise<void> : R | Promise<R>>>) {
     attachRouteMetadata({ ...descriptor }, { key, success, ...(response && {
       response: ContractValidator.create(response)
     })});
