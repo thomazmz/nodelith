@@ -24,22 +24,27 @@ export class InjectionModule extends InjectionContainer implements CoreInitializ
     return [ ...entries, ...super.entries ]
   }
 
-  public useModule(module: InjectionModule): void {
+  public useModule(module: InjectionModule): this {
     this.modules.add(module.clone({
       context: this.context
     }))
+
+    return this
   }
 
-  public useModules(modules: InjectionModule[]): void {
+  public useModules(modules: InjectionModule[]): this {
     modules.forEach((module) => this.useModule(module))
+    return this
   }
 
-  public useInitializer<T>(initializer: InjectionInitializer<T>): void {
+  public useInitializer<T>(initializer: InjectionInitializer<T>): this {
     this.initializers.add(initializer.clone())
+    return this
   }
 
-  public useInitializers(initializers: InjectionInitializer[]): void {
+  public useInitializers(initializers: InjectionInitializer[]): this {
     initializers.forEach(initializer => this.useInitializer(initializer))
+    return this
   }
 
   public clone(options: { context?: InjectionContext | undefined }): InjectionModule {
