@@ -2,6 +2,7 @@ import z from 'zod'
 import { HttpStatus } from '@nodelith/http'
 import { HttpMethod } from '@nodelith/http'
 import { FunctionUtils } from '@nodelith/utils'
+import { ContractValidator } from '@nodelith/contract'
 
 const CONTROLLER_ROUTE_METADATA_KEY = Symbol('__controller_method_metadata')
 
@@ -13,10 +14,10 @@ export type ControllerRouteMetadata = Readonly<{
   readonly method?: HttpMethod | undefined
   readonly path?: string | undefined
   readonly key?: string | undefined
-  readonly response?: z.ZodType<z.util.JSONType> | undefined
-  readonly header?: z.ZodType<z.util.JSONType> | undefined
-  readonly query?: z.ZodType<z.util.JSONType> | undefined
-  readonly body?: z.ZodType<z.util.JSONType> | undefined
+  readonly response?: ContractValidator | undefined
+  readonly header?: ContractValidator | undefined
+  readonly query?: ContractValidator | undefined
+  readonly body?: ContractValidator | undefined
 }>
 
 export const ControllerRouteMetadata = Object.freeze({
@@ -74,12 +75,6 @@ export function Operation(operation?: string) {
   };
 }
 
-export function Success<T extends z.ZodType<z.util.JSONType> | undefined>(success: HttpStatus, response?: T) {
-  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils<T extends undefined ? void : z.output<T>>>) {
-    attachRouteMetadata({ ...descriptor }, { key, success, response });
-  }
-}
-
 export function Method(method: HttpMethod) {
   return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) => {
     attachRouteMetadata({ ...descriptor }, { key, method });
@@ -92,20 +87,34 @@ export function Path(path: string) {
   };
 }
 
+export function Success<T extends z.ZodType<z.util.JSONType> | undefined>(success: HttpStatus, response?: T) {
+  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils<T extends undefined ? void : z.output<T>>>) {
+    attachRouteMetadata({ ...descriptor }, { key, success, ...(response && {
+      response: ContractValidator.create(response)
+    })});
+  }
+}
+
 export function Body<T extends z.ZodType<z.util.JSONType>>(body?: T) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) {
-    attachRouteMetadata({ ...descriptor }, { key, body });
+    attachRouteMetadata({ ...descriptor }, { key, ...(body && {
+      body: ContractValidator.create(body, 'body')
+    }) });
   }
 }
 
 export function Query<T extends z.ZodType<z.util.JSONType>>(query?: T) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) {
-    attachRouteMetadata({ ...descriptor }, { key, query });
+    attachRouteMetadata({ ...descriptor }, { key, ...(query && {
+      query: ContractValidator.create(query, 'query')
+    })});
   }
 }
 
 export function Header<T extends z.ZodType<z.util.JSONType>>(header?: T) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionUtils>) {
-    attachRouteMetadata({ ...descriptor }, { key, header });
+    attachRouteMetadata({ ...descriptor }, { key, ...(header && {
+      header: ContractValidator.create(header, 'header')
+    })});
   }
 }

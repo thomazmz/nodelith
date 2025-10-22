@@ -1,8 +1,8 @@
-import z from 'zod'
 import { HttpStatus } from '@nodelith/http'
 import { HttpMethod } from '@nodelith/http'
 import { ObjectUtils } from '@nodelith/utils'
 import { ConstructorUtils } from '@nodelith/utils'
+import { ContractValidator } from '@nodelith/contract'
 import { ControllerInputMetadata } from './controller-input-metadata'
 import { ControllerRouteMetadata } from './controller-route-metadata'
 import { ControllerRouterMetadata } from './controller-router-metadata'
@@ -15,10 +15,10 @@ export type ControllerRootMetadata = ControllerRouterMetadata & {
     readonly method: HttpMethod
     readonly path: string,
     readonly key: string,
-    readonly response?: z.ZodJSONSchema,
-    readonly header?: z.ZodJSONSchema,
-    readonly query?: z.ZodJSONSchema,
-    readonly body?: z.ZodJSONSchema,
+    readonly response?: ContractValidator,
+    readonly header?: ContractValidator,
+    readonly query?: ContractValidator,
+    readonly body?: ContractValidator,
   })[]
 }
 
