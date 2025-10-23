@@ -1,5 +1,4 @@
 import { CoreIdentity } from '@nodelith/core'
-import { InjectionRegistration } from './injection-registration'
 
 export class InjectionContext {
   public static create() {
@@ -15,10 +14,6 @@ export class InjectionContext {
   }
 
   private instances: Map<CoreIdentity, any> = new Map()
-
-  public delete(token: InjectionRegistration.Token): void {
-    this.instances.delete(token)
-  }
  
   public resolve<T>(target: (...args: any[]) => T, ...args: any[]): T {
     const identity = CoreIdentity.obtain(target)

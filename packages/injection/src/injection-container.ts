@@ -21,29 +21,6 @@ export class InjectionContainer {
     return new InjectionContainer(context ?? InjectionContext.create())
   }
 
-  public static resolve<T extends object>(container: InjectionContainer, options: (
-    & Omit<InjectionContainer.ClassOptions<T>, 'token' | 'lifecycle' | 'resolution' | 'visibility'>
-    & InjectionRegistration.ResolutionOptions
-  )): T
-
-  public static resolve<T extends object>(container: InjectionContainer, options: (
-    & Omit<InjectionContainer.FactoryOptions<T>, 'token' | 'lifecycle' | 'resolution' | 'visibility'>
-    & InjectionRegistration.ResolutionOptions 
-  )): T
-
-  public static resolve<T>(container: InjectionContainer, options: (
-    & Omit<InjectionContainer.FunctionOptions<T>, 'token' | 'lifecycle' | 'resolution' | 'visibility'>
-    & InjectionRegistration.ResolutionOptions
-  )): T
-
-  public static resolve<T>(container: InjectionContainer, options: any): T {
-    return InjectionRegistration.create<T>(options).resolve({
-      bundle: InjectionBundle.create({
-        entries: container.entries,
-      })
-    })
-  }
-
   protected constructor(context: InjectionContext) {
     this.context = context
   }
