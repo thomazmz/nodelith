@@ -108,36 +108,34 @@ export class InjectionRegistration<T = any> {
   public static readonly RESOLUTION_MODES = ['proxy', 'eager'] as const
 
   protected static proxy<T extends object = any>(resolver: FunctionUtils<T>, prototype?: object): FunctionUtils<T> {
-    let instance: undefined | T = undefined
-  
-    const getInstance = (args: any[]): T => {
-      return instance ? instance : instance = resolver(...args)
-    }
-  
     return CoreIdentity.bind(resolver, (...args: any[]) => {
+      const getInstance = ((instance?: T) => () => {
+        return instance ? instance : instance = resolver(...args)
+      })()
+
       return new Proxy<T>(Object.create(prototype ?? null), {
         get(_target, property, receiver) {
-          const instance = getInstance(args)
+          const instance = getInstance()
           return Reflect.get(instance, property, receiver)
         },
         set(_target, property, value, receiver) {
-          const instance = getInstance(args)
+          const instance = getInstance()
           return Reflect.set(instance, property, value, receiver)
         },
         has(_target, property) {
-          const instance = getInstance(args)
+          const instance = getInstance()
           return Reflect.has(instance, property)
         },
         ownKeys(_target) {
-          const instance = getInstance(args)
+          const instance = getInstance()
           return Reflect.ownKeys(instance)
         },
         getPrototypeOf(_target) {
-          const instance = getInstance(args)
+          const instance = getInstance()
           return Reflect.getPrototypeOf(instance)
         },
         getOwnPropertyDescriptor(_target, property) {
-          const instance = getInstance(args)
+          const instance = getInstance()
           return Reflect.getOwnPropertyDescriptor(instance, property)
         },
       })
