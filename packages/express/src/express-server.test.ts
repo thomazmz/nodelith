@@ -39,4 +39,3 @@ describe('ExpressServer', () => {
     expect(terminateSpy).toHaveBeenCalledTimes(1)
   })
 })
-
