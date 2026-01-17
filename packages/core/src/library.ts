@@ -1,0 +1,1 @@
+export { CoreInitializer } from './core-initializer'
