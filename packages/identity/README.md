@@ -14,7 +14,7 @@ This library generates **22-character Base62 IDs** (derived from a cryptographic
 
 ---
 
-## Installation
+## 📦 Installation
 
 ```bash
 npm i <your-package-name>
