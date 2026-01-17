@@ -1,0 +1,18 @@
+{
+  "moduleFileExtensions": ["ts", "js"],
+  "maxWorkers": 1,
+  "rootDir": "./src",
+  "testMatch": ["**/*.test.ts"],
+  "testEnvironment": "node",
+  "passWithNoTests":  true,
+  "transform": {
+    "^.+\\.ts$": ["ts-jest", {
+      "tsconfig": {
+        "isolatedModules": true
+      }
+    }]
+  },
+  "moduleNameMapper": {
+    "^@nodelith/http/(.+)$": "<rootDir>/$1/library.ts"
+  }
+}
