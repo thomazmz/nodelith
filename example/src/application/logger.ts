@@ -1,6 +1,6 @@
 import { CoreLogger } from '@nodelith/core'
 
-export class Logger implements CoreLogger {
+export class ApplicationLogger implements CoreLogger {
   public info(message: string, metadata?: Record<string, any>): void {
     this.log('info', message, metadata)
   }

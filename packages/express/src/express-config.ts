@@ -7,8 +7,10 @@ export type ExpressConfigRecord = {
 }
 
 export class ExpressConfig extends ConfigInitializer<ExpressConfigRecord> {
-  public profile: ConfigProfile<ExpressConfigRecord> = {
+  public static readonly DEFAULT_PROFILE = Object.freeze({
     name: ConfigProfile.string('EXPRESS_SERVER_NAME', 'Server'),
     port: ConfigProfile.number('EXPRESS_SERVER_PORT', 3000),
-  }
+  })
+
+  public readonly profile: ConfigProfile<ExpressConfigRecord> = ExpressConfig.DEFAULT_PROFILE
 }
