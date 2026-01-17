@@ -5,20 +5,20 @@
   "type": "commonjs",
   "exports": {
     "./*": {
-      "types": "./dist/*/library.d.ts",
-      "import": "./dist/*/library.js",
-      "require": "./dist/*/library.js"
+      "types": "./dist/*/*.library.d.ts",
+      "import": "./dist/*/*.library.js",
+      "require": "./dist/*/*.library.js"
     }
   },
   "scripts": {
     "build": "tsc --project ./build.json",
-    "start": "pnpm run build && node dist/application/server.js",
-    "start:dev": "tsx src/index.ts"
+    "start": "node --inspect --enable-source-maps --env-file=.env dist/application/server.js"
   },
   "dependencies": {
     "@nodelith/controller": "workspace:^",
     "@nodelith/injection": "workspace:^",
     "@nodelith/express": "workspace:^",
+    "@nodelith/config": "workspace:^",
     "@nodelith/core": "workspace:^",
     "@nodelith/http": "workspace:^",
     "express": "^5.0.3"
