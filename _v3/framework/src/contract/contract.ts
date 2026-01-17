@@ -1,6 +1,0 @@
-export { ContractInput as Input } from './contract-input'
-export { ContractObject as Object } from './contract-object'
-export { ContractOutput as Output } from './contract-output'
-export { ContractOutputList as OutputList } from './contract-output-list'
-export { ContractProperty as Property } from './contract-property'
-export { Schema } from './contract-object'

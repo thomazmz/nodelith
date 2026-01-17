@@ -1,5 +1,0 @@
-export * as Contract from './contract'
-export { ContractInput } from './contract-input'
-export { ContractOutput } from './contract-output'
-export { ContractObject } from './contract-object'
-export { ContractProperty } from './contract-property'
