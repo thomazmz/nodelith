@@ -1,0 +1,32 @@
+{
+  "name": "@nodelith/example",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "exports": {
+    "./*": {
+      "types": "./dist/*/library.d.ts",
+      "import": "./dist/*/library.js",
+      "require": "./dist/*/library.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project ./build.json",
+    "start": "pnpm run build && node dist/application/server.js",
+    "start:dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@nodelith/controller": "workspace:^",
+    "@nodelith/injection": "workspace:^",
+    "@nodelith/express": "workspace:^",
+    "@nodelith/core": "workspace:^",
+    "@nodelith/http": "workspace:^",
+    "express": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.2.1",
+    "typescript": "^5.9.2",
+    "tsx": "^4.19.0"
+  }
+}
