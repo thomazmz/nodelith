@@ -17,7 +17,8 @@
   "peerDependencies": {
     "@nodelith/utilities": "workspace:^",
     "@nodelith/identity": "workspace:^",
-    "@nodelith/core": "workspace:^"
+    "@nodelith/core": "workspace:^",
+    "acorn": "^8.15.0"
   },
   "devDependencies": {
     "@nodelith/utilities": "workspace:^",

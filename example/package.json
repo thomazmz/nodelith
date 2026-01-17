@@ -21,7 +21,8 @@
     "@nodelith/config": "workspace:^",
     "@nodelith/core": "workspace:^",
     "@nodelith/http": "workspace:^",
-    "express": "^5.0.3"
+    "express": "^5.0.3",
+    "acorn": "^8.15.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
