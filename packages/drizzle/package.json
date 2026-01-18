@@ -1,0 +1,49 @@
+{
+  "name": "@nodelith/drizzle",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "exports": {
+    "./mysql": {
+      "types": "./dist/mysql/library.d.ts",
+      "import": "./dist/mysql/library.js",
+      "require": "./dist/mysql/library.js"
+    },
+    "./postgres": {
+      "types": "./dist/postgres/library.d.ts",
+      "import": "./dist/postgres/library.js",
+      "require": "./dist/postgres/library.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project ./build.json",
+    "build:watch": "tsc --watch --project ./build.json",
+    "test": "jest --config ./jest.json"
+  },
+  "peerDependencies": {
+    "@nodelith/config": "workspace:^",
+    "@nodelith/core": "workspace:^",
+    "drizzle-orm": "^0.44.5",
+    "mysql2": "^3.15.1",
+    "pg": "^8.17.2"
+  },
+  "peerDependenciesMeta": {
+    "mysql2": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@nodelith/config": "workspace:^",
+    "@nodelith/core": "workspace:^",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.2.1",
+    "drizzle-orm": "^0.44.5",
+    "typescript": "^5.9.2",
+    "ts-jest": "^29.4.1",
+    "mysql2": "^3.15.1",
+    "jest": "^30.0.5",
+    "pg": "^8.17.2"
+  }
+}
