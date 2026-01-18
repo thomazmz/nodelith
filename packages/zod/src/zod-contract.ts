@@ -1,4 +1,4 @@
-import { z, ZodISODateTime } from 'zod'
+import { z } from 'zod'
 
 import { CoreContract } from '@nodelith/core'
 
@@ -39,7 +39,15 @@ class ZodContractField<T extends CoreContract.Value = CoreContract.Value> {
   public optional(): ZodContractField<T | undefined> {
     return new ZodContractField({
       shape: this.shape.optional(),
-      example: this.example as T | undefined,
+      example: this.example,
+      description: this.description,
+    })
+  }
+
+  public nullable(): ZodContractField<T | null> {
+    return new ZodContractField({
+      shape: this.shape.nullable(),
+      example: this.example as T | null,
       description: this.description,
     })
   }
@@ -66,6 +74,8 @@ class ZodContractField<T extends CoreContract.Value = CoreContract.Value> {
 }
 
 export class ZodContract<T extends Record<string, CoreContract.Value>> implements CoreContract<T> {
+  private readonly shape: z.ZodType<T>
+
   public readonly example: T
 
   public readonly description?: string
@@ -77,14 +87,27 @@ export class ZodContract<T extends Record<string, CoreContract.Value>> implement
     this.example = Object.fromEntries(
       Object.entries(this.fields).map(([key, field]) => [key, field.example]
     )) as T
+
+    this.shape = z.object(
+      Object.fromEntries(Object.entries(this.fields).map(([key, field]) => [key, field.shape]))
+    ) as z.ZodType<T>
   }
 
-  public parse(value: unknown, error?: new (message: string) => Error): T {
-    if(error) throw new error('Method not implemented.')
-    else throw new Error('Method not implemented.')
+  public parse(value: unknown, errorConstructor?: new (message: string) => Error): T {
+    const { success, data, error } = this.shape.safeParse(value)
+
+    if (!success && errorConstructor) {
+      throw new errorConstructor(error.message)
+    }
+
+    if(!success) {
+      throw new Error(error.message)
+    }
+
+    return data
   }
 
-  public pick<K extends keyof T>(field: K): ZodContractField<T[K]> {
+  public select<K extends keyof T>(field: K): ZodContractField<T[K]> {
     return this.fields[field].clone()
   }
 
