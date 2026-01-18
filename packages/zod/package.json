@@ -15,17 +15,16 @@
     "test": "jest --config ./jest.json"
   },
   "peerDependencies": {
-    "@nodelith/core": "workspace:^"
+    "@nodelith/core": "workspace:^",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@nodelith/core": "workspace:^",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.2.1",
-    "jest": "^30.0.5",
+    "typescript": "^5.9.2",
     "ts-jest": "^29.4.1",
-    "typescript": "^5.9.2"
-  },
-  "dependencies": {
+    "jest": "^30.0.5",
     "zod": "^4.3.5"
   }
 }
