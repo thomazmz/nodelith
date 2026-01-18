@@ -30,15 +30,15 @@ export function extractRouterMetadata(constructor: ConstructorType & {
   })
 }
 
-export function Router<Result extends InstanceType<ConstructorType>, Args extends any[]>(path: string) {
-  return (constructor: ConstructorType<Result, Args>) => {
+export function Router(path: string) {
+  return <C extends ConstructorType>(constructor: C): C => {
     attachRouterMetadata(constructor, { path })
     return constructor
   }
 }
 
-export function Name<Result extends InstanceType<ConstructorType>, Args extends any[]>(name: string) {
-  return (constructor: ConstructorType<Result, Args>) => {
+export function Name(name: string) {
+  return <C extends ConstructorType>(constructor: C): C => {
     attachRouterMetadata(constructor, { name })
     return constructor
   }

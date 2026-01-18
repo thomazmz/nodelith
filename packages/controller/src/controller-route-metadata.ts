@@ -1,4 +1,5 @@
 import { FunctionType } from '@nodelith/utilities'
+import { CoreContract } from '@nodelith/core'
 import { HttpStatus } from '@nodelith/http'
 import { HttpMethod } from '@nodelith/http'
 
@@ -12,10 +13,10 @@ export type ControllerRouteMetadata = Readonly<{
   readonly method?: HttpMethod | undefined
   readonly path?: string | undefined
   readonly key?: string | undefined
-  // readonly response?: Contract | undefined
-  // readonly header?: Contract | undefined
-  // readonly query?: Contract | undefined
-  // readonly body?: Contract | undefined
+  readonly response?: CoreContract | undefined
+  readonly header?: CoreContract | undefined
+  readonly query?: CoreContract | undefined
+  readonly body?: CoreContract | undefined
 }>
 
 export const ControllerRouteMetadata = Object.freeze({
@@ -34,10 +35,10 @@ export function attachRouteMetadata(descriptor: TypedPropertyDescriptor<Function
     method: metadata.method ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.method,
     path: metadata.path ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.path,
     key: metadata.key ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.key,
-    // response: metadata.response ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.response,
-    // header: metadata.header ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.header,
-    // query: metadata.query ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.query,
-    // body: metadata.body ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.body,
+    response: metadata.response ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.response,
+    header: metadata.header ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.header,
+    query: metadata.query ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.query,
+    body: metadata.body ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.body,
   }
 }
 
@@ -52,10 +53,10 @@ export function extractRouteMetadata(descriptor: TypedPropertyDescriptor<Functio
     method: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.method,
     path: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.path,
     key: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.key,
-    // response: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.response,
-    // header: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.header,
-    // query: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.query,
-    // body: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.body,
+    response: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.response,
+    header: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.header,
+    query: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.query,
+    body: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.body,
   })
 }
 
@@ -89,40 +90,28 @@ export function Path(path: string) {
   }
 }
 
-export function Success<T>(success: HttpStatus) {
-  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
-    attachRouteMetadata({ ...descriptor }, { key, success })
+export function Success<T extends Awaited<Record<string, CoreContract.Value>>>(success: HttpStatus, contract?: CoreContract<T>) {
+  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType<Promise<T> | T>>) {
+    attachRouteMetadata({ ...descriptor }, { key, success, ...({
+      response: contract
+    })})
   }
 }
 
-// export function Success<T>(success: HttpStatucs, contract?: Contract<T>) {
-//   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
-//     attachRouteMetadata({ ...descriptor }, { key, success, ...({
-//       response: contract
-//     })})
-//   }
-// }
+export function Body<T extends Record<string, CoreContract.Value>>(body: CoreContract<T>) {
+  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
+    attachRouteMetadata({ ...descriptor }, { key, body })
+  }
+}
 
-// export function Body<T extends z.ZodType<z.util.JSONType>>(body?: T) {
-//   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
-//     attachRouteMetadata({ ...descriptor }, { key, ...(body && {
-//       body: ContractValidator.create(body, 'body')
-//     })})
-//   }
-// }
+export function Query<T extends Record<string, CoreContract.Value>>(query: CoreContract<T>) {
+  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
+    attachRouteMetadata({ ...descriptor }, { key, query })
+  }
+}
 
-// export function Query<T extends z.ZodType<z.util.JSONType>>(query?: T) {
-//   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
-//     attachRouteMetadata({ ...descriptor }, { key, ...(query && {
-//       query: ContractValidator.create(query, 'query')
-//     })})
-//   }
-// }
-
-// export function Header<T extends z.ZodType<z.util.JSONType>>(header?: T) {
-//   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
-//     attachRouteMetadata({ ...descriptor }, { key, ...(header && {
-//       header: ContractValidator.create(header, 'header')
-//     })})
-//   }
-// }
+export function Header<T extends Record<string, CoreContract.Value>>(header: CoreContract<T>) {
+  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
+    attachRouteMetadata({ ...descriptor }, { key, header })
+  }
+}
