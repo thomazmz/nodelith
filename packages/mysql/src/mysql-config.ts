@@ -12,11 +12,11 @@ export type MysqlConfig = {
 
 export class MysqlConfigInitializer extends ConfigInitializer<MysqlConfig> {
   protected readonly profile = Object.freeze({
-    host: ConfigProfile.string('REFRESH_MYSQL_HOST', 'localhost'),
-    port: ConfigProfile.number('REFRESH_MYSQL_PORT', 3306),
-    user: ConfigProfile.string('REFRESH_MYSQL_USER', 'admin'),
-    password: ConfigProfile.string('REFRESH_MYSQL_PASSWORD', 'admin'),
-    database: ConfigProfile.string('REFRESH_MYSQL_DATABASE', 'refresh-database'),
-    connectionLimit: ConfigProfile.number('REFRESH_MYSQL_POOL_SIZE', 10),
+    host: ConfigProfile.string('MYSQL_HOST', 'localhost'),
+    port: ConfigProfile.number('MYSQL_PORT', 3306),
+    user: ConfigProfile.string('MYSQL_USER', 'admin'),
+    password: ConfigProfile.string('MYSQL_PASSWORD', 'admin'),
+    database: ConfigProfile.string('MYSQL_DATABASE', 'database'),
+    connectionLimit: ConfigProfile.number('MYSQL_POOL_SIZE', 10),
   })
 }

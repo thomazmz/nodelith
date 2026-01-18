@@ -12,12 +12,12 @@ export type PostgresConfig = {
 
 export class PostgresConfigInitializer extends ConfigInitializer<PostgresConfig> {
   protected readonly profile = Object.freeze({
-    host: ConfigProfile.string('REFRESH_POSTGRES_HOST', 'localhost'),
-    port: ConfigProfile.number('REFRESH_POSTGRES_PORT', 5432),
-    user: ConfigProfile.string('REFRESH_POSTGRES_USER', 'admin'),
-    password: ConfigProfile.string('REFRESH_POSTGRES_PASSWORD', 'admin'),
-    database: ConfigProfile.string('REFRESH_POSTGRES_DATABASE', 'refresh-database'),
-    connectionLimit: ConfigProfile.number('REFRESH_POSTGRES_POOL_SIZE', 10),
+    host: ConfigProfile.string('POSTGRES_HOST', 'localhost'),
+    port: ConfigProfile.number('POSTGRES_PORT', 5432),
+    user: ConfigProfile.string('POSTGRES_USER', 'admin'),
+    password: ConfigProfile.string('POSTGRES_PASSWORD', 'admin'),
+    database: ConfigProfile.string('POSTGRES_DATABASE', 'database'),
+    connectionLimit: ConfigProfile.number('POSTGRES_POOL_SIZE', 10),
   })
 }
 

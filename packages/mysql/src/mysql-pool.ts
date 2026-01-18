@@ -1,24 +1,22 @@
 import Mysql from 'mysql2/promise'
-
 import { CoreInitializer } from '@nodelith/core';
-
 import { MysqlConfig } from './mysql-config';
 
 export class MysqlPoolInitializer implements CoreInitializer {
-  private readonly mysqlConfigRecord: MysqlConfig
+  private readonly mysqlConfig: MysqlConfig
 
-  constructor(mysqlConfigRecord: MysqlConfig) {
-    this.mysqlConfigRecord = mysqlConfigRecord
+  constructor(mysqlConfig: MysqlConfig) {
+    this.mysqlConfig = mysqlConfig
   }
 
   public async initialize(): Promise<Mysql.Pool> {
     return Mysql.createPool({
-      host: this.mysqlConfigRecord.host,
-      port: this.mysqlConfigRecord.port,
-      user: this.mysqlConfigRecord.user,
-      password: this.mysqlConfigRecord.password,
-      database: this.mysqlConfigRecord.database,
-      connectionLimit: this.mysqlConfigRecord.connectionLimit,
+      host: this.mysqlConfig.host,
+      port: this.mysqlConfig.port,
+      user: this.mysqlConfig.user,
+      password: this.mysqlConfig.password,
+      database: this.mysqlConfig.database,
+      connectionLimit: this.mysqlConfig.connectionLimit,
     });
   }
 }
