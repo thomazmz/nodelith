@@ -1,3 +1,3 @@
-# Nodelith Express Example
+# Nodelith Usage Example
 
-Simple Express server that wires controllers and dependencies through `@nodelith` libraries.
+Simple server that wires controllers and dependencies through `@nodelith` libraries.

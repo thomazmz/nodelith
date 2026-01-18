@@ -29,7 +29,9 @@
     "strictBindCallApply": false,
     "strictNullChecks": true,
     "paths": {
-      "@nodelith/example/domain": ["domain/*.library.ts"],
+      "@nodelith/example/domain": ["domain/library.ts"],
+      "@nodelith/example/application": ["domain/library.ts"],
+      "@nodelith/example/infrastructure": ["infrastructure/library.ts"],
     }
   }
 }
