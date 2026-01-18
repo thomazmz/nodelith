@@ -73,9 +73,21 @@ export class InjectionModule extends InjectionContainer {
     return this.resolveRegistration(registration, options)
   }
 
+  public override async initialize(options?: InjectionRegistration.ResolutionOptions): Promise<void> {
+    for await (const module of this.modules) {
+      await module.initialize(options)
+    }
+
+    for await (const initializer of this.initializers) {
+      const registration = await initializer.initialize(options)
+      this.setRegistration(registration)
+    }
+  }
+
   public clone(options?: Partial<InjectionModule.DeclarationOptions>): InjectionModule {
     const module = InjectionModule.create(options)
     module.useRegistrations(this.registrations)
+    module.useInitializers(this.initializers)
     module.useModules(this.modules)
     return module
   }
