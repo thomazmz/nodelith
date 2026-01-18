@@ -5,24 +5,24 @@
   "type": "commonjs",
   "exports": {
     "./domain": {
-      "types": "./dist/domain/domain.library.d.ts",
-      "import": "./dist/domain/domain.library.js",
-      "require": "./dist/domain/domain.library.js"
+      "types": "./dist/domain/library.d.ts",
+      "import": "./dist/domain/library.js",
+      "require": "./dist/domain/library.js"
     },
     "./application": {
-      "types": "./dist/application/application.library.d.ts",
-      "import": "./dist/application/application.library.js",
-      "require": "./dist/application/application.library.js"
+      "types": "./dist/application/library.d.ts",
+      "import": "./dist/application/library.js",
+      "require": "./dist/application/library.js"
     },
     "./infrastructure": {
-      "types": "./dist/infrastructure/infrastructure.library.d.ts",
-      "import": "./dist/infrastructure/infrastructure.library.js",
-      "require": "./dist/infrastructure/infrastructure.library.js"
+      "types": "./dist/infrastructure/library.d.ts",
+      "import": "./dist/infrastructure/library.js",
+      "require": "./dist/infrastructure/library.js"
     }
   },
   "scripts": {
     "build": "tsc --project ./build.json",
-    "start": "node --inspect --enable-source-maps --env-file=.env dist/application/application.server.js"
+    "start": "node --inspect --enable-source-maps --env-file=.env.local dist/application/server.js"
   },
   "dependencies": {
     "@nodelith/controller": "workspace:^",
