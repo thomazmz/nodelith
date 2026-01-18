@@ -1,0 +1,31 @@
+{
+  "name": "@nodelith/zod",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "types": "./dist/library.d.ts",
+      "import": "./dist/library.js",
+      "require": "./dist/library.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project ./build.json",
+    "build:watch": "tsc --watch --project ./build.json",
+    "test": "jest --config ./jest.json"
+  },
+  "peerDependencies": {
+    "@nodelith/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@nodelith/core": "workspace:^",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.2.1",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.1",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "zod": "^4.3.5"
+  }
+}
