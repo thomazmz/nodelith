@@ -77,11 +77,7 @@ export class InjectionModule extends InjectionContainer {
     for await (const module of this.modules) {
       await module.initialize(options)
     }
-
-    for await (const initializer of this.initializers) {
-      const registration = await initializer.initialize(options)
-      this.setRegistration(registration)
-    }
+    await super.initialize(options)
   }
 
   public clone(options?: Partial<InjectionModule.DeclarationOptions>): InjectionModule {

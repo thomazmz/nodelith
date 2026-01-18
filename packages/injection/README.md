@@ -8,8 +8,8 @@ A flexible and lightweight dependency injection library for JavaScript and TypeS
 
 - **Containers** for creating dependency graphs;
 - **Modules** for composing dependency graphs;
-- **Lifecycle controls** to manage lifecycle of each registration independently (supports `singleton`, `scoped`, and `transient`).
-- **Visibility controls** to expose only what you want when composing modules (`public` and `private`).
+- **Lifecycle controls** manage registration lifecycle through `singleton`, `scoped`, and `transient` registrations.
+- **Visibility controls** to expose only what you want through `public` and `private` visibility modes.
 - **Lazy bundles** and tracing to help avoid cycles and resolve only when accessed.
 - **Initialization pipeline** to run setup steps before registrations are made available.
 - **Parameter inference** via AST parsing and manually overrides when desired.

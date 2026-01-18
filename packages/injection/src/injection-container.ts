@@ -168,8 +168,11 @@ export class InjectionContainer {
 
   public async initialize(options?: InjectionRegistration.ResolutionOptions): Promise<void> {
     for await (const initializer of this.initializers) {
-      const registration = await initializer.initialize(options)
-      this.setRegistration(registration)
+      this.setRegistration((await initializer.initialize({ ...options, bundle: InjectionBundle.create({
+        context: options?.context ?? this.context,
+        bundle: options?.bundle,
+        entries: this.entries,
+      })})))
     }
   }
 
