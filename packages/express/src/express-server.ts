@@ -3,7 +3,7 @@ import { ExpressModule } from '@nodelith/express';
 import { CoreInitializer } from '@nodelith/core';
 import { CoreLogger } from '@nodelith/core';
 
-import { ExpressConfigRecord } from './express-config';
+import { ExpressConfig } from './express-config';
 
 export class ExpressServer {
   public static for(module: ExpressModule) {
@@ -16,7 +16,7 @@ export class ExpressServer {
     this.module = module.clone()
   }
 
-  public useConfig(initializer: ConstructorType<CoreInitializer<ExpressConfigRecord>>): this {
+  public useConfig(initializer: ConstructorType<CoreInitializer<ExpressConfig>>): this {
     this.module.mapClassInitializer('applicationConfig', initializer)
     return this
   }
@@ -31,7 +31,7 @@ export class ExpressServer {
   
     const app = this.module.resolveApplication()
     const logger = this.module.resolve<CoreLogger>('applicationLogger')
-    const config = this.module.resolve<ExpressConfigRecord>('applicationConfig')
+    const config = this.module.resolve<ExpressConfig>('applicationConfig')
   
     app.listen(config.port, () => {
       logger.info(`${config.name} running on port ${config.port}.`)
