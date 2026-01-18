@@ -1,7 +1,8 @@
 {
   "name": "@nodelith/utilities",
-  "version": "1.0.0",
+  "version": "0.8.0",
   "type": "commonjs",
+  "access": "public",
   "exports": {
     ".": {
       "types": "./dist/library.d.ts",
@@ -9,6 +10,11 @@
       "require": "./dist/library.js"
     }
   },
+  "keywords": [
+    "typescript",
+    "javascript",
+    "utilities"
+  ],
   "scripts": {
     "test": "jest --config ./jest.json",
     "build": "tsc --project ./build.json",

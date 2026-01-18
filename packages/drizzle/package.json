@@ -1,7 +1,23 @@
 {
   "name": "@nodelith/drizzle",
-  "version": "1.0.0",
+  "version": "0.8.0",
   "type": "commonjs",
+  "access": "public",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENCE.txt",
+    "package.json"
+  ],
+  "keywords": [
+    "typescript",
+    "javascript",
+    "database",
+    "drizzle",
+    "data",
+    "orm",
+    "db"
+  ],
   "exports": {
     "./mysql": {
       "types": "./dist/mysql/library.d.ts",

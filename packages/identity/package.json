@@ -1,10 +1,23 @@
 {
   "name": "@nodelith/identity",
-  "version": "1.0.0",
+  "version": "0.8.0",
   "type": "commonjs",
+  "access": "public",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENCE.txt",
+    "package.json"
+  ],
   "engines": {
     "node": ">=14.17.0"
   },
+  "keywords": [
+    "typescript",
+    "javascript",
+    "idenitty",
+    "base62"
+  ],
   "exports": {
     ".": {
       "types": "./dist/library.d.ts",

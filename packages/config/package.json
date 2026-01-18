@@ -1,7 +1,20 @@
 {
   "name": "@nodelith/config",
-  "version": "1.0.0",
+  "version": "0.8.0",
   "type": "commonjs",
+  "access": "public",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENCE.txt",
+    "package.json"
+  ],
+  "keywords": [
+    "typescript",
+    "javascript",
+    "config",
+    "node"
+  ],
   "exports": {
     ".": {
       "types": "./dist/library.d.ts",
