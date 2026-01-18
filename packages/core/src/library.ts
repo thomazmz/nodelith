@@ -1,4 +1,7 @@
 export { CoreInitializer } from './core-initializer'
+export { CoreRepository } from './core-repository'
 export { CoreContract } from './core-contract'
 export { CoreLoader } from './core-loader'
 export { CoreLogger } from './core-logger'
+export { CoreEntity } from './core-entity'
+export { CoreValue } from './core-value'
