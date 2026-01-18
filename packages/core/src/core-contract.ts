@@ -6,6 +6,7 @@ export declare namespace CoreContract {
     | boolean
     | number
     | string
+    | null
   )
 
   export type RootMetadata<T extends Record<string, CoreContract.Value>> = {
@@ -19,7 +20,7 @@ export declare namespace CoreContract {
   }
 }
 
-export interface CoreContract<T extends Record<string, CoreContract.Value>> extends CoreContract.RootMetadata<T> {
+export interface CoreContract<T extends Record<string, CoreContract.Value> = any> extends CoreContract.RootMetadata<T> {
   parse(value: unknown, error?: new (message: string) => Error): T
-  pick<K extends keyof T>(key: K): CoreContract.FieldMetadata<T[K]>
+  select<K extends keyof T>(key: K): CoreContract.FieldMetadata<T[K]>
 }
