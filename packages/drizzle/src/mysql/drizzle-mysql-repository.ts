@@ -21,12 +21,12 @@ export abstract class DrizzleMysqlRepository<E extends CoreEntity, T extends Dri
     return DrizzleMysqlRepository.getById(database, table)(response.insertId)
   }
 
-  protected static update = (database: MySql2Database, table: DrizzleMysqlTable) => async (id: string | number, properties: Partial<CoreEntity.Entries>): Promise<DrizzleMysqlTable['$inferSelect']> => {
+  protected static updateById = (database: MySql2Database, table: DrizzleMysqlTable) => async (id: string | number, properties: Partial<CoreEntity.Entries>): Promise<DrizzleMysqlTable['$inferSelect']> => {
     await database.update(table).set(properties).where(eq(getTableColumns(table).id, Number(id))).execute()
     return DrizzleMysqlRepository.getById(database, table)(id)
   }
 
-  protected static delete = (database: MySql2Database, table: DrizzleMysqlTable) => async (id: string | number): Promise<void> => {
+  protected static deleteById = (database: MySql2Database, table: DrizzleMysqlTable) => async (id: string | number): Promise<void> => {
     await database.delete(table).where(eq(getTableColumns(table).id, Number(id))).execute()
   }
 
@@ -46,13 +46,13 @@ export abstract class DrizzleMysqlRepository<E extends CoreEntity, T extends Dri
     return this.mapEntity(drizzleResult)
   }
 
-  public async update(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E> {
-    const drizzleResult = await DrizzleMysqlRepository.update(this.database, this.table)(id, entries)
+  public async updateById(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E> {
+    const drizzleResult = await DrizzleMysqlRepository.updateById(this.database, this.table)(id, entries)
     return this.mapEntity(drizzleResult)
   }
 
-  public async delete(id: E['id']): Promise<void> {
-    const drizzleResult = await DrizzleMysqlRepository.delete(this.database, this.table)(id)
+  public async deleteById(id: E['id']): Promise<void> {
+    const drizzleResult = await DrizzleMysqlRepository.deleteById(this.database, this.table)(id)
   }
 
   public async getById(id: E['id']): Promise<E> {

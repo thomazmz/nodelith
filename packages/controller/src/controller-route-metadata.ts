@@ -91,7 +91,7 @@ export function Path(path: string) {
 }
 
 export function Success<T extends Awaited<Record<string, CoreContract.Value>>>(success: HttpStatus, contract?: CoreContract<T>) {
-  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType<Promise<T> | T>>) {
+  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType<Promise<T | void> | T | void>>) {
     attachRouteMetadata({ ...descriptor }, { key, success, ...({
       response: contract
     })})

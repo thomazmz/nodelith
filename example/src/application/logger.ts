@@ -2,34 +2,31 @@ import { CoreLogger } from '@nodelith/core'
 
 export class ApplicationLogger implements CoreLogger {
   public info(message: string, metadata?: Record<string, any>): void {
-    this.log('info', message, metadata)
+    const formatted = this.format('INFO', message, metadata)
+    console.info(formatted)
   }
 
   public warn(message: string, metadata?: Record<string, any>): void {
-    this.log('warn', message, metadata)
+    const formatted = this.format('WARN', message, metadata)
+    console.warn(formatted)
   }
 
   public error(message: string, metadata?: Record<string, any>): void {
-    this.log('error', message, metadata)
+    const formatted = this.format('ERROR', message, metadata)
+    console.error(formatted)
   }
 
   public debug(message: string, metadata?: Record<string, any>): void {
-    this.log('debug', message, metadata)
+    const formatted = this.format('DEBUG', message, metadata)
+    console.debug(formatted)
   }
 
   public trace(message: string, metadata?: Record<string, any>): void {
-    this.log('trace', message, metadata)
+    const formatted = this.format('TRACE', message, metadata)
+    console.trace(formatted)
   }
 
-  private log(level: string, message: string, metadata?: Record<string, any>) {
-    const suffix = metadata ? ` ${JSON.stringify(metadata)}` : ''
-    const line = `[${level.toUpperCase()}] ${message}${suffix}`
-
-    if (level === 'error' || level === 'warn') {
-      console.error(line)
-      return
-    }
-
-    console.log(line)
+  private format(level: string, message: string, _metadata?: Record<string, any>) {
+    return `[${level}] ${message}`
   }
 }

@@ -5,11 +5,11 @@ export type PetDto = CoreContract.Infer<typeof PetDto>
 
 export const PetDto = ZodContract.create('PetDto', {
   id: ZodContract.string({
-    description: 'Unique pet identifier.',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'Numeric and unique pet identifier.',
+    example: '1543234',
   }),
   name: ZodContract.string({
-    description: 'Human-friendly pet name.',
+    description: 'Readable pet name.',
     example: 'Luna',
   }),
   age: ZodContract.number({
@@ -22,5 +22,5 @@ export type CreatePetRequestBody = CoreContract.Infer<typeof CreatePetRequestBod
 
 export const CreatePetRequestBody = ZodContract.create('CreatePetRequestBody', {
   name: PetDto.select('name').optional(),
-  age: PetDto.select('age').optional(),
+  age: PetDto.select('age'),
 })

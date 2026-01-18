@@ -15,17 +15,20 @@ export class PetService {
     this.petConfig = PetConfig
   }
 
+  public deletePetById(id: string): Promise<void> {
+    return this.petRepository.deleteById(id)
+  }
+
   public getPetById(id: string): Promise<PetEntity> {
     return this.petRepository.getById(id)
   }
 
   public createPet(properties: {
-    age?: number,
+    age: number,
     name?: string,
   }): Promise<PetEntity> {
-    return this.petRepository.create({
+    return this.petRepository.create({ ...properties,
       name: properties.name ?? this.petConfig.defaultName,
-      age: properties.age ?? this.petConfig.defaultAge,
     })
   }
 }

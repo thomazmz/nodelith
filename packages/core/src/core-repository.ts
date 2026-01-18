@@ -17,23 +17,23 @@ export interface CoreRepository<E extends CoreEntity = CoreEntity> {
   getById(id: E['id']): Promise<E>
 
   /**
+   * @description Deletes a single entity instance.
+   * @param {E['id']} id An id matching the single instance to be deleted.
+   * @returns {Promise<void>}
+   */
+  deleteById(id: E['id']): Promise<void>
+
+  /**
+   * @description Updates a single entity instance. It will update the updatedAt timestamp.
+   * @param {CoreEntity.Enries<E>} entries The assignable entries that will be used to update the entity instance.
+   * @returns {Promise<E>} Returns the updated instance.
+   */
+  updateById(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E>
+
+  /**
    * @description Creates a single entity instance. It will assign the instance a unique id and the createdAt/updatedAt timestamps.
    * @param {CoreEntity.Enries<E>} entries The assignable entries that will be used to create the entity instancy.
    * @returns {Promise<E>} Returns the created instance.
    */
   create(entries: CoreEntity.Entries<E>): Promise<E>
-
-  /**
-   * @description Creates a single entity instance. It will assign the instance a unique id and the createdAt/updatedAt timestamps.
-   * @param {CoreEntity.Enries<E>} entries The assignable entries that will be used to create the entity instancy.
-   * @returns {Promise<E>} Returns the created instance.
-   */
-  update(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E>
-
-  /**
-   * @description Deletes a single entity instance.
-   * @param {E['id']} id An id matching the single instance to be deleted.
-   * @returns {Promise<void>}
-   */
-  delete(id: E['id']): Promise<void>
 }

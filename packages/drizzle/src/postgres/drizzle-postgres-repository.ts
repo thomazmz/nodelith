@@ -21,12 +21,12 @@ export abstract class DrizzlePostgresRepository<E extends CoreEntity, T extends 
     return row
   }
 
-  protected static update = (database: NodePgDatabase, table: DrizzlePostgresTable) => async (id: string | number, properties: Partial<CoreEntity.Entries>): Promise<DrizzlePostgresTable['$inferSelect']> => {
+  protected static updateById = (database: NodePgDatabase, table: DrizzlePostgresTable) => async (id: string | number, properties: Partial<CoreEntity.Entries>): Promise<DrizzlePostgresTable['$inferSelect']> => {
     const [ row ] = await database.update(table).set(properties).where(eq(getTableColumns(table).id, id)).returning().execute()
     return row
   }
 
-  protected static delete = (database: NodePgDatabase, table: DrizzlePostgresTable) => async (id: string | number): Promise<void> => {
+  protected static deleteById = (database: NodePgDatabase, table: DrizzlePostgresTable) => async (id: string | number): Promise<void> => {
     await database.delete(table).where(eq(getTableColumns(table).id, id)).execute()
   }
 
@@ -46,13 +46,13 @@ export abstract class DrizzlePostgresRepository<E extends CoreEntity, T extends 
     return this.mapEntity(drizzleResult)
   }
 
-  public async update(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E> {
-    const drizzleResult = await DrizzlePostgresRepository.update(this.database, this.table)(id, entries)
+  public async updateById(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E> {
+    const drizzleResult = await DrizzlePostgresRepository.updateById(this.database, this.table)(id, entries)
     return this.mapEntity(drizzleResult)
   }
 
-  public async delete(id: E['id']): Promise<void> {
-    await DrizzlePostgresRepository.delete(this.database, this.table)(id)
+  public async deleteById(id: E['id']): Promise<void> {
+    await DrizzlePostgresRepository.deleteById(this.database, this.table)(id)
   }
 
   public async getById(id: E['id']): Promise<E> {
