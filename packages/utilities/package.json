@@ -1,8 +1,9 @@
 {
   "name": "@nodelith/utilities",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "type": "commonjs",
   "access": "public",
+  "license": "MIT",
   "exports": {
     ".": {
       "types": "./dist/library.d.ts",
