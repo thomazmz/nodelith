@@ -12,6 +12,7 @@ Core building blocks live under `packages/`:
 - [`@nodelith/config`](https://www.npmjs.com/package/@nodelith/config) (Configuration utilities)
 - [`@nodelith/controller`](https://www.npmjs.com/package/@nodelith/controller) (Controller utilities)
 - [`@nodelith/core`](https://www.npmjs.com/package/@nodelith/core) (Core Nodelith types)
+- [`@nodelith/identity`](https://www.npmjs.com/package/@nodelith/identity) (Base62 identity utilities)
 - [`@nodelith/express`](https://www.npmjs.com/package/@nodelith/express) (Adapters for [Express](https://expressjs.com/))
 - [`@nodelith/drizzle`](https://www.npmjs.com/package/@nodelith/drizzle) (Adapters for [Drizzle ORM](https://orm.drizzle.team/))
 - [`@nodelith/postgres`](https://www.npmjs.com/package/@nodelith/postgres) (Adapters for [PostgreSQL](https://www.postgresql.org/))
