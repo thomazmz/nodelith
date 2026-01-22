@@ -90,7 +90,7 @@ export function Path(path: string) {
   }
 }
 
-export function Success<T extends Awaited<Record<string, CoreContract.Value>>>(success: HttpStatus, contract?: CoreContract<T>) {
+export function Success<T extends Awaited<CoreContract.Literal>>(success: HttpStatus, contract?: CoreContract<T>) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType<Promise<T | void> | T | void>>) {
     attachRouteMetadata({ ...descriptor }, { key, success, ...({
       response: contract
@@ -98,19 +98,19 @@ export function Success<T extends Awaited<Record<string, CoreContract.Value>>>(s
   }
 }
 
-export function Body<T extends Record<string, CoreContract.Value>>(body: CoreContract<T>) {
+export function Body<T extends CoreContract.Literal>(body: CoreContract<T>) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
     attachRouteMetadata({ ...descriptor }, { key, body })
   }
 }
 
-export function Query<T extends Record<string, CoreContract.Value>>(query: CoreContract<T>) {
+export function Query<T extends CoreContract.Literal>(query: CoreContract<T>) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
     attachRouteMetadata({ ...descriptor }, { key, query })
   }
 }
 
-export function Header<T extends Record<string, CoreContract.Value>>(header: CoreContract<T>) {
+export function Header<T extends CoreContract.Literal>(header: CoreContract<T>) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
     attachRouteMetadata({ ...descriptor }, { key, header })
   }
