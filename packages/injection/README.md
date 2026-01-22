@@ -179,12 +179,13 @@ import { CoreInitializer } from '@nodelith/core'
 
 class CacheInitializer implements CoreInitializer<Set<string>> {
   public async initialize() {
-    return ['Some', 'slow', 'operation'];
+    return ['Some', 'very', 'slow', 'operation'];
   }
 }
 
 function SomethingWithCache(cache: string[]) {
-  return cache.join()
+  console.log(cache.join(' '))
+  // > Some very slow operation
 }
 
 const container = InjectionContainer.create()
