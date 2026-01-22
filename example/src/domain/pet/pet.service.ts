@@ -2,6 +2,7 @@
 import { PetEntity } from './pet.domain'
 import { PetConfig } from './pet.config'
 import { PetRepository } from './pet.repository'
+import { CoreLogger } from '@nodelith/core'
 
 export class PetService {
   private readonly petRepository: PetRepository
@@ -10,6 +11,7 @@ export class PetService {
   public constructor(
     petRepository: PetRepository,
     PetConfig: PetConfig,
+    logger: CoreLogger,
   ) {
     this.petRepository = petRepository
     this.petConfig = PetConfig
