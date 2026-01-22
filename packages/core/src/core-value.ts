@@ -11,7 +11,6 @@ export declare namespace CoreValue {
     | string
     | bigint
     | number
-    | Date
   )
   
   export type Array = (
