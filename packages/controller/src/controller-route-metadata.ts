@@ -1,4 +1,5 @@
 import { FunctionType } from '@nodelith/utilities'
+import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
 import { HttpStatus } from '@nodelith/http'
 import { HttpMethod } from '@nodelith/http'
@@ -90,7 +91,7 @@ export function Path(path: string) {
   }
 }
 
-export function Success<T extends Awaited<CoreContract.Literal>>(success: HttpStatus, contract?: CoreContract<T>) {
+export function Success<T extends Awaited<CoreNullable>>(success: HttpStatus, contract?: CoreContract<T>) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType<Promise<T | void> | T | void>>) {
     attachRouteMetadata({ ...descriptor }, { key, success, ...({
       response: contract
@@ -98,19 +99,19 @@ export function Success<T extends Awaited<CoreContract.Literal>>(success: HttpSt
   }
 }
 
-export function Body<T extends CoreContract.Literal>(body: CoreContract<T>) {
+export function Body<T extends CoreNullable>(body: CoreContract<T>) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
     attachRouteMetadata({ ...descriptor }, { key, body })
   }
 }
 
-export function Query<T extends CoreContract.Literal>(query: CoreContract<T>) {
+export function Query<T extends CoreNullable>(query: CoreContract<T>) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
     attachRouteMetadata({ ...descriptor }, { key, query })
   }
 }
 
-export function Header<T extends CoreContract.Literal>(header: CoreContract<T>) {
+export function Header<T extends CoreNullable>(header: CoreContract<T>) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
     attachRouteMetadata({ ...descriptor }, { key, header })
   }
