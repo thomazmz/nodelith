@@ -26,7 +26,8 @@
   "scripts": {
     "test": "jest --config ./jest.json",
     "build": "tsc --project ./build.json",
-    "build:watch": "tsc --watch --project ./build.json"
+    "build:watch": "tsc --watch --project ./build.json",
+    "start": "node --inspect --enable-source-maps dist/application.js"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
