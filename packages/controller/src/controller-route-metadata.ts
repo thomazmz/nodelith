@@ -91,27 +91,27 @@ export function Path(path: string) {
   }
 }
 
-export function Success<T extends Awaited<CoreNullable>>(success: HttpStatus, contract?: CoreContract<T>) {
+export function SuccessResponse<T extends Awaited<CoreNullable>>(status: HttpStatus, contract?: CoreContract<T>) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType<Promise<T | void> | T | void>>) {
-    attachRouteMetadata({ ...descriptor }, { key, success, ...({
+    attachRouteMetadata({ ...descriptor }, { key, success: status, ...({
       response: contract
     })})
   }
 }
 
-export function Body<T extends CoreNullable>(body: CoreContract<T>) {
+export function RequestBody(body: CoreContract) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
     attachRouteMetadata({ ...descriptor }, { key, body })
   }
 }
 
-export function Query<T extends CoreNullable>(query: CoreContract<T>) {
+export function RequestQuery(query: CoreContract) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
     attachRouteMetadata({ ...descriptor }, { key, query })
   }
 }
 
-export function Header<T extends CoreNullable>(header: CoreContract<T>) {
+export function RequestHeader(header: CoreContract) {
   return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
     attachRouteMetadata({ ...descriptor }, { key, header })
   }

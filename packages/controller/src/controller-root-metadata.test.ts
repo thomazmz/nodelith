@@ -1,5 +1,5 @@
 import { ControllerRootMetadata } from './controller-root-metadata'
-import { Router, Path, Method, Success, Summary } from './controller'
+import { Router, Path, Method, SuccessResponse, Summary } from './controller'
 
 jest.mock('@nodelith/http', () => ({
   HttpStatus: { Ok: 200, Created: 201, NoContent: 204 },
@@ -33,7 +33,7 @@ describe('ControllerRootMetadata', () => {
     class Sample {
       @Path('/users')
       @Method('post' as any)
-      @Success(201 as any)
+      @SuccessResponse(201 as any)
       @Summary('Create user')
       create(name: string) {
         return name

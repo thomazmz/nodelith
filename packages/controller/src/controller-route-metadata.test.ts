@@ -1,4 +1,4 @@
-import { ControllerRouteMetadata, Path, Method, Success, Summary, Description, Operation } from './controller-route-metadata'
+import { ControllerRouteMetadata, Path, Method, SuccessResponse, Summary, Description, Operation } from './controller-route-metadata'
 
 jest.mock('@nodelith/http', () => ({
   HttpStatus: { Ok: 200, Created: 201 },
@@ -30,7 +30,7 @@ describe('ControllerRouteMetadata', () => {
 
     Path('/y')(undefined as any, 'demo', desc)
     Method('post' as any)(undefined as any, 'demo', desc)
-    Success(201 as any)(undefined as any, 'demo', desc)
+    SuccessResponse(201 as any)(undefined as any, 'demo', desc)
     Summary('s')(undefined as any, 'demo', desc)
     Description('d')(undefined as any, 'demo', desc)
     Operation('op')(undefined as any, 'demo', desc)
