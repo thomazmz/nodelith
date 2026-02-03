@@ -11,14 +11,16 @@ export declare namespace CoreValue {
     | string
     | bigint
     | number
+    | Date
   )
   
-  export type Array = (
+  export type Array = undefined | (
     | CoreValue.Primitive 
     | CoreValue.Record
+    | CoreValue.Array
   )[]
   
-  export type Record = {
+  export type Record = undefined | {
     readonly [key: string]: (
       | CoreValue.Primitive
       | CoreValue.Record
