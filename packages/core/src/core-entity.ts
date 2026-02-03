@@ -6,9 +6,7 @@ export type CoreEntity = (
 )
 
 export declare namespace CoreEntity {
-  export type Entries<E extends CoreEntity = CoreEntity> = (
-    Omit<E, keyof CoreEntity.Base>
-  )
+  export type Entries<E extends CoreEntity = CoreEntity> = Omit<E, keyof CoreEntity.Base>
   
   export type Base = {
     readonly id: string

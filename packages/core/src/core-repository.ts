@@ -1,39 +1,70 @@
 import { CoreEntity } from './core-entity'
 
-export interface CoreRepository<E extends CoreEntity = CoreEntity> {
+export interface CoreRepository<E extends CoreEntity = CoreEntity, Q extends Partial<E> = Partial<E>> {
+  /**
+   * Create a single entity instance.
+   * Implementations must assign a unique id and set `createdAt` and `updatedAt` timestamps.
+   *
+   * @param entries Assignable entries used to create the entity instance.
+   * @returns A promise that resolves to the created entity.
+   * @throws {InfrastructureError} If the operation fails.
+   */
+  createOne(entries: CoreEntity.Entries<E>): Promise<E>
 
   /**
-   * @description Gets all entity instance in a repository.
-   * @returns {Promise<E>} Returns all the instances in the repository  as an array.
-   * @throws {InfrastructureError} Throws a InfrastructureError in case of failure.
+   * Update a single entity instance by id.
+   * Implementations must update the `updatedAt` timestamp.
+   *
+   * @param id The id of the entity to update.
+   * @param entries Assignable entries used to update the entity instance.
+   * @returns A promise that resolves to the updated entity.
+   * @throws {InfrastructureError} If the operation fails.
+   * @throws {NotFoundError} If no entity exists for the given id.
    */
-  getAll(): Promise<E[]>
+  updateOneById(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E>
 
   /**
-   * @description Gets a single entity instance that matches a given id.
-   * @param {E['id']} id An id matching the single instance to get.
-   * @returns {Promise<E>} Returns the matched entity or throws
+   * Delete a single entity instance by id.
+   *
+   * @param id The id of the entity to delete.
+   * @returns A promise that resolves when the entity has been deleted.
+   * @throws {InfrastructureError} If the operation fails.
+   * @throws {NotFoundError} If no entity exists for the given id.
    */
-  getById(id: E['id']): Promise<E>
+  deleteOneById(id: E['id']): Promise<void>
 
   /**
-   * @description Deletes a single entity instance.
-   * @param {E['id']} id An id matching the single instance to be deleted.
-   * @returns {Promise<void>}
+   * Find all entity instances that match a query.
+   *
+   * @param query A partial entity-shaped object used to filter results.
+   * @returns A promise that resolves to all matching entities.
+   * @throws {InfrastructureError} If the operation fails.
    */
-  deleteById(id: E['id']): Promise<void>
+  findByQuery(query: Q): Promise<E[]>
 
   /**
-   * @description Updates a single entity instance. It will update the updatedAt timestamp.
-   * @param {CoreEntity.Enries<E>} entries The assignable entries that will be used to update the entity instance.
-   * @returns {Promise<E>} Returns the updated instance.
+   * Find the first entity instance that matches a query.
+   *
+   * @param query A partial entity-shaped object used to filter results.
+   * @returns A promise that resolves to the first matching entity, or `undefined` if none exists.
+   * @throws {InfrastructureError} If the operation fails.
    */
-  updateById(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E>
+  findOneByQuery(query: Q): Promise<E | undefined>
 
   /**
-   * @description Creates a single entity instance. It will assign the instance a unique id and the createdAt/updatedAt timestamps.
-   * @param {CoreEntity.Enries<E>} entries The assignable entries that will be used to create the entity instancy.
-   * @returns {Promise<E>} Returns the created instance.
+   * Find a single entity instance by id.
+   *
+   * @param id The id of the entity to find.
+   * @returns A promise that resolves to the matched entity, or `undefined` if none exists.
+   * @throws {InfrastructureError} If the operation fails.
    */
-  create(entries: CoreEntity.Entries<E>): Promise<E>
+  findOneById(id: E['id']): Promise<E | undefined>
+
+  /**
+   * Find all entity instances in the repository.
+   *
+   * @returns A promise that resolves to all entity instances.
+   * @throws {InfrastructureError} If the operation fails.
+   */
+  findAll(): Promise<E[]>
 }
