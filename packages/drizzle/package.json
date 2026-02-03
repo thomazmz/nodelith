@@ -56,11 +56,12 @@
     "@nodelith/core": "workspace:^",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.2.1",
+    "@types/pg": "^8.16.0",
     "drizzle-orm": "^0.44.5",
-    "typescript": "^5.9.2",
-    "ts-jest": "^29.4.1",
-    "mysql2": "^3.15.1",
     "jest": "^30.0.5",
-    "pg": "^8.17.2"
+    "mysql2": "^3.15.1",
+    "pg": "^8.17.2",
+    "ts-jest": "^29.4.1",
+    "typescript": "^5.9.2"
   }
 }
