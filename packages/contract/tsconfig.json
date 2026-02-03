@@ -21,7 +21,7 @@
     "forceConsistentCasingInFileNames": false,
     "incremental": true,
     "noFallthroughCasesInSwitch": false,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "removeComments": true,
