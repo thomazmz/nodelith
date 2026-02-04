@@ -56,6 +56,6 @@ export class $Object<T extends CoreNullable.Record> implements CoreContract<T> {
   }
 
   private run(input: unknown, normalize: boolean): CoreParser.Result<T> {
-    throw new Error('Not implemented')
+    return { success: true, value: input as T }
   }
 }

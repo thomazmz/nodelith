@@ -117,7 +117,7 @@ export class ExpressModule extends InjectionModule {
                 `Bad request. Could not parse request headers.`
               )
 
-              return result;
+              return result.value;
             }
 
             if(parameter === 'query') {
@@ -131,7 +131,7 @@ export class ExpressModule extends InjectionModule {
                 `Bad request. Could not parse request query.`
               )
 
-              return result;
+              return result.value;
             }
 
             if(parameter === 'body') {
@@ -145,7 +145,7 @@ export class ExpressModule extends InjectionModule {
                 `Bad request. Could not parse request body.`
               )
 
-              return result;
+              return result.value;
             }
 
             return request.params[parameter] ? request.params[parameter] : HttpInternalServerError.throw(

@@ -56,6 +56,6 @@ export class $Array<T extends CoreNullable.Array = CoreNullable.Array> implement
   }
 
   private run(input: unknown, normalize: boolean): CoreParser.Result<T> {
-    throw new Error('Not implemented')
+    return { success: true, value: input as T }
   }
 }
