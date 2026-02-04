@@ -44,8 +44,14 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
     return $Number.create({ ...this.properties, ...options }) as $Number<CoreContract.Output<T, P>>
   }
 
-  public assert(input: unknown, error?: (new (message: string) => Error) | undefined): T {
-    return input as T
+  public assert(input: unknown, CustomError?: (new (message: string) => Error) | undefined): T {
+    const result = this.parse(input)
+
+    if(result.success) return result.value
+      
+    throw !CustomError 
+      ? new Error(result.issues[0]?.message ?? 'Could not parse value.')
+      : new CustomError(result.issues[0]?.message ?? 'Could not parse value.')
   }
 
   public parse(input: unknown): CoreParser.Result<T> {
@@ -54,7 +60,7 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
     }
 
     if(input === undefined) {
-      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected undefined value.`) ]}
+      return { success: false, issues: [ CoreIssue.create(`Could not parse value. Unexpected undefined value.`) ]}
     }
 
     if(input === null && this.properties.nullable ) {
@@ -62,7 +68,7 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
     }
 
     if(input === null) {
-      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected null value.`) ]}
+      return { success: false, issues: [ CoreIssue.create(`Could not parse value. Unexpected null value.`) ]}
     }
 
     if(typeof input === 'number') {
@@ -78,11 +84,11 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
     }
 
     if(typeof input === 'boolean') {
-      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected boolean value.`) ]}
+      return { success: false, issues: [ CoreIssue.create(`Could not parse value. Unexpected boolean value.`) ]}
     }
 
     if(typeof input === 'string' && input.trim() === '') {
-      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected string value.`) ]}
+      return { success: false, issues: [ CoreIssue.create(`Could not parse value. Unexpected string value.`) ]}
     }
 
     if(typeof input === 'string' && Number.isFinite(Number(input))) {
@@ -90,7 +96,7 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
     }
 
     if(typeof input === 'string') {
-      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected string value.`) ]}
+      return { success: false, issues: [ CoreIssue.create(`Could not parse value. Unexpected string value.`) ]}
     }
 
     if(typeof input === 'bigint' && input <= BigInt(Number.MAX_SAFE_INTEGER) && input >= BigInt(Number.MIN_SAFE_INTEGER)) {
@@ -98,9 +104,9 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
     }
 
     if(typeof input === 'bigint') {
-      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected bigint value.`) ]}
+      return { success: false, issues: [ CoreIssue.create(`Could not parse value. Unexpected bigint value.`) ]}
     }
 
-    return { success: false, issues: [ CoreIssue.create('Could not parse input. Unexpected value.') ] }
+    return { success: false, issues: [ CoreIssue.create('Could not parse value. Unexpected value.') ] }
   }
 }

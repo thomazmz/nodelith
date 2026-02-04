@@ -62,4 +62,46 @@ describe('contract-string', () => {
     expect(result.success).toBe(false)
     if(!result.success) expect(result.issues.length).toBeGreaterThan(0)
   })
+
+  test('accepts undefined when optional=true nullable=false', () => {
+    const contract = $String.create({ optional: true, nullable: false })
+    const result = contract.parse(undefined)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(undefined)
+  })
+
+  test('fails for null when optional=true nullable=false', () => {
+    const contract = $String.create({ optional: true, nullable: false })
+    const result = contract.parse(null)
+    expect(result.success).toBe(false)
+    if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
+  })
+
+  test('accepts null when optional=false nullable=true', () => {
+    const contract = $String.create({ optional: false, nullable: true })
+    const result = contract.parse(null)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(null)
+  })
+
+  test('fails for undefined when optional=false nullable=true', () => {
+    const contract = $String.create({ optional: false, nullable: true })
+    const result = contract.parse(undefined)
+    expect(result.success).toBe(false)
+    if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
+  })
+
+  test('accepts undefined when optional=true nullable=true', () => {
+    const contract = $String.create({ optional: true, nullable: true })
+    const result = contract.parse(undefined)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(undefined)
+  })
+
+  test('accepts null when optional=true nullable=true', () => {
+    const contract = $String.create({ optional: true, nullable: true })
+    const result = contract.parse(null)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(null)
+  })
 })

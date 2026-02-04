@@ -44,55 +44,61 @@ export class $String<T extends CoreNullable.String> implements CoreContract<T> {
     return $String.create({ ...this.properties, ...options }) as $String<CoreContract.Output<T, P>>
   }
 
-  public assert(input: unknown, error?: (new (message: string) => Error) | undefined): T {
-    return input as T
+  public assert(input: unknown, CustomError?: (new (message: string) => Error) | undefined): T {
+    const result = this.parse(input)
+
+    if(result.success) return result.value
+      
+    throw !CustomError 
+      ? new Error(result.issues[0]?.message ?? 'Could not parse value')
+      : new CustomError(result.issues[0]?.message ?? 'Could not parse value')
   }
 
-public parse(input: unknown): CoreParser.Result<T> {
-  if(input === undefined && this.properties.optional ) {
-    return { success: true, value: input as T } 
+  public parse(input: unknown): CoreParser.Result<T> {
+    if(input === undefined && this.properties.optional ) {
+      return { success: true, value: input as T } 
+    }
+
+    if(input === undefined) {
+      return { success: false, issues: [ CoreIssue.create(`Could not parse value. Unexpected undefined value.`) ]}
+    }
+
+    if(input === null && this.properties.nullable ) {
+      return { success: true, value: input as T } 
+    }
+
+    if(input === null) {
+      return { success: false, issues: [ CoreIssue.create(`Could not parse value. Unexpected null value.`) ]}
+    }
+
+    if(typeof input === 'string') {
+      return { success: true, value: input as T }
+    }
+
+    if(typeof input === 'number' && Number.isFinite(input)) {
+      return { success: true, value: String(input) as T }
+    } 
+
+    if(typeof input === 'number') {
+      return { success: false, issues: [ CoreIssue.create(`Could not parse value. Unexpected number value.`) ]}
+    }
+
+    if(typeof input === 'bigint') {
+      return { success: true, value: String(input) as T }
+    }
+
+    if(typeof input === 'boolean' && input) {
+      return { success: true, value: 'true' as T }
+    }
+
+    if(typeof input === 'boolean' && !input) {
+      return { success: true, value: 'false' as T }
+    }
+
+    if(typeof input === 'boolean') {
+      return { success: false, issues: [ CoreIssue.create(`Could not parse value. Unexpected boolean value.`) ]}
+    }
+
+    return { success: false, issues: [ CoreIssue.create('Could not parse value. Unexpected value.') ] }
   }
-
-  if(input === undefined) {
-    return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected undefined value.`) ]}
-  }
-
-  if(input === null && this.properties.nullable ) {
-    return { success: true, value: input as T } 
-  }
-
-  if(input === null) {
-    return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected null value.`) ]}
-  }
-
-  if(typeof input === 'string') {
-    return { success: true, value: input as T }
-  }
-
-  if(typeof input === 'number' && Number.isFinite(input)) {
-    return { success: true, value: String(input) as T }
-  } 
-
-  if(typeof input === 'number') {
-    return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected number value.`) ]}
-  }
-
-  if(typeof input === 'bigint') {
-    return { success: true, value: String(input) as T }
-  }
-
-  if(typeof input === 'boolean' && input) {
-    return { success: true, value: 'true' as T }
-  }
-
-  if(typeof input === 'boolean' && !input) {
-    return { success: true, value: 'false' as T }
-  }
-
-  if(typeof input === 'boolean') {
-    return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected boolean value.`) ]}
-  }
-
-  return { success: false, issues: [ CoreIssue.create('Could not parse input. Unexpected value.') ] }
-}
 }

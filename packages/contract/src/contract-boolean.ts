@@ -44,8 +44,14 @@ export class $Boolean<T extends CoreNullable.Boolean> implements CoreContract<T>
     return $Boolean.create({ ...this.properties, ...options }) as $Boolean<CoreContract.Output<T, P>>
   }
 
-  public assert(input: unknown, error?: (new (message: string) => Error) | undefined): T {
-    return input as T
+  public assert(input: unknown, CustomError?: (new (message: string) => Error) | undefined): T {
+    const result = this.parse(input)
+
+    if(result.success) return result.value
+      
+    throw !CustomError 
+      ? new Error(result.issues[0]?.message ?? 'Could not parse value.')
+      : new CustomError(result.issues[0]?.message ?? 'Could not parse value.')
   }
 
   public parse(input: unknown): CoreParser.Result<T> {

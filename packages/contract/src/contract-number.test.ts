@@ -1,6 +1,6 @@
 import { $Number } from './contract-number'
 
-describe.only('contract-number', () => {
+describe('contract-number', () => {
   const contract = $Number.create({ optional: false, nullable: false })
 
   test('fails for undefined when not optional', () => {
@@ -86,5 +86,47 @@ describe.only('contract-number', () => {
     const result = contract.parse({ a: 1 })
     expect(result.success).toBe(false)
     if(!result.success) expect(result.issues.length).toBeGreaterThan(0)
+  })
+
+  test('accepts undefined when optional=true nullable=false', () => {
+    const contract = $Number.create({ optional: true, nullable: false })
+    const result = contract.parse(undefined)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(undefined)
+  })
+
+  test('fails for null when optional=true nullable=false', () => {
+    const contract = $Number.create({ optional: true, nullable: false })
+    const result = contract.parse(null)
+    expect(result.success).toBe(false)
+    if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
+  })
+
+  test('accepts null when optional=false nullable=true', () => {
+    const contract = $Number.create({ optional: false, nullable: true })
+    const result = contract.parse(null)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(null)
+  })
+
+  test('fails for undefined when optional=false nullable=true', () => {
+    const contract = $Number.create({ optional: false, nullable: true })
+    const result = contract.parse(undefined)
+    expect(result.success).toBe(false)
+    if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
+  })
+
+  test('accepts undefined when optional=true nullable=true', () => {
+    const contract = $Number.create({ optional: true, nullable: true })
+    const result = contract.parse(undefined)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(undefined)
+  })
+
+  test('accepts null when optional=true nullable=true', () => {
+    const contract = $Number.create({ optional: true, nullable: true })
+    const result = contract.parse(null)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(null)
   })
 })

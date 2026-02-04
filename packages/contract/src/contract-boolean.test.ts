@@ -1,6 +1,6 @@
 import { $Boolean } from './contract-boolean'
 
-describe.only('contract-boolean', () => {
+describe('contract-boolean', () => {
   const contract = $Boolean.create({ optional: false, nullable: false })
 
   test('fails for undefined when not optional', () => {
@@ -97,5 +97,47 @@ describe.only('contract-boolean', () => {
     const result = contract.parse({ a: 1 })
     expect(result.success).toBe(false)
     if(!result.success) expect(result.issues.length).toBeGreaterThan(0)
+  })
+
+  test('accepts boolean true when optional=true nullable=false', () => {
+    const contract = $Boolean.create({ optional: true, nullable: false })
+    const result = contract.parse(true)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(true)
+  })
+
+  test('accepts boolean false when optional=true nullable=false', () => {
+    const contract = $Boolean.create({ optional: true, nullable: false })
+    const result = contract.parse(false)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(false)
+  })
+
+  test('accepts boolean true when optional=false nullable=true', () => {
+    const contract = $Boolean.create({ optional: false, nullable: true })
+    const result = contract.parse(true)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(true)
+  })
+
+  test('accepts boolean false when optional=false nullable=true', () => {
+    const contract = $Boolean.create({ optional: false, nullable: true })
+    const result = contract.parse(false)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(false)
+  })
+
+  test('accepts boolean true when optional=true nullable=true', () => {
+    const contract = $Boolean.create({ optional: true, nullable: true })
+    const result = contract.parse(true)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(true)
+  })
+
+  test('accepts boolean false when optional=true nullable=true', () => {
+    const contract = $Boolean.create({ optional: true, nullable: true })
+    const result = contract.parse(false)
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.value).toBe(false)
   })
 })
