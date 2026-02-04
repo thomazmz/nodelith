@@ -43,6 +43,10 @@ export class $Boolean<T extends CoreNullable.Boolean> implements CoreContract<T>
     return $Boolean.create({ ...this.properties, ...options }) as $Boolean<CoreContract.Output<T, P>>
   }
 
+  public assert(input: unknown, error?: (new (message: string) => Error) | undefined): T {
+    return input as T
+  }
+
   public parse(input: unknown): CoreParser.Result<T> {
     return { success: true, value: input } as CoreParser.Result<T>
   }

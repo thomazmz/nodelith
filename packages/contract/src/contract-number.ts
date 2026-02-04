@@ -43,6 +43,10 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
     return $Number.create({ ...this.properties, ...options }) as $Number<CoreContract.Output<T, P>>
   }
 
+  public assert(input: unknown, error?: (new (message: string) => Error) | undefined): T {
+    return input as T
+  }
+
   public parse(input: unknown): CoreParser.Result<T> {
     return { success: true, value: input } as CoreParser.Result<T>
   }

@@ -47,6 +47,10 @@ export class $Array<T extends CoreNullable.Array = CoreNullable.Array> implement
     return $Array.create({ ...this.properties, ...options }) as $Array<CoreContract.Output<T, P>>
   }
 
+  public assert(input: unknown, error?: (new (message: string) => Error) | undefined): T {
+    return input as T
+  }
+
   public parse(input: unknown): CoreParser.Result<T> {
     return { success: true, value: input } as CoreParser.Result<T>
   }

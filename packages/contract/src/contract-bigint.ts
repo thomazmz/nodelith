@@ -43,6 +43,10 @@ export class $Bigint<T extends CoreNullable.Bigint> implements CoreContract<T> {
     return $Bigint.create({ ...this.properties, ...options }) as $Bigint<CoreContract.Output<T, P>>
   }
 
+  public assert(input: unknown, error?: (new (message: string) => Error) | undefined): T {
+    return input as T
+  }
+
   public parse(input: unknown): CoreParser.Result<T> {
     return { success: true, value: input } as CoreParser.Result<T>
   }

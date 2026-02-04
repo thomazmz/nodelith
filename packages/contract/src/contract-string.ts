@@ -43,6 +43,10 @@ export class $String<T extends CoreNullable.String> implements CoreContract<T> {
     return $String.create({ ...this.properties, ...options }) as $String<CoreContract.Output<T, P>>
   }
 
+  public assert(input: unknown, error?: (new (message: string) => Error) | undefined): T {
+    return input as T
+  }
+
   public parse(input: unknown): CoreParser.Result<T> {
     return { success: true, value: input } as CoreParser.Result<T>
   }
