@@ -1,3 +1,4 @@
+import { CoreIssue } from '@nodelith/core'
 import { CoreParser } from '@nodelith/core'
 import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
@@ -48,6 +49,58 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
   }
 
   public parse(input: unknown): CoreParser.Result<T> {
-    return { success: true, value: input } as CoreParser.Result<T>
+    if(input === undefined && this.properties.optional ) {
+      return { success: true, value: input as T } 
+    }
+
+    if(input === undefined) {
+      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected undefined value.`) ]}
+    }
+
+    if(input === null && this.properties.nullable ) {
+      return { success: true, value: input as T } 
+    }
+
+    if(input === null) {
+      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected null value.`) ]}
+    }
+
+    if(typeof input === 'number') {
+      return { success: true, value: input as T }
+    }
+
+    if(typeof input === 'boolean' && input === true) {
+      return { success: true, value: 1 as T }
+    }
+
+    if(typeof input === 'boolean' && input === false) {
+      return { success: true, value: 0 as T }
+    }
+
+    if(typeof input === 'boolean') {
+      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected boolean value.`) ]}
+    }
+
+    if(typeof input === 'string' && input.trim() === '') {
+      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected string value.`) ]}
+    }
+
+    if(typeof input === 'string' && Number.isFinite(Number(input))) {
+      return { success: true, value: Number(input) as T }
+    }
+
+    if(typeof input === 'string') {
+      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected string value.`) ]}
+    }
+
+    if(typeof input === 'bigint' && input <= BigInt(Number.MAX_SAFE_INTEGER) && input >= BigInt(Number.MIN_SAFE_INTEGER)) {
+      return { success: true, value: Number(input) as T }
+    }
+
+    if(typeof input === 'bigint') {
+      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected bigint value.`) ]}
+    }
+
+    return { success: false, issues: [ CoreIssue.create('Could not parse input. Unexpected value.') ] }
   }
 }

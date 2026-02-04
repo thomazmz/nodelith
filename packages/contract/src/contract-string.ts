@@ -1,3 +1,4 @@
+import { CoreIssue } from '@nodelith/core'
 import { CoreParser } from '@nodelith/core'
 import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
@@ -47,7 +48,51 @@ export class $String<T extends CoreNullable.String> implements CoreContract<T> {
     return input as T
   }
 
-  public parse(input: unknown): CoreParser.Result<T> {
-    return { success: true, value: input } as CoreParser.Result<T>
+public parse(input: unknown): CoreParser.Result<T> {
+  if(input === undefined && this.properties.optional ) {
+    return { success: true, value: input as T } 
   }
+
+  if(input === undefined) {
+    return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected undefined value.`) ]}
+  }
+
+  if(input === null && this.properties.nullable ) {
+    return { success: true, value: input as T } 
+  }
+
+  if(input === null) {
+    return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected null value.`) ]}
+  }
+
+  if(typeof input === 'string') {
+    return { success: true, value: input as T }
+  }
+
+  if(typeof input === 'number' && Number.isFinite(input)) {
+    return { success: true, value: String(input) as T }
+  } 
+
+  if(typeof input === 'number') {
+    return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected number value.`) ]}
+  }
+
+  if(typeof input === 'bigint') {
+    return { success: true, value: String(input) as T }
+  }
+
+  if(typeof input === 'boolean' && input) {
+    return { success: true, value: 'true' as T }
+  }
+
+  if(typeof input === 'boolean' && !input) {
+    return { success: true, value: 'false' as T }
+  }
+
+  if(typeof input === 'boolean') {
+    return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected boolean value.`) ]}
+  }
+
+  return { success: false, issues: [ CoreIssue.create('Could not parse input. Unexpected value.') ] }
+}
 }
