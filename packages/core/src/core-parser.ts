@@ -19,6 +19,5 @@ export declare namespace CoreParser {
 
 export interface CoreParser<T = any> {
   parse(input: unknown): CoreParser.Result<T>
-  assert(input: unknown, error?: (new (message: string) => Error)): T
+  normalize(input: unknown): CoreParser.Result<T>
 }
-

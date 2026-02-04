@@ -44,73 +44,59 @@ export class $Boolean<T extends CoreNullable.Boolean> implements CoreContract<T>
     return $Boolean.create({ ...this.properties, ...options }) as $Boolean<CoreContract.Output<T, P>>
   }
 
-  public assert(input: unknown, CustomError?: (new (message: string) => Error) | undefined): T {
-    const result = this.parse(input)
-
-    if(result.success) return result.value
-      
-    throw !CustomError 
-      ? new Error(result.issues[0]?.message ?? 'Could not parse value.')
-      : new CustomError(result.issues[0]?.message ?? 'Could not parse value.')
+  public parse(input: unknown): CoreParser.Result<T> {
+    return this.run(input, false)
   }
 
-  public parse(input: unknown): CoreParser.Result<T> {
+  public normalize(input: unknown): CoreParser.Result<T> {
+    return this.run(input, true)
+  }
+
+  private run(input: unknown, coerce: boolean): CoreParser.Result<T> {
     if(input === undefined) return !this.properties.optional 
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected undefined value.`) ]}
+      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into boolean type. Unexpected undefined value.`) ]}
       : { success: true, value: input as T }
 
     if(input === null) return !this.properties.nullable 
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected null value.`) ]}
+      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into boolean type. Unexpected null value.`) ]}
       : { success: true, value: input as T }
 
     if(typeof input === 'boolean') {
       return { success: true, value: input as T }
     }
 
-    if(typeof input === 'string' && input === 'true') {
+    if(coerce && typeof input === 'string' && input === 'true') {
       return { success: true, value: true as T }
     }
 
-    if(typeof input === 'string' && input === 'false') {
+    if(coerce && typeof input === 'string' && input === 'false') {
       return { success: true, value: false as T }
     }
 
-    if(typeof input === 'string' && input === '1') {
+    if(coerce && typeof input === 'string' && input === '1') {
       return { success: true, value: true as T }
     }
 
-    if(typeof input === 'string' && input === '0') {
+    if(coerce && typeof input === 'string' && input === '0') {
       return { success: true, value: false as T }
     }
 
-    if(typeof input === 'string') {
-      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected string value.`) ]}
-    }
-
-    if(typeof input === 'number' && input === 1) {
+    if(coerce && typeof input === 'number' && input === 1) {
       return { success: true, value: true as T }
     }
 
-    if(typeof input === 'number' && input === 0) {
+    if(coerce && typeof input === 'number' && input === 0) {
       return { success: true, value: false as T }
     }
 
-    if(typeof input === 'number') {
-      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected number value.`) ]}
-    }
-
-    if(typeof input === 'bigint' && input === 1n) {
+    if(coerce && typeof input === 'bigint' && input === 1n) {
       return { success: true, value: true as T }
     }
 
-    if(typeof input === 'bigint' && input === 0n) {
+    if(coerce && typeof input === 'bigint' && input === 0n) {
       return { success: true, value: false as T }
     }
 
-    if(typeof input === 'bigint') {
-      return { success: false, issues: [ CoreIssue.create(`Could not parse input. Unexpected bigint value.`) ]}
-    }
-
-    return { success: false, issues: [ CoreIssue.create('Could not parse input. Unexpected value.') ] }
+    return { success: false, issues: [ CoreIssue.create('Could not parse input into boolean type. Unexpected value.') ] }
   }
 }

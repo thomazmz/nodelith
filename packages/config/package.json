@@ -30,7 +30,9 @@
   },
   "peerDependencies": {
     "@nodelith/utilities": "workspace:^",
-    "@nodelith/core": "workspace:^"
+    "@nodelith/contract": "workspace:^",
+    "@nodelith/core": "workspace:^",
+    "@nodelith/http": "workspace:^"
   },
   "devDependencies": {
     "@nodelith/utilities": "workspace:^",

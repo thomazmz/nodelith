@@ -4,6 +4,7 @@
   "rootDir": "./src",
   "testMatch": ["**/*.test.ts"],
   "testEnvironment": "node",
+  "passWithNoTests":  true,
   "transform": {
     "^.+\\.ts$": ["ts-jest", {
       "tsconfig": {

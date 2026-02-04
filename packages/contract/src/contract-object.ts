@@ -46,12 +46,16 @@ export class $Object<T extends CoreNullable.Record> implements CoreContract<T> {
   public clone<const P extends CoreContract.Options>(options?: P): $Object<CoreContract.Output<T, P>> {
     return $Object.create({ ...this.properties, ...options }) as $Object<CoreContract.Output<T, P>>
   }
-
-  public assert(input: unknown, error?: (new (message: string) => Error) | undefined): T {
-    return input as T
+  
+  public parse(input: unknown): CoreParser.Result<T> {
+    return this.run(input, false)
   }
 
-  public parse(input: unknown): CoreParser.Result<T> {
-    return { success: true, value: input } as CoreParser.Result<T>
+  public normalize(input: unknown): CoreParser.Result<T> {
+    return this.run(input, true)
+  }
+
+  private run(input: unknown, normalize: boolean): CoreParser.Result<T> {
+    throw new Error('Not implemented')
   }
 }

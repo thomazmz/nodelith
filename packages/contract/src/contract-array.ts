@@ -46,17 +46,16 @@ export class $Array<T extends CoreNullable.Array = CoreNullable.Array> implement
   public clone<const P extends CoreContract.Options>(options?: P): $Array<CoreContract.Output<T, P>> {
     return $Array.create({ ...this.properties, ...options }) as $Array<CoreContract.Output<T, P>>
   }
-
-  public assert(input: unknown, error?: (new (message: string) => Error) | undefined): T {
-    return input as T
+  
+  public parse(input: unknown): CoreParser.Result<T> {
+    return this.run(input, true)
   }
 
-  public parse(input: unknown): CoreParser.Result<T> {
-    return { success: true, value: input } as CoreParser.Result<T>
+  public normalize(input: unknown): CoreParser.Result<T> {
+    return this.run(input, true)
+  }
+
+  private run(input: unknown, normalize: boolean): CoreParser.Result<T> {
+    throw new Error('Not implemented')
   }
 }
-
-const t = $Array.create({
-  optional: true,
-  nullable: true,
-})

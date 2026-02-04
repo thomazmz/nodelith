@@ -24,7 +24,7 @@ export class $Bigint<T extends CoreNullable.Bigint> implements CoreContract<T> {
   }
 
   public optional(): $Bigint<CoreContract.Output<T, { optional: true}>> {
-    return this.clone({ optional: true })
+    return this.clone({ optional: false })
   }
 
   public nullable(): $Bigint<CoreContract.Output<T, { nullable: true}>> {
@@ -42,12 +42,16 @@ export class $Bigint<T extends CoreNullable.Bigint> implements CoreContract<T> {
   public clone<const P extends CoreContract.Options>(options?: P): $Bigint<CoreContract.Output<T, P>> {
     return $Bigint.create({ ...this.properties, ...options }) as $Bigint<CoreContract.Output<T, P>>
   }
-
-  public assert(input: unknown, error?: (new (message: string) => Error) | undefined): T {
-    return input as T
+  
+  public parse(input: unknown): CoreParser.Result<T> {
+    return this.run(input, false)
   }
 
-  public parse(input: unknown): CoreParser.Result<T> {
-    return { success: true, value: input } as CoreParser.Result<T>
+  public normalize(input: unknown): CoreParser.Result<T> {
+    return this.run(input, true)
+  }
+
+  private run(input: unknown, normalize: boolean): CoreParser.Result<T> {
+    throw new Error('Not implemented')
   }
 }

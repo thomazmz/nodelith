@@ -107,21 +107,45 @@ export class ExpressModule extends InjectionModule {
 
           const args = Object.values(metadata.inputs).map((parameter: string) => {
             if(parameter === 'headers') {
-              return metadata.header ? metadata.header.assert(request.headers, HttpBadRequestError) : HttpInternalServerError.throw(
+              if(!metadata.header) HttpInternalServerError.throw(
                 `Could not provide a "headers" parameter to ${constructor.name}:${metadata.key}. Ensure a @Controller.Headers annotation is assigned to the route method.`
               )
+
+              const result = metadata.header.parse(request.headers)
+              
+              if(!result.success) HttpBadRequestError.throw(
+                `Bad request. Could not parse request headers.`
+              )
+
+              return result;
             }
 
             if(parameter === 'query') {
-              return metadata.query ? metadata.query.assert(request.query, HttpBadRequestError) : HttpInternalServerError.throw(
+              if(!metadata.query) HttpInternalServerError.throw(
                 `Could not provide a "query" parameter to ${constructor.name}:${metadata.key}. Ensure a @Controller.Query annotation is assigned to the route method.`
               )
+
+              const result = metadata.query.parse(request.query)
+              
+              if(!result.success) HttpBadRequestError.throw(
+                `Bad request. Could not parse request query.`
+              )
+
+              return result;
             }
 
             if(parameter === 'body') {
-              return metadata.body ? metadata.body.assert(request.body, HttpBadRequestError) : HttpInternalServerError.throw(
+              if(!metadata.body) HttpInternalServerError.throw(
                 `Could not provide a "body" parameter to ${constructor.name}:${metadata.key}. Ensure a @Controller.Body annotation is assigned to the route method.`
               )
+
+              const result = metadata.body.parse(request.body)
+              
+              if(!result.success) HttpBadRequestError.throw(
+                `Bad request. Could not parse request body.`
+              )
+
+              return result;
             }
 
             return request.params[parameter] ? request.params[parameter] : HttpInternalServerError.throw(
