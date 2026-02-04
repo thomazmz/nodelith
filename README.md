@@ -9,6 +9,7 @@ workspace that hosts the core packages and an example app.
 Core building blocks live under `packages/`:
 - [`@nodelith/injection`](https://www.npmjs.com/package/@nodelith/injection) (Dependency injection)
 - [`@nodelith/http`](https://www.npmjs.com/package/@nodelith/http) (HTTP utilities)
+- [`@nodelith/contract`](https://www.npmjs.com/package/@nodelith/contract) (Contract utilities)
 - [`@nodelith/config`](https://www.npmjs.com/package/@nodelith/config) (Configuration utilities)
 - [`@nodelith/controller`](https://www.npmjs.com/package/@nodelith/controller) (Controller utilities)
 - [`@nodelith/core`](https://www.npmjs.com/package/@nodelith/core) (Core Nodelith types)
@@ -17,7 +18,6 @@ Core building blocks live under `packages/`:
 - [`@nodelith/drizzle`](https://www.npmjs.com/package/@nodelith/drizzle) (Adapters for [Drizzle ORM](https://orm.drizzle.team/))
 - [`@nodelith/postgres`](https://www.npmjs.com/package/@nodelith/postgres) (Adapters for [PostgreSQL](https://www.postgresql.org/))
 - [`@nodelith/mysql`](https://www.npmjs.com/package/@nodelith/mysql) (Adapters for [MySQL](https://www.mysql.com/))
-- [`@nodelith/zod`](https://www.npmjs.com/package/@nodelith/zod) (Adapters for [Zod](https://zod.dev/))
 
 
 The `example/` workspace shows how the packages are used together.
