@@ -3,7 +3,7 @@ import { Controller } from '@nodelith/controller'
 import { HttpStatus } from '@nodelith/http'
 import { HttpMethod } from '@nodelith/http'
 import { CreatePetRequestBody } from './pet.contracts'
-import { PetDto } from './pet.contracts'
+import { PetDataObject } from './pet.contracts'
 
 @Controller.Router('/pets')
 export class PetController {
@@ -15,16 +15,16 @@ export class PetController {
 
   @Controller.Path('/:id')
   @Controller.Method(HttpMethod.Delete)
-  @Controller.Success(HttpStatus.NoContent)
-  @Controller.Body(CreatePetRequestBody)
+  @Controller.RequestBody(CreatePetRequestBody)
+  @Controller.SuccessResponse(HttpStatus.NoContent)
   public async deletePet(id: string): Promise<void> {
     await this.petService.deletePetById(id)
   }
 
   @Controller.Path('/:id')
   @Controller.Method(HttpMethod.Get)
-  @Controller.Success(HttpStatus.Ok, PetDto)
-  public async getPets(id: string): Promise<PetDto> {
+  @Controller.SuccessResponse(HttpStatus.Ok, PetDataObject)
+  public async getPets(id: string): Promise<PetDataObject> {
     const pet = await this.petService.getPetById(id)
     return Object.freeze({
       id: pet.id,
@@ -35,9 +35,9 @@ export class PetController {
 
   @Controller.Path('/')
   @Controller.Method(HttpMethod.Post)
-  @Controller.Success(HttpStatus.Created, PetDto)
-  @Controller.Body(CreatePetRequestBody)
-  public async createPet(body: CreatePetRequestBody): Promise<PetDto> {
+  @Controller.RequestBody(CreatePetRequestBody)
+  @Controller.SuccessResponse(HttpStatus.Created, PetDataObject)
+  public async createPet(body: CreatePetRequestBody): Promise<PetDataObject> {
     const pet = await this.petService.createPet(body)
     return Object.freeze({
       id: pet.id,

@@ -17,19 +17,25 @@ export class PetService {
     this.petConfig = PetConfig
   }
 
-  public deletePetById(id: string): Promise<void> {
-    return this.petRepository.deleteById(id)
+  public async deletePetById(id: string): Promise<void> {
+    return this.petRepository.deleteOneById(id)
   }
 
-  public getPetById(id: string): Promise<PetEntity> {
-    return this.petRepository.getById(id)
+  public async findPetById(id: string): Promise<PetEntity | undefined> {
+    return this.petRepository.findOneById(id)
   }
 
-  public createPet(properties: {
+  public async getPetById(id: string): Promise<PetEntity> {
+    const pet = await this.findPetById(id)
+    if(!pet) throw new Error('Pet not found.')
+    return pet
+  }
+
+  public async createPet(properties: {
     age: number,
     name?: string,
   }): Promise<PetEntity> {
-    return this.petRepository.create({ ...properties,
+    return this.petRepository.createOne({ ...properties,
       name: properties.name ?? this.petConfig.defaultName,
     })
   }
