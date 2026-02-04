@@ -1,9 +1,9 @@
-import { ConstructorType } from '@nodelith/utilities';
-import { ExpressModule } from '@nodelith/express';
-import { CoreInitializer } from '@nodelith/core';
-import { CoreLogger } from '@nodelith/core';
+import { ConstructorType } from '@nodelith/utilities'
+import { ExpressModule } from '@nodelith/express'
+import { CoreInitializer } from '@nodelith/core'
+import { CoreLogger } from '@nodelith/core'
 
-import { ExpressConfig } from './express-config';
+import { ExpressConfig } from './express-config'
 
 export class ExpressServer {
   public static for(module: ExpressModule) {
@@ -29,10 +29,11 @@ export class ExpressServer {
   public async start(): Promise<void> {
     await this.module.initialize()
   
-    const app = this.module.resolveApplication()
     const logger = this.module.resolve<CoreLogger>('applicationLogger')
     const config = this.module.resolve<ExpressConfig>('applicationConfig')
-  
+
+    const app = this.module.resolveApplication(config)
+
     app.listen(config.port, () => {
       logger.info(`${config.name} running on port ${config.port}.`)
     })

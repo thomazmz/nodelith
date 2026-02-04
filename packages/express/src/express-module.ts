@@ -1,14 +1,17 @@
 import express from 'express'
+import cors from 'cors'
 
 import { ControllerRootMetadata } from '@nodelith/controller'
 import { HttpInternalServerError } from '@nodelith/http'
+import { HttpBadRequestError } from '@nodelith/http'
 import { InjectionContext } from '@nodelith/injection'
 import { InjectionModule } from '@nodelith/injection'
 import { ConstructorType } from '@nodelith/utilities'
 import { InjectionTrace } from '@nodelith/injection'
-import { HttpBadRequestError } from '@nodelith/http'
 import { FunctionType } from '@nodelith/utilities'
 import { HttpStatus } from '@nodelith/http'
+
+import { ExpressConfig } from './express-config'
 
 export declare namespace ExpressModule {
   export type DeclarationOptions = {
@@ -70,11 +73,19 @@ export class ExpressModule extends InjectionModule {
     return this
   }
 
-  public resolveApplication(): express.Application {
-    return express().use(this.resolveRouter())
+  public resolveApplication(expressConfig?: ExpressConfig): express.Application {
+    return express().use(this.resolveRouter(expressConfig))
   }
 
-  public resolveRouter(): express.Router {
+  public resolveRouter(expressConfig?: ExpressConfig): express.Router {
+    const bodyHandler = express.json()
+
+    const corsHandler = cors({
+      ...((typeof expressConfig?.allowedOrigins !== 'undefined') && { origin: expressConfig?.allowedOrigins }),
+      ...((typeof expressConfig?.allowedMethods !== 'undefined') && { methods: expressConfig?.allowedMethods }),
+      ...((typeof expressConfig?.allowedHeaders !== 'undefined') &&  { allowedHeaders: expressConfig?.allowedHeaders }),
+    })
+
     return this.controllers.reduce((applicationRouter, constructor) => {
       const { path, routes} = ControllerRootMetadata.extract(constructor)
 
@@ -96,22 +107,19 @@ export class ExpressModule extends InjectionModule {
 
           const args = Object.values(metadata.inputs).map((parameter: string) => {
             if(parameter === 'headers') {
-              // return metadata.header ? metadata.header.parse(request.headers, HttpBadRequestError) : HttpInternalServerError.throw(
-              return metadata.header ? metadata.header.parse(request.headers) : HttpInternalServerError.throw(
+              return metadata.header ? metadata.header.assert(request.headers, HttpBadRequestError) : HttpInternalServerError.throw(
                 `Could not provide a "headers" parameter to ${constructor.name}:${metadata.key}. Ensure a @Controller.Headers annotation is assigned to the route method.`
               )
             }
 
             if(parameter === 'query') {
-              // return metadata.query ? metadata.query.parse(request.query, HttpBadRequestError) : HttpInternalServerError.throw(
-              return metadata.query ? metadata.query.parse(request.query) : HttpInternalServerError.throw(
+              return metadata.query ? metadata.query.assert(request.query, HttpBadRequestError) : HttpInternalServerError.throw(
                 `Could not provide a "query" parameter to ${constructor.name}:${metadata.key}. Ensure a @Controller.Query annotation is assigned to the route method.`
               )
             }
 
             if(parameter === 'body') {
-              // return metadata.body ? metadata.body.parse(request.body, HttpBadRequestError) : HttpInternalServerError.throw(
-              return metadata.body ? metadata.body.parse(request.body) : HttpInternalServerError.throw(
+              return metadata.body ? metadata.body.assert(request.body, HttpBadRequestError) : HttpInternalServerError.throw(
                 `Could not provide a "body" parameter to ${constructor.name}:${metadata.key}. Ensure a @Controller.Body annotation is assigned to the route method.`
               )
             }
@@ -142,7 +150,7 @@ export class ExpressModule extends InjectionModule {
       }
 
       return applicationRouter
-    }, express.Router().use(express.json()))
+    }, express.Router().use(corsHandler, bodyHandler))
   }
 
   protected resolveRequestHandlers(): express.RequestHandler[] {

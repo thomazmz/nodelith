@@ -30,23 +30,26 @@
     "build:watch": "tsc --watch --project ./build.json"
   },
   "dependencies": {
-    "@nodelith/controller": "workspace:^",
-    "@nodelith/injection": "workspace:^",
-    "@nodelith/utilities": "workspace:^",
     "@nodelith/config": "workspace:^",
+    "@nodelith/controller": "workspace:^",
     "@nodelith/core": "workspace:^",
-    "@nodelith/http": "workspace:^"
+    "@nodelith/http": "workspace:^",
+    "@nodelith/injection": "workspace:^",
+    "@nodelith/utilities": "workspace:^"
   },
   "peerDependencies": {
+    "cors": "^2.8.6",
     "express": "^5.0.3"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.2.1",
-    "typescript": "^5.9.2",
-    "ts-jest": "^29.4.1",
+    "cors": "^2.8.6",
     "express": "^5.0.3",
-    "jest": "^30.0.5"
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.1",
+    "typescript": "^5.9.2"
   }
 }
