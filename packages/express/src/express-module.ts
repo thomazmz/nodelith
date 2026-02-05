@@ -202,6 +202,7 @@ export class ExpressModule extends InjectionModule {
     module.useRequestHandlers(this.requestHandlers)
     module.useErrorHandlers(this.errorHandlers)
     module.useRegistrations(this.registrations)
+    module.useInitializers(this.initializers)
     module.useControllers(this.controllers)
     module.useModules(this.modules)
     return module
