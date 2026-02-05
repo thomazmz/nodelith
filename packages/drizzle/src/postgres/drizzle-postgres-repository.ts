@@ -26,6 +26,11 @@ export abstract class DrizzlePostgresRepository<E extends CoreEntity, T extends 
     return row
   }
 
+  protected static updateOneByQuery = (database: NodePgDatabase, table: DrizzlePostgresTable) => async (query: Record<string, unknown>, properties: Partial<CoreEntity.Entries>): Promise<DrizzlePostgresTable['$inferSelect']> => {
+    throw new Error('Method not implemented')
+  }
+  
+
   protected static deleteOneById = (database: NodePgDatabase, table: DrizzlePostgresTable) => async (id: string | number): Promise<void> => {
     await database.delete(table).where(eq(getTableColumns(table).id, id)).execute()
   }
@@ -58,8 +63,13 @@ export abstract class DrizzlePostgresRepository<E extends CoreEntity, T extends 
     return this.mapEntity(drizzleResult)
   }
 
-  public async updateOneById(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E> {
+  public async updateOneById(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E | undefined> {
     const drizzleResult = await DrizzlePostgresRepository.updateOneById(this.database, this.table)(id, entries)
+    return this.mapEntity(drizzleResult)
+  }
+
+  public async updateOneByQuery(query: Partial<E>, entries: Partial<CoreEntity.Entries<E>>): Promise<E | undefined> {
+    const drizzleResult = await DrizzlePostgresRepository.updateOneByQuery(this.database, this.table)(query, entries)
     return this.mapEntity(drizzleResult)
   }
 

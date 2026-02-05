@@ -21,7 +21,18 @@ export interface CoreRepository<E extends CoreEntity = CoreEntity, Q extends Par
    * @throws {InfrastructureError} If the operation fails.
    * @throws {NotFoundError} If no entity exists for the given id.
    */
-  updateOneById(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E>
+  updateOneById(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E | undefined>
+
+  /**
+   * Updates the first entity instance that matches a query.
+  *
+   * @param entries Assignable entries used to update the entity instances.
+   * @param query A partial entity-shaped object used to filter results.
+   * @returns A promise that resolves to the first matching entity, or `undefined` if none exists.
+   * @throws {InfrastructureError} If the operation fails.
+   */
+  updateOneByQuery(query: Partial<E>, entries: Partial<CoreEntity.Entries<E>>): Promise<E | undefined>
+
 
   /**
    * Delete a single entity instance by id.

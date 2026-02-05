@@ -26,6 +26,10 @@ export abstract class DrizzleMysqlRepository<E extends CoreEntity, T extends Dri
     return DrizzleMysqlRepository.getOneById(database, table)(id)
   }
 
+  protected static updateOneByQuery = (database: MySql2Database, table: DrizzleMysqlTable) => async (query: Record<string, unknown>, properties: Partial<CoreEntity.Entries>): Promise<DrizzleMysqlTable['$inferSelect'] | undefined> => {
+    throw new Error('Method not implemented')
+  }
+
   protected static deleteOneById = (database: MySql2Database, table: DrizzleMysqlTable) => async (id: string | number): Promise<void> => {
     await database.delete(table).where(eq(getTableColumns(table).id, Number(id))).execute()
   }
@@ -58,9 +62,14 @@ export abstract class DrizzleMysqlRepository<E extends CoreEntity, T extends Dri
     return this.mapEntity(drizzleResult)
   }
 
-  public async updateOneById(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E> {
+  public async updateOneById(id: E['id'], entries: Partial<CoreEntity.Entries<E>>): Promise<E | undefined> {
     const drizzleResult = await DrizzleMysqlRepository.updateOneById(this.database, this.table)(id, entries)
     return this.mapEntity(drizzleResult)
+  }
+
+  public async updateOneByQuery(query: Partial<E>, entries: Partial<CoreEntity.Entries<E>>): Promise<E | undefined> {
+    const drizzleResult = await DrizzleMysqlRepository.updateOneByQuery(this.database, this.table)(query, entries)
+    return drizzleResult ? this.mapEntity(drizzleResult) : undefined
   }
 
   public async deleteOneById(id: E['id']): Promise<void> {
