@@ -1,0 +1,50 @@
+{
+  "name": "@nodelith/mongodb",
+  "version": "0.8.1",
+  "type": "commonjs",
+  "access": "public",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENCE.txt",
+    "package.json"
+  ],
+  "keywords": [
+    "typescript",
+    "javascript",
+    "relational",
+    "database",
+    "mongodb",
+    "orm",
+    "db"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/library.d.ts",
+      "import": "./dist/library.js",
+      "require": "./dist/library.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project ./build.json",
+    "build:watch": "tsc --watch --project ./build.json",
+    "test": "jest --config ./jest.json"
+  },
+  "peerDependencies": {
+    "@nodelith/config": "workspace:^",
+    "@nodelith/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@nodelith/config": "workspace:^",
+    "@nodelith/core": "workspace:^",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.2.1",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.1",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "mongodb": "^7.0.0"
+  }
+}
