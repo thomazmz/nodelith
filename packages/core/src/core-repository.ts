@@ -1,3 +1,4 @@
+import { CorePage } from 'core-page'
 import { CoreEntity } from './core-entity'
 
 export interface CoreRepository<E extends CoreEntity = CoreEntity, Q extends Partial<E> = Partial<E>> {
@@ -77,5 +78,14 @@ export interface CoreRepository<E extends CoreEntity = CoreEntity, Q extends Par
    * @returns A promise that resolves to all entity instances.
    * @throws {InfrastructureError} If the operation fails.
    */
-  findAll(): Promise<E[]>
+  getAll(): Promise<E[]>
+
+
+  /**
+   * Get a page of instances in a repository.
+   *
+   * @returns A promise that resolves to a page.
+   * @throws {InfrastructureError} If the operation fails.
+   */
+  getPage(query: CorePage.Query<E>): Promise<CorePage.Content<E>>
 }

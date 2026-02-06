@@ -2,7 +2,7 @@ import { Pool } from 'mysql2/promise'
 import { eq, getTableColumns } from 'drizzle-orm'
 import { drizzle, MySql2Database } from 'drizzle-orm/mysql2'
 
-import { CoreEntity } from '@nodelith/core'
+import { CoreEntity, CorePage } from '@nodelith/core'
 import { CoreRepository } from '@nodelith/core'
 
 import { DrizzleMysqlTable } from './drizzle-mysql-table'
@@ -39,7 +39,7 @@ export abstract class DrizzleMysqlRepository<E extends CoreEntity, T extends Dri
     return row
   }
 
-  protected static findAll = (database: MySql2Database, table: DrizzleMysqlTable) => async (): Promise<DrizzleMysqlTable['$inferSelect'][]> => {
+  protected static getAll = (database: MySql2Database, table: DrizzleMysqlTable) => async (): Promise<DrizzleMysqlTable['$inferSelect'][]> => {
     return database.select().from(table).execute()
   }
 
@@ -76,7 +76,7 @@ export abstract class DrizzleMysqlRepository<E extends CoreEntity, T extends Dri
     const drizzleResult = await DrizzleMysqlRepository.deleteOneById(this.database, this.table)(id)
   }
 
-  public async getOneById(id: E['id']): Promise<E> {
+  public async getOneById(id: E['id']): Promise<E | undefined> {
     const drizzleResult = await DrizzleMysqlRepository.getOneById(this.database, this.table)(id)
     return this.mapEntity(drizzleResult)
   }
@@ -96,8 +96,12 @@ export abstract class DrizzleMysqlRepository<E extends CoreEntity, T extends Dri
     return drizzleResult ? this.mapEntity(drizzleResult) : undefined
   }
 
-  public async findAll(): Promise<E[]> {
-    const drizzleResult = await  DrizzleMysqlRepository.findAll(this.database, this.table)()
+  public async getAll(): Promise<E[]> {
+    const drizzleResult = await  DrizzleMysqlRepository.getAll(this.database, this.table)()
     return drizzleResult.map(singleResult => this.mapEntity(singleResult))
+  }
+
+  public async getPage(query: CorePage.Query<E>): Promise<CorePage.Content<E>> {
+    throw new Error('Method not implemented.')
   }
 }

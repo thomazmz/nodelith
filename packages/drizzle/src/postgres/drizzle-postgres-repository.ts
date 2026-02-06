@@ -2,7 +2,7 @@ import { Pool } from 'pg'
 import { eq, getTableColumns } from 'drizzle-orm'
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres'
 
-import { CoreEntity } from '@nodelith/core'
+import { CoreEntity, CorePage } from '@nodelith/core'
 import { CoreRepository } from '@nodelith/core'
 
 import { DrizzlePostgresTable } from './drizzle-postgres-table'
@@ -40,7 +40,7 @@ export abstract class DrizzlePostgresRepository<E extends CoreEntity, T extends 
     return row
   }
 
-  protected static findAll = (database: NodePgDatabase, table: DrizzlePostgresTable) => async (): Promise<DrizzlePostgresTable['$inferSelect'][]> => {
+  protected static getAll = (database: NodePgDatabase, table: DrizzlePostgresTable) => async (): Promise<DrizzlePostgresTable['$inferSelect'][]> => {
     return database.select().from(table).execute()
   }
 
@@ -97,8 +97,12 @@ export abstract class DrizzlePostgresRepository<E extends CoreEntity, T extends 
     return drizzleResult ? this.mapEntity(drizzleResult) : undefined
   }
 
-  public async findAll(): Promise<E[]> {
-    const drizzleResult = await DrizzlePostgresRepository.findAll(this.database, this.table)()
+  public async getAll(): Promise<E[]> {
+    const drizzleResult = await DrizzlePostgresRepository.getAll(this.database, this.table)()
     return drizzleResult.map((singleResult) => this.mapEntity(singleResult))
+  }
+
+  public async getPage(query: CorePage.Query<E>): Promise<CorePage.Content<E>> {
+    throw new Error('Method not implemented.')
   }
 }

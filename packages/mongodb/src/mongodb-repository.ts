@@ -1,5 +1,5 @@
 import { ObjectId, Collection, MongoClient, Db } from 'mongodb'
-import { CoreEntity, CoreRepository } from '@nodelith/core'
+import { CoreEntity, CorePage, CoreRepository } from '@nodelith/core'
 
 export type MongodbEntries<E extends CoreEntity> = Omit<E, keyof CoreEntity.Base>
 
@@ -16,7 +16,7 @@ export abstract class MongodbRepository<E extends CoreEntity> implements CoreRep
   public constructor(collectionName: string, databaseName: string, mongodbClient: MongoClient) {
     this.collection = mongodbClient.db(databaseName).collection(collectionName)
     this.database = mongodbClient.db(databaseName)
-}
+  }
 
   private static toStringId(id: ObjectId): string {
     return id.toHexString()
@@ -156,7 +156,11 @@ export abstract class MongodbRepository<E extends CoreEntity> implements CoreRep
     return MongodbRepository.findOneById<E>(this.collection)(id, this.map)
   }
 
-  public async findAll(): Promise<E[]> {
+  public async getAll(): Promise<E[]> {
     return MongodbRepository.findAll<E>(this.collection)(this.map)
+  }
+
+  public getPage(query: CorePage.Query<E>): Promise<CorePage.Content<E>> {
+    throw new Error('Method not implemented.')
   }
 }
