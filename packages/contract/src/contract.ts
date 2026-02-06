@@ -54,6 +54,16 @@ function createObjectContract<S extends $Object.Shape>(shape: S): $Object<{
 }
 
 ////////////////////////////////////////////////
+// Array Contract 
+import { $Array } from './contract-array'
+function createArrayContract<S extends $Array.Shape>(shape: S): $Array<CoreContract.Infer<S>[]> {
+  return $Array.create({
+    optional: false,
+    nullable: false
+  })
+}
+
+////////////////////////////////////////////////
 // Contract 
 export const Contract = Object.freeze({
   boolean: createBooleanContract,
@@ -61,6 +71,7 @@ export const Contract = Object.freeze({
   string: createStringContract,
   number: createNumberContract,
   bigint: createBigintContract,
+  array: createArrayContract,
 })
 
 export declare namespace Contract {
