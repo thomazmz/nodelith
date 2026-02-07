@@ -64,6 +64,26 @@ function createArrayContract<S extends $Array.Shape>(shape: S): $Array<CoreContr
 }
 
 ////////////////////////////////////////////////
+// Array Contract 
+import { $Enum } from './contract-enum'
+export function createEnumContracta<const S extends $Enum.Values>(...values: S): $Enum<$Enum.OutputOf<S>, S> {
+  return $Enum.create(values, {
+    optional: false,
+    nullable: false
+  })
+}
+
+////////////////////////////////////////////////
+// Date Contract 
+// import { $Date } from './contract-date'
+// export function createEnumContracta<const S extends $Enum.Values>(...values: S): $Enum<$Enum.OutputOf<S>, S> {
+//   return $Enum.create(values, {
+//     optional: false,
+//     nullable: false
+//   })
+// }
+
+////////////////////////////////////////////////
 // Contract 
 export const Contract = Object.freeze({
   boolean: createBooleanContract,
@@ -72,6 +92,7 @@ export const Contract = Object.freeze({
   number: createNumberContract,
   bigint: createBigintContract,
   array: createArrayContract,
+  enum: createEnumContracta,
 })
 
 export declare namespace Contract {
