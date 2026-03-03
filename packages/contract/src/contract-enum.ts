@@ -3,13 +3,7 @@ import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
 import { CoreParser } from '@nodelith/core'
 
-export declare namespace $Enum {
-  export type Values = readonly CoreNullable[]
-
-  export type OutputOf<V extends Values> = V[number]
-}
-
-export class $Enum<T extends CoreNullable = CoreNullable, V extends $Enum.Values = $Enum.Values> implements CoreContract<T> {
+export class $Enum<T extends CoreNullable = CoreNullable, V extends CoreNullable[] = CoreNullable[]> implements CoreContract<T> {
   private static readonly DEFAULT_OPTIONAL_PROPERTY: CoreContract.DefaultProperties['optional'] = false as const
   private static readonly DEFAULT_NULLABLE_PROPERTY: CoreContract.DefaultProperties['nullable'] = false as const
 
@@ -20,7 +14,7 @@ export class $Enum<T extends CoreNullable = CoreNullable, V extends $Enum.Values
     }
   }
 
-  public static create<const V extends $Enum.Values, P extends CoreContract.Options = CoreContract.DefaultProperties>(values: V, options?: P): $Enum<CoreContract.Output<$Enum.OutputOf<V>, P>, V> {
+  public static create<const V extends CoreNullable[], P extends CoreContract.Options = CoreContract.DefaultProperties>(values: V, options?: P): $Enum<CoreContract.Output<V[number], P>, V> {
     return new $Enum(values, options)
   }
 

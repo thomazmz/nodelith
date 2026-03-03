@@ -1,5 +1,5 @@
 
-import { CoreContract } from '@nodelith/core'
+import { CoreContract, CoreNullable } from '@nodelith/core'
 
 ////////////////////////////////////////////////
 // Boolean Contract 
@@ -47,7 +47,7 @@ import { $Object } from './contract-object'
 function createObjectContract<S extends $Object.Shape>(shape: S): $Object<{
   readonly [K in keyof S]: S[K] extends CoreContract<infer T> ? T : never
 }> {
-  return $Object.create({
+  return $Object.create(shape, {
     optional: false,
     nullable: false
   })
@@ -64,9 +64,9 @@ function createArrayContract<S extends $Array.Shape>(shape: S): $Array<CoreContr
 }
 
 ////////////////////////////////////////////////
-// Array Contract 
+// Enum Contract 
 import { $Enum } from './contract-enum'
-export function createEnumContracta<const S extends $Enum.Values>(...values: S): $Enum<$Enum.OutputOf<S>, S> {
+export function createEnumContract<const S extends CoreNullable[]>(...values: S): $Enum<S[number], S> {
   return $Enum.create(values, {
     optional: false,
     nullable: false
@@ -75,13 +75,14 @@ export function createEnumContracta<const S extends $Enum.Values>(...values: S):
 
 ////////////////////////////////////////////////
 // Date Contract 
-// import { $Date } from './contract-date'
-// export function createEnumContracta<const S extends $Enum.Values>(...values: S): $Enum<$Enum.OutputOf<S>, S> {
-//   return $Enum.create(values, {
-//     optional: false,
-//     nullable: false
-//   })
-// }
+import { $Date } from './contract-date'
+function createDateContract(): $Date<Date> {
+  return $Date.create({
+    optional: false,
+    nullable: false,
+  })
+}
+
 
 ////////////////////////////////////////////////
 // Contract 
@@ -92,7 +93,8 @@ export const Contract = Object.freeze({
   number: createNumberContract,
   bigint: createBigintContract,
   array: createArrayContract,
-  enum: createEnumContracta,
+  enum: createEnumContract,
+  date: createDateContract,
 })
 
 export declare namespace Contract {

@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+// import qs from 'qs'
 
 import { ControllerRootMetadata } from '@nodelith/controller'
 import { HttpInternalServerError } from '@nodelith/http'
@@ -111,7 +112,7 @@ export class ExpressModule extends InjectionModule {
                 `Could not provide a "headers" parameter to ${constructor.name}:${metadata.key}. Ensure a @Controller.Headers annotation is assigned to the route method.`
               )
 
-              const result = metadata.header.parse(request.headers)
+              const result = metadata.header.normalize(request.headers)
               
               if(!result.success) HttpBadRequestError.throw(
                 `Bad request. Could not parse request headers.`
@@ -125,8 +126,11 @@ export class ExpressModule extends InjectionModule {
                 `Could not provide a "query" parameter to ${constructor.name}:${metadata.key}. Ensure a @Controller.Query annotation is assigned to the route method.`
               )
 
-              const result = metadata.query.parse(request.query)
-              
+              // const rawQuery = (request.originalUrl ?? request.url ?? "").split("?", 2)[1] ?? "";
+              // const parsedQuery = .parse(rawQuery);
+
+              const result = metadata.query.normalize(request.query)
+
               if(!result.success) HttpBadRequestError.throw(
                 `Bad request. Could not parse request query.`
               )
@@ -139,7 +143,7 @@ export class ExpressModule extends InjectionModule {
                 `Could not provide a "body" parameter to ${constructor.name}:${metadata.key}. Ensure a @Controller.Body annotation is assigned to the route method.`
               )
 
-              const result = metadata.body.parse(request.body)
+              const result = metadata.body.normalize(request.body)
               
               if(!result.success) HttpBadRequestError.throw(
                 `Bad request. Could not parse request body.`

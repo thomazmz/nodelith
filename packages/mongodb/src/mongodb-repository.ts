@@ -104,13 +104,6 @@ export abstract class MongodbRepository<E extends CoreEntity> implements CoreRep
     }
   }
 
-  private static findAll<E extends CoreEntity>(collection: Collection) {
-    return async (map: (document: MongodbDocument<E>) => E): Promise<E[]> => {
-      const documents = await collection.find().toArray()
-      return documents.map(document => map(document as any))
-    }
-  }
-
   private static findOneByQuery<E extends CoreEntity>(collection: Collection) {
     return async (query: Partial<E>, map: (document: MongodbDocument<E>) => E): Promise<E | undefined> => {
       const document = await collection.findOne(MongodbRepository.byQuery(query))
@@ -121,7 +114,41 @@ export abstract class MongodbRepository<E extends CoreEntity> implements CoreRep
   private static findByQuery<E extends CoreEntity>(collection: Collection) {
     return async (entries: Partial<E>, map: (document: MongodbDocument<E>) => E): Promise<E[]> => {
       const documents = await collection.find(MongodbRepository.byQuery(entries)).toArray()
-      return documents.map(document => map(document as any))
+      return documents.map(map)
+    }
+  }
+
+  private static getAll<E extends CoreEntity>(collection: Collection) {
+    return async (map: (document: MongodbDocument<E>) => E): Promise<E[]> => {
+      const documents = await collection.find().toArray()
+      return documents.map(map)
+    }
+  }
+  
+  private static getPage<E extends CoreEntity>(collection: Collection) {
+    return async (query: CorePage.Query<E>, map: (document: MongodbDocument<E>) => E): Promise<CorePage.Content<E>> => {
+      const filter = query.filter ? MongodbRepository.byQuery(query.filter) : {}
+      const offset = typeof query.offset === 'number' ? query.offset : 0
+      const limit = typeof query.limit === 'number' ? query.limit : 25
+      const sort = query.sort ?? 'asc'
+
+      const [documents, total] = await Promise.all([
+        collection
+          .find(filter)
+          .sort(sort)
+          .skip(offset)
+          .limit(limit)
+          .toArray(),
+        collection.countDocuments(filter),
+      ])
+
+      return {
+        data: documents.map(map),
+        sort,
+        total,
+        limit,
+        offset,
+      }
     }
   }
 
@@ -157,10 +184,10 @@ export abstract class MongodbRepository<E extends CoreEntity> implements CoreRep
   }
 
   public async getAll(): Promise<E[]> {
-    return MongodbRepository.findAll<E>(this.collection)(this.map)
+    return MongodbRepository.getAll<E>(this.collection)(this.map)
   }
 
-  public getPage(query: CorePage.Query<E>): Promise<CorePage.Content<E>> {
-    throw new Error('Method not implemented.')
+  public async getPage(query: CorePage.Query<E>): Promise<CorePage.Content<E>> {
+    return MongodbRepository.getPage<E>(this.collection)(query, this.map)
   }
 }
