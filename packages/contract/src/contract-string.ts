@@ -44,47 +44,51 @@ export class $String<T extends CoreNullable.String> implements CoreContract<T> {
     return $String.create({ ...this.properties, ...options }) as $String<CoreContract.Output<T, P>>
   }
 
+  public coerce(input: unknown): CoreParser.Result<T> {
+    if (input === undefined || input === null) {
+      return this.parse(input)
+    }
+
+    if (typeof input === 'string') {
+      return this.parse(input)
+    }
+
+    if (input instanceof String) {
+      return this.parse(input.valueOf())
+    }
+
+    if(typeof input === 'boolean') {
+      return this.parse(String(input))
+    }
+
+    if (typeof input === 'bigint') {
+      return this.parse(String(input))
+    }
+
+    if (typeof input === 'number' && Number.isFinite(input)) {
+      return this.parse(String(input)) 
+    }
+
+    if (typeof input === 'number') { 
+      return { success: false, issues: [CoreIssue.create(`Could not coerce non-finite number into string.`)] }
+    }  
+
+    return this.parse(input)
+  }
+
   public parse(input: unknown): CoreParser.Result<T> {
-    return this.run(input, false)
-  }
-
-  public normalize(input: unknown): CoreParser.Result<T> {
-    return this.run(input, true)
-  }
-
-  private run(input: unknown, normalize: boolean): CoreParser.Result<T> {
     if(input === undefined) return !this.properties.optional 
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into string type. Unexpected undefined value.`) ]}
+      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into string type. Received "undefined" while expecting "string".`) ]}
       : { success: true, value: input as T }
 
     if(input === null) return !this.properties.nullable 
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into string type. Unexpected null value.`) ]}
+      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into string type. Received "null" while expecting "string".`) ]}
       : { success: true, value: input as T }
 
     if(typeof input === 'string') {
       return { success: true, value: input as T }
     }
 
-    if(normalize && typeof input === 'number' && Number.isFinite(input)) {
-      return { success: true, value: String(input) as T }
-    }
-
-    if(normalize && typeof input === 'bigint') {
-      return { success: true, value: String(input) as T }
-    }
-
-    if(normalize && typeof input === 'boolean' && input) {
-      return { success: true, value: 'true' as T }
-    }
-
-    if(normalize && typeof input === 'boolean' && !input) {
-      return { success: true, value: 'false' as T }
-    }
-
-    if(normalize && typeof input === 'boolean') {
-      return { success: false, issues: [ CoreIssue.create(`Could not parse input into string type. Unexpected boolean value.`) ]}
-    }
-
-    return { success: false, issues: [ CoreIssue.create('Could not parse input into string type. Unexpected value.') ] }
+    return { success: false, issues: [ CoreIssue.create(`Could not parse input into string type. Received ${typeof input} while expecting "string".`) ] }
   }
 }
