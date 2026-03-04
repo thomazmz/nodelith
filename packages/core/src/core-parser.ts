@@ -19,5 +19,5 @@ export declare namespace CoreParser {
 
 export interface CoreParser<T = any> {
   parse(input: unknown): CoreParser.Result<T>
-  normalize(input: unknown): CoreParser.Result<T>
+  coerce(input: unknown): CoreParser.Result<T>
 }
