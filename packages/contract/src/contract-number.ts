@@ -10,7 +10,7 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
   private static resolveProperties(options?: CoreContract.Options): CoreContract.Properties {
     return {
       optional: typeof options?.optional === 'boolean' ? options.optional : $Number.DEFAULT_OPTIONAL_PROPERTY,
-      nullable: typeof options?.nullable === 'boolean' ? options.nullable : $Number.DEFAULT_NULLABLE_PROPERTY,
+      nullable: typeof options?.nullable === 'boolean' ? options?.nullable : $Number.DEFAULT_NULLABLE_PROPERTY,
     }
   }
 
@@ -44,43 +44,55 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
     return $Number.create({ ...this.properties, ...options }) as $Number<CoreContract.Output<T, P>>
   }
 
+  public coerce(input: unknown): CoreParser.Result<T> {
+    if (input === undefined || input === null) {
+      return this.parse(input)
+    }
+
+    if (typeof input === 'number' && Number.isFinite(input)) {
+      return this.parse(input)
+    }
+
+    if (typeof input === 'boolean' && input === true) {
+      return this.parse(1)
+    }
+
+    if (typeof input === 'boolean' && input === false) {
+      return this.parse(0)
+    }
+
+    if (typeof input === 'string' && input.trim() !== '' && Number.isFinite(Number(input))) {
+      return this.parse(Number(input))
+    }
+
+    if (typeof input === 'bigint' && input <= BigInt(Number.MAX_SAFE_INTEGER) && input >= BigInt(Number.MIN_SAFE_INTEGER)) {
+      return this.parse(Number(input))
+    }
+
+    if (typeof input === 'number') {
+      return { success: false, issues: [CoreIssue.create(`Could not coerce non-finite number into number.`)] }
+    }
+
+    if (typeof input === 'bigint') {
+      return { success: false, issues: [CoreIssue.create(`Could not coerce bigint into number. Value out of safe integer range.`)] }
+    }
+
+    return this.parse(input)
+  }
+
   public parse(input: unknown): CoreParser.Result<T> {
-    return this.run(input, false)
-  }
-
-  public normalize(input: unknown): CoreParser.Result<T> {
-    return this.run(input, true)
-  }
-
-  private run(input: unknown, normalize: boolean): CoreParser.Result<T> {
     if(input === undefined) return !this.properties.optional 
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into number type. Unexpected undefined value.`) ]}
+      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into number type. Received "undefined" while expecting "number".`) ]}
       : { success: true, value: input as T }
 
     if(input === null) return !this.properties.nullable 
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into number type. Unexpected null value.`) ]}
+      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into number type. Received "null" while expecting "number".`) ]}
       : { success: true, value: input as T }
 
-    if(typeof input === 'number') {
+    if(typeof input === 'number' && Number.isFinite(input)) {
       return { success: true, value: input as T }
     }
 
-    if(normalize && typeof input === 'boolean' && input === true) {
-      return { success: true, value: 1 as T }
-    }
-
-    if(normalize && typeof input === 'boolean' && input === false) {
-      return { success: true, value: 0 as T }
-    }
-
-    if(normalize && typeof input === 'string' && Number.isFinite(Number(input))) {
-      return { success: true, value: Number(input) as T }
-    }
-
-    if(normalize && typeof input === 'bigint' && input <= BigInt(Number.MAX_SAFE_INTEGER) && input >= BigInt(Number.MIN_SAFE_INTEGER)) {
-      return { success: true, value: Number(input) as T }
-    }
-
-    return { success: false, issues: [ CoreIssue.create('Could not parse input into number type. Unexpected value.') ] }
+    return { success: false, issues: [ CoreIssue.create(`Could not parse input into number type. Received ${typeof input} while expecting "number".`) ] }
   }
 }
