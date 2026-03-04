@@ -49,7 +49,7 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
       return this.parse(input)
     }
 
-    if (typeof input === 'number' && Number.isFinite(input)) {
+    if (typeof input === 'number' && !Number.isNaN(input)) {
       return this.parse(input)
     }
 
@@ -61,7 +61,7 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
       return this.parse(0)
     }
 
-    if (typeof input === 'string' && input.trim() !== '' && Number.isFinite(Number(input))) {
+    if (typeof input === 'string' && input.trim() !== '' && !Number.isNaN(Number(input))) {
       return this.parse(Number(input))
     }
 
@@ -70,7 +70,11 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
     }
 
     if (typeof input === 'number') {
-      return { success: false, issues: [CoreIssue.create(`Could not coerce non-finite number into number.`)] }
+      return { success: false, issues: [CoreIssue.create(`Could not coerce NaN into number.`)] }
+    }
+
+    if (typeof input === 'string') {
+      return { success: false, issues: [CoreIssue.create(`Could not coerce string into number.`)] }
     }
 
     if (typeof input === 'bigint') {
@@ -89,7 +93,7 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
       ? { success: false, issues: [ CoreIssue.create(`Could not parse input into number type. Received "null" while expecting "number".`) ]}
       : { success: true, value: input as T }
 
-    if(typeof input === 'number' && Number.isFinite(input)) {
+    if(typeof input === 'number' && !Number.isNaN(input)) {
       return { success: true, value: input as T }
     }
 

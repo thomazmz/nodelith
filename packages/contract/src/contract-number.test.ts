@@ -4,36 +4,34 @@ describe('$Number', () => {
   describe('parse', () => {
     const contract = $Number.create({ optional: false, nullable: false })
 
-    test('accepts a finite number', () => {
-      const result = contract.parse(123.5)
-      expect(result.success).toBe(true)
-      if (result.success) expect(result.value).toBe(123.5)
+    test('accepts finite numbers', () => {
+      const a = contract.parse(123.5)
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(123.5)
+
+      const b = contract.parse(0)
+      expect(b.success).toBe(true)
+      if (b.success) expect(b.value).toBe(0)
+
+      const c = contract.parse(-10)
+      expect(c.success).toBe(true)
+      if (c.success) expect(c.value).toBe(-10)
     })
 
-    test('accepts 0 and negative numbers', () => {
-      const a = contract.parse(0)
+    test('accepts Infinity and -Infinity', () => {
+      const a = contract.parse(Infinity)
       expect(a.success).toBe(true)
-      if (a.success) expect(a.value).toBe(0)
+      if (a.success) expect(a.value).toBe(Infinity)
 
-      const b = contract.parse(-10)
+      const b = contract.parse(-Infinity)
       expect(b.success).toBe(true)
-      if (b.success) expect(b.value).toBe(-10)
+      if (b.success) expect(b.value).toBe(-Infinity)
     })
 
     test('fails for NaN', () => {
       const result = contract.parse(NaN)
       expect(result.success).toBe(false)
       if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
-    })
-
-    test('fails for Infinity and -Infinity', () => {
-      const a = contract.parse(Infinity)
-      expect(a.success).toBe(false)
-      if (!a.success) expect(a.issues.length).toBeGreaterThan(0)
-
-      const b = contract.parse(-Infinity)
-      expect(b.success).toBe(false)
-      if (!b.success) expect(b.issues.length).toBeGreaterThan(0)
     })
 
     test('fails for undefined when not optional', () => {
@@ -118,10 +116,24 @@ describe('$Number', () => {
   describe('coerce', () => {
     const contract = $Number.create({ optional: false, nullable: false })
 
-    test('passes through finite numbers unchanged', () => {
-      const result = contract.coerce(42)
-      expect(result.success).toBe(true)
-      if (result.success) expect(result.value).toBe(42)
+    test('passes through numbers unchanged (including Infinity/-Infinity)', () => {
+      const a = contract.coerce(42)
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(42)
+
+      const b = contract.coerce(Infinity)
+      expect(b.success).toBe(true)
+      if (b.success) expect(b.value).toBe(Infinity)
+
+      const c = contract.coerce(-Infinity)
+      expect(c.success).toBe(true)
+      if (c.success) expect(c.value).toBe(-Infinity)
+    })
+
+    test('rejects NaN', () => {
+      const result = contract.coerce(NaN)
+      expect(result.success).toBe(false)
+      if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
     })
 
     test('coerces booleans to 1/0', () => {
@@ -134,7 +146,7 @@ describe('$Number', () => {
       if (b.success) expect(b.value).toBe(0)
     })
 
-    test('coerces numeric strings to numbers', () => {
+    test('coerces numeric strings to numbers (including Infinity/-Infinity)', () => {
       const a = contract.coerce('123')
       expect(a.success).toBe(true)
       if (a.success) expect(a.value).toBe(123)
@@ -146,9 +158,17 @@ describe('$Number', () => {
       const c = contract.coerce('-10')
       expect(c.success).toBe(true)
       if (c.success) expect(c.value).toBe(-10)
+
+      const d = contract.coerce('Infinity')
+      expect(d.success).toBe(true)
+      if (d.success) expect(d.value).toBe(Infinity)
+
+      const e = contract.coerce('-Infinity')
+      expect(e.success).toBe(true)
+      if (e.success) expect(e.value).toBe(-Infinity)
     })
 
-    test('rejects empty/whitespace-only strings', () => {
+    test('rejects empty/whitespace-only strings behavior)', () => {
       const a = contract.coerce('')
       expect(a.success).toBe(false)
       if (!a.success) expect(a.issues.length).toBeGreaterThan(0)
@@ -186,20 +206,6 @@ describe('$Number', () => {
       const b = contract.coerce(BigInt(Number.MIN_SAFE_INTEGER) - 1n)
       expect(b.success).toBe(false)
       if (!b.success) expect(b.issues.length).toBeGreaterThan(0)
-    })
-
-    test('rejects non-finite numbers (NaN, Infinity, -Infinity)', () => {
-      const a = contract.coerce(NaN)
-      expect(a.success).toBe(false)
-      if (!a.success) expect(a.issues.length).toBeGreaterThan(0)
-
-      const b = contract.coerce(Infinity)
-      expect(b.success).toBe(false)
-      if (!b.success) expect(b.issues.length).toBeGreaterThan(0)
-
-      const c = contract.coerce(-Infinity)
-      expect(c.success).toBe(false)
-      if (!c.success) expect(c.issues.length).toBeGreaterThan(0)
     })
 
     test('undefined/null still follow optional/nullable rules', () => {
