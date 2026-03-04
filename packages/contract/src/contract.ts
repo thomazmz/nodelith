@@ -42,12 +42,12 @@ function createStringContract(): $String<string> {
 }
 
 ////////////////////////////////////////////////
-// Object Contract 
-import { $Object } from './contract-object'
-function createObjectContract<S extends $Object.Shape>(shape: S): $Object<{
+// Struct Contract 
+import { $Struct } from './contract-struct'
+function createObjectContract<S extends $Struct.Shape>(shape: S): $Struct<{
   readonly [K in keyof S]: S[K] extends CoreContract<infer T> ? T : never
 }> {
-  return $Object.create({
+  return $Struct.create(shape, {
     optional: false,
     nullable: false
   })
@@ -64,37 +64,38 @@ function createArrayContract<S extends $Array.Shape>(shape: S): $Array<CoreContr
 }
 
 ////////////////////////////////////////////////
-// Array Contract 
+// Enum Contract
 import { $Enum } from './contract-enum'
-export function createEnumContracta<const S extends $Enum.Values>(...values: S): $Enum<$Enum.OutputOf<S>, S> {
-  return $Enum.create(values, {
-    optional: false,
-    nullable: false
-  })
+export function createEnumContract<const S extends string[]>(...values: S): $Enum<S[number], S> {
+  return $Enum.create(values, { optional: false, nullable: false })
 }
 
 ////////////////////////////////////////////////
 // Date Contract 
-// import { $Date } from './contract-date'
-// export function createEnumContracta<const S extends $Enum.Values>(...values: S): $Enum<$Enum.OutputOf<S>, S> {
-//   return $Enum.create(values, {
-//     optional: false,
-//     nullable: false
-//   })
-// }
+import { $Date } from './contract-date'
+function createDateContract(): $Date<Date> {
+  return $Date.create({
+    optional: false,
+    nullable: false,
+  })
+}
+
 
 ////////////////////////////////////////////////
-// Contract 
+// Contract Methods
 export const Contract = Object.freeze({
   boolean: createBooleanContract,
-  object: createObjectContract,
+  struct: createObjectContract,
   string: createStringContract,
   number: createNumberContract,
   bigint: createBigintContract,
   array: createArrayContract,
-  enum: createEnumContracta,
+  enum: createEnumContract,
+  date: createDateContract,
 })
 
+////////////////////////////////////////////////
+// Contract Types
 export declare namespace Contract {
   export type Infer<T extends CoreContract> = CoreContract.Infer<T>
 }

@@ -1,37 +1,31 @@
-import { CoreIssue }  from '@nodelith/core'
+import { CoreIssue } from '@nodelith/core'
+import { CoreParser } from '@nodelith/core'
 import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
-import { CoreParser } from '@nodelith/core'
 
-export declare namespace $Enum {
-  export type Values = readonly CoreNullable[]
-
-  export type OutputOf<V extends Values> = V[number]
-}
-
-export class $Enum<T extends CoreNullable = CoreNullable, V extends $Enum.Values = $Enum.Values> implements CoreContract<T> {
+export class $Enum<T extends CoreNullable.String = CoreNullable.String, V extends readonly string[] = readonly string[]> implements CoreContract<T> {
   private static readonly DEFAULT_OPTIONAL_PROPERTY: CoreContract.DefaultProperties['optional'] = false as const
   private static readonly DEFAULT_NULLABLE_PROPERTY: CoreContract.DefaultProperties['nullable'] = false as const
 
   private static resolveProperties(options?: CoreContract.Options): CoreContract.Properties {
     return {
       optional: typeof options?.optional === 'boolean' ? options.optional : $Enum.DEFAULT_OPTIONAL_PROPERTY,
-      nullable: typeof options?.nullable === 'boolean' ? options.nullable : $Enum.DEFAULT_NULLABLE_PROPERTY,
+      nullable: typeof options?.nullable === 'boolean' ? options?.nullable : $Enum.DEFAULT_NULLABLE_PROPERTY,
     }
   }
 
-  public static create<const V extends $Enum.Values, P extends CoreContract.Options = CoreContract.DefaultProperties>(values: V, options?: P): $Enum<CoreContract.Output<$Enum.OutputOf<V>, P>, V> {
+  public static create<const V extends readonly string[], P extends CoreContract.Options = CoreContract.DefaultProperties>(values: V, options?: P): $Enum<CoreContract.Output<NoInfer<V[number]>, P>, V> {
     return new $Enum(values, options)
   }
 
   protected readonly properties: CoreContract.Properties
+
   protected readonly values: V
-  private readonly set: ReadonlySet<CoreNullable>
+
 
   protected constructor(values: V, options?: CoreContract.Options) {
-    this.values = values
     this.properties = $Enum.resolveProperties(options)
-    this.set = new Set(values as readonly CoreNullable[])
+    this.values = [...values] as unknown as V
   }
 
   public optional(): $Enum<CoreContract.Output<T, { optional: true }>, V> {
@@ -54,27 +48,29 @@ export class $Enum<T extends CoreNullable = CoreNullable, V extends $Enum.Values
     return $Enum.create(this.values, { ...this.properties, ...options }) as $Enum<CoreContract.Output<T, P>, V>
   }
 
+  public coerce(input: unknown): CoreParser.Result<T> {
+    return this.parse(input) // enums do not coerce
+  }
+
   public parse(input: unknown): CoreParser.Result<T> {
-    return this.run(input)
-  }
-
-  public normalize(input: unknown): CoreParser.Result<T> {
-    return this.run(input)
-  }
-
-  private run(input: unknown): CoreParser.Result<T> {
     if (input === undefined) {
-      if (this.properties.optional) return { success: true, value: input as T }
-      return { success: false, issues: [ CoreIssue.create(`Could not parse input into enum type. Unexpected undefined value.`) ]}
+      return !this.properties.optional
+        ? { success: false, issues: [CoreIssue.create(`Could not parse input into enum type. Received "undefined" while expecting "string".`)] }
+        : { success: true, value: input as T }
     }
 
     if (input === null) {
-      if (this.properties.nullable) return { success: true, value: input as T }
-      return { success: false, issues: [ CoreIssue.create(`Could not parse input into enum type. Unexpected null value.`) ]}
+      return !this.properties.nullable
+        ? { success: false, issues: [CoreIssue.create(`Could not parse input into enum type. Received "null" while expecting "string".`)] }
+        : { success: true, value: input as T }
     }
 
-    if (!this.set.has(input as CoreNullable)) {
-      return { success: false, issues: [ CoreIssue.create(`Could not parse input into enum type. Unexpected value.`) ]}
+    if (typeof input !== 'string') {
+      return { success: false, issues: [CoreIssue.create(`Could not parse input into enum type. Received ${typeof input} while expecting "string".`)]}
+    }
+
+    if (!this.values.includes(input)) {
+      return { success: false, issues: [CoreIssue.create(`Could not parse input into enum type. Unexpected value.`)] }
     }
 
     return { success: true, value: input as T }
