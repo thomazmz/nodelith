@@ -4,6 +4,16 @@ describe('$Boolean', () => {
   describe('parse', () => {
     const contract = $Boolean.create({ optional: false, nullable: false })
 
+    test('accepts true/false', () => {
+      const a = contract.parse(true)
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(true)
+
+      const b = contract.parse(false)
+      expect(b.success).toBe(true)
+      if (b.success) expect(b.value).toBe(false)
+    })
+
     test('fails for undefined when not optional', () => {
       const result = contract.parse(undefined)
       expect(result.success).toBe(false)
@@ -16,118 +26,262 @@ describe('$Boolean', () => {
       if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
     })
 
-    test('accepts boolean true', () => {
-      const result = contract.parse(true)
-      expect(result.success).toBe(true)
-      if (result.success) expect(result.value).toBe(true)
-    })
-
-    test('accepts boolean false', () => {
-      const result = contract.parse(false)
-      expect(result.success).toBe(true)
-      if (result.success) expect(result.value).toBe(false)
-    })
-
-    test('rejects strings', () => {
-      const result = contract.parse('true')
-      expect(result.success).toBe(false)
-      if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
-    })
-
-    test('rejects numbers', () => {
-      const result = contract.parse(1)
-      expect(result.success).toBe(false)
-      if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
-    })
-
-    test('rejects bigints', () => {
-      const result = contract.parse(1n)
-      expect(result.success).toBe(false)
-      if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
-    })
-
     test('optional=true allows undefined', () => {
-      const contract = $Boolean.create({ optional: true, nullable: false })
-      const result = contract.parse(undefined)
+      const opt = $Boolean.create({ optional: true, nullable: false })
+      const result = opt.parse(undefined)
       expect(result.success).toBe(true)
       if (result.success) expect(result.value).toBe(undefined)
     })
 
     test('nullable=true allows null', () => {
-      const contract = $Boolean.create({ optional: false, nullable: true })
-      const result = contract.parse(null)
+      const nul = $Boolean.create({ optional: false, nullable: true })
+      const result = nul.parse(null)
       expect(result.success).toBe(true)
       if (result.success) expect(result.value).toBe(null)
     })
+
+    test('optional=true does NOT allow null', () => {
+      const opt = $Boolean.create({ optional: true, nullable: false })
+      const result = opt.parse(null)
+      expect(result.success).toBe(false)
+      if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
+    })
+
+    test('nullable=true does NOT allow undefined', () => {
+      const nul = $Boolean.create({ optional: false, nullable: true })
+      const result = nul.parse(undefined)
+      expect(result.success).toBe(false)
+      if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
+    })
+
+    test('optional=true + nullable=true allows both undefined and null', () => {
+      const both = $Boolean.create({ optional: true, nullable: true })
+
+      const a = both.parse(undefined)
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(undefined)
+
+      const b = both.parse(null)
+      expect(b.success).toBe(true)
+      if (b.success) expect(b.value).toBe(null)
+    })
+
+    test('rejects non-boolean types', () => {
+      const a = contract.parse('true')
+      expect(a.success).toBe(false)
+      if (!a.success) expect(a.issues.length).toBeGreaterThan(0)
+
+      const b = contract.parse(1)
+      expect(b.success).toBe(false)
+      if (!b.success) expect(b.issues.length).toBeGreaterThan(0)
+
+      const c = contract.parse(0)
+      expect(c.success).toBe(false)
+      if (!c.success) expect(c.issues.length).toBeGreaterThan(0)
+
+      const d = contract.parse({})
+      expect(d.success).toBe(false)
+      if (!d.success) expect(d.issues.length).toBeGreaterThan(0)
+
+      const e = contract.parse([])
+      expect(e.success).toBe(false)
+      if (!e.success) expect(e.issues.length).toBeGreaterThan(0)
+
+      const f = contract.parse(Symbol('x'))
+      expect(f.success).toBe(false)
+      if (!f.success) expect(f.issues.length).toBeGreaterThan(0)
+
+      const g = contract.parse(() => true)
+      expect(g.success).toBe(false)
+      if (!g.success) expect(g.issues.length).toBeGreaterThan(0)
+    })
   })
 
-  describe('normalize', () => {
+  describe('coerce', () => {
     const contract = $Boolean.create({ optional: false, nullable: false })
 
-    test('normalizes string "true" to true', () => {
-      const result = contract.normalize('true')
-      expect(result.success).toBe(true)
-      if (result.success) expect(result.value).toBe(true)
+    test('passes through booleans unchanged', () => {
+      const a = contract.coerce(true)
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(true)
+
+      const b = contract.coerce(false)
+      expect(b.success).toBe(true)
+      if (b.success) expect(b.value).toBe(false)
     })
 
-    test('normalizes string "false" to false', () => {
-      const result = contract.normalize('false')
-      expect(result.success).toBe(true)
-      if (result.success) expect(result.value).toBe(false)
+    test('coerces string "true"/"false"', () => {
+      const a = contract.coerce('true')
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(true)
+
+      const b = contract.coerce('false')
+      expect(b.success).toBe(true)
+      if (b.success) expect(b.value).toBe(false)
     })
 
-    test('normalizes string "1" to true', () => {
-      const result = contract.normalize('1')
-      expect(result.success).toBe(true)
-      if (result.success) expect(result.value).toBe(true)
+    test('coerces string "1"/"0"', () => {
+      const a = contract.coerce('1')
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(true)
+
+      const b = contract.coerce('0')
+      expect(b.success).toBe(true)
+      if (b.success) expect(b.value).toBe(false)
     })
 
-    test('normalizes string "0" to false', () => {
-      const result = contract.normalize('0')
-      expect(result.success).toBe(true)
-      if (result.success) expect(result.value).toBe(false)
+    test('coerces number 1/0', () => {
+      const a = contract.coerce(1)
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(true)
+
+      const b = contract.coerce(0)
+      expect(b.success).toBe(true)
+      if (b.success) expect(b.value).toBe(false)
     })
 
-    test('rejects other strings', () => {
-      const result = contract.normalize('yes')
-      expect(result.success).toBe(false)
-      if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
+    test('coerces bigint 1n/0n', () => {
+      const a = contract.coerce(1n)
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(true)
+
+      const b = contract.coerce(0n)
+      expect(b.success).toBe(true)
+      if (b.success) expect(b.value).toBe(false)
     })
 
-    test('normalizes number 1 to true', () => {
-      const result = contract.normalize(1)
-      expect(result.success).toBe(true)
-      if (result.success) expect(result.value).toBe(true)
+    test('rejects other values', () => {
+      const a = contract.coerce('TRUE')
+      expect(a.success).toBe(false)
+      if (!a.success) expect(a.issues.length).toBeGreaterThan(0)
+
+      const b = contract.coerce('yes')
+      expect(b.success).toBe(false)
+      if (!b.success) expect(b.issues.length).toBeGreaterThan(0)
+
+      const c = contract.coerce(2)
+      expect(c.success).toBe(false)
+      if (!c.success) expect(c.issues.length).toBeGreaterThan(0)
+
+      const d = contract.coerce(-1)
+      expect(d.success).toBe(false)
+      if (!d.success) expect(d.issues.length).toBeGreaterThan(0)
+
+      const e = contract.coerce({})
+      expect(e.success).toBe(false)
+      if (!e.success) expect(e.issues.length).toBeGreaterThan(0)
+
+      const f = contract.coerce([])
+      expect(f.success).toBe(false)
+      if (!f.success) expect(f.issues.length).toBeGreaterThan(0)
     })
 
-    test('normalizes number 0 to false', () => {
-      const result = contract.normalize(0)
-      expect(result.success).toBe(true)
-      if (result.success) expect(result.value).toBe(false)
+    test('undefined/null still follow optional/nullable rules', () => {
+      const baseU = contract.coerce(undefined)
+      expect(baseU.success).toBe(false)
+      if (!baseU.success) expect(baseU.issues.length).toBeGreaterThan(0)
+
+      const baseN = contract.coerce(null)
+      expect(baseN.success).toBe(false)
+      if (!baseN.success) expect(baseN.issues.length).toBeGreaterThan(0)
+
+      const both = $Boolean.create({ optional: true, nullable: true })
+
+      const u = both.coerce(undefined)
+      expect(u.success).toBe(true)
+      if (u.success) expect(u.value).toBe(undefined)
+
+      const n = both.coerce(null)
+      expect(n.success).toBe(true)
+      if (n.success) expect(n.value).toBe(null)
+    })
+  })
+
+  describe('chaining', () => {
+    test('optional() returns a new contract that allows undefined', () => {
+      const base = $Boolean.create({ optional: false, nullable: false })
+      const opt = base.optional()
+
+      const a = opt.parse(undefined)
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(undefined)
+
+      const b = base.parse(undefined)
+      expect(b.success).toBe(false)
+      if (!b.success) expect(b.issues.length).toBeGreaterThan(0)
     })
 
-    test('rejects other numbers', () => {
-      const result = contract.normalize(2)
-      expect(result.success).toBe(false)
-      if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
+    test('nullable() returns a new contract that allows null', () => {
+      const base = $Boolean.create({ optional: false, nullable: false })
+      const nul = base.nullable()
+
+      const a = nul.parse(null)
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(null)
+
+      const b = base.parse(null)
+      expect(b.success).toBe(false)
+      if (!b.success) expect(b.issues.length).toBeGreaterThan(0)
     })
 
-    test('normalizes bigint 1n to true', () => {
-      const result = contract.normalize(1n)
-      expect(result.success).toBe(true)
-      if (result.success) expect(result.value).toBe(true)
+    test('required() disables optional + nullable', () => {
+      const base = $Boolean.create({ optional: true, nullable: true })
+      const req = base.required()
+
+      const a = req.parse(undefined)
+      expect(a.success).toBe(false)
+      if (!a.success) expect(a.issues.length).toBeGreaterThan(0)
+
+      const b = req.parse(null)
+      expect(b.success).toBe(false)
+      if (!b.success) expect(b.issues.length).toBeGreaterThan(0)
+
+      const c = req.parse(true)
+      expect(c.success).toBe(true)
+      if (c.success) expect(c.value).toBe(true)
     })
 
-    test('normalizes bigint 0n to false', () => {
-      const result = contract.normalize(0n)
-      expect(result.success).toBe(true)
-      if (result.success) expect(result.value).toBe(false)
+    test('clone() with no args preserves behavior', () => {
+      const base = $Boolean.create({ optional: false, nullable: false })
+      const cloned = base.clone()
+
+      const a = cloned.parse(true)
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(true)
+
+      const b = cloned.parse(undefined)
+      expect(b.success).toBe(false)
+      if (!b.success) expect(b.issues.length).toBeGreaterThan(0)
     })
 
-    test('rejects other bigints', () => {
-      const result = contract.normalize(2n)
-      expect(result.success).toBe(false)
-      if (!result.success) expect(result.issues.length).toBeGreaterThan(0)
+    test('clone() can enable optional without affecting base', () => {
+      const base = $Boolean.create({ optional: false, nullable: false })
+      const cloned = base.clone({ optional: true })
+
+      const a = cloned.parse(undefined)
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(undefined)
+
+      const b = base.parse(undefined)
+      expect(b.success).toBe(false)
+      if (!b.success) expect(b.issues.length).toBeGreaterThan(0)
+    })
+
+    test('optional() + nullable() chaining allows both undefined and null', () => {
+      const base = $Boolean.create({ optional: false, nullable: false })
+      const both = base.optional().nullable()
+
+      const a = both.parse(undefined)
+      expect(a.success).toBe(true)
+      if (a.success) expect(a.value).toBe(undefined)
+
+      const b = both.parse(null)
+      expect(b.success).toBe(true)
+      if (b.success) expect(b.value).toBe(null)
+
+      const c = both.parse(false)
+      expect(c.success).toBe(true)
+      if (c.success) expect(c.value).toBe(false)
     })
   })
 })
