@@ -1,5 +1,5 @@
-import { CoreIssue } from '@nodelith/core'
 import { CoreParser } from '@nodelith/core'
+import { CoreIssue } from '@nodelith/core'
 import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
 
@@ -24,15 +24,15 @@ export class $Date<T extends CoreNullable.Date> implements CoreContract<T> {
     this.properties = $Date.resolveProperties(options)
   }
 
-  public optional(): $Date<CoreContract.Output<T, { optional: true}>> {
+  public optional(): $Date<CoreContract.Output<T, { optional: true }>> {
     return this.clone({ optional: true })
   }
 
-  public nullable(): $Date<CoreContract.Output<T, { nullable: true}>> {
+  public nullable(): $Date<CoreContract.Output<T, { nullable: true }>> {
     return this.clone({ nullable: true })
   }
 
-  public required(): $Date<CoreContract.Output<T, { optional: false, nullable: false } >> {
+  public required(): $Date<CoreContract.Output<T, { optional: false, nullable: false }>> {
     return this.clone({ optional: false, nullable: false })
   }
 
@@ -44,40 +44,54 @@ export class $Date<T extends CoreNullable.Date> implements CoreContract<T> {
     return $Date.create({ ...this.properties, ...options }) as $Date<CoreContract.Output<T, P>>
   }
 
+  public coerce(input: unknown): CoreParser.Result<T> {
+    if (input === undefined || input === null) {
+      return this.parse(input)
+    }
+
+    if (input instanceof Date) {
+      return this.parse(input)
+    }
+
+    if (typeof input === 'string' && input.trim() !== '') {
+      const date = new Date(input)
+      if (!Number.isNaN(date.getTime())) {
+        return this.parse(date)
+      }
+      return this.parse(input)
+    }
+
+    if (typeof input === 'number' && Number.isFinite(input)) {
+      const date = new Date(input)
+      if (!Number.isNaN(date.getTime())) {
+        return this.parse(date)
+      }
+      return this.parse(input)
+    }
+
+    return this.parse(input)
+  }
+
   public parse(input: unknown): CoreParser.Result<T> {
-    return this.run(input, false)
-  }
-
-  public normalize(input: unknown): CoreParser.Result<T> {
-    return this.run(input, true)
-  }
-
-  private run(input: unknown, normalize: boolean): CoreParser.Result<T> {
-    if(input === undefined) return !this.properties.optional
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into Date type. Unexpected undefined value.`) ]}
+    if (input === undefined) return !this.properties.optional
+      ? { success: false, issues: [CoreIssue.create(`Could not parse input into date type. Received "undefined" while expecting "Date".`)] }
       : { success: true, value: input as T }
 
-    if(input === null) return !this.properties.nullable
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into Date type. Unexpected null value.`) ]}
+    if (input === null) return !this.properties.nullable
+      ? { success: false, issues: [CoreIssue.create(`Could not parse input into date type. Received "null" while expecting "Date".`)] }
       : { success: true, value: input as T }
 
-    if(input instanceof Date) return !Number.isFinite(input.getTime())
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into Date type. Invalid Date value.`) ]}
-      : { success: true, value: new Date(input.getTime()) as T }
-
-    if (normalize && typeof input === 'number') {
-      return this.run(new Date(input), normalize)
-    }
-    
-    if (normalize && typeof input === 'bigint') {
-      return this.run(new Date(Number(input)), normalize)
+    if (input instanceof Date && !Number.isNaN(input.getTime())) {
+      return { success: true, value: input as T }
     }
 
-    // TODO This needs improvement as behaviour can be undeterministic depending on environments.
-    if(normalize && typeof input === 'string') {
-      return this.run(new Date(input), normalize)
+    return {
+      success: false,
+      issues: [
+        CoreIssue.create(
+          `Could not parse input into date type. Received ${typeof input} while expecting "Date".`
+        )
+      ]
     }
-
-    return { success: false, issues: [ CoreIssue.create('Could not parse input into Date type. Unexpected value.') ] }
-  }
+}
 }
