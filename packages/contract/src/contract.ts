@@ -54,12 +54,12 @@ function createObjectContract<S extends $Struct.Shape>(shape: S): $Struct<{
 }
 
 ////////////////////////////////////////////////
-// Array Contract 
+// Array Contract
 import { $Array } from './contract-array'
 function createArrayContract<S extends $Array.Shape>(shape: S): $Array<CoreContract.Infer<S>[]> {
-  return $Array.create({
+  return $Array.create(shape, {
     optional: false,
-    nullable: false
+    nullable: false,
   })
 }
 
