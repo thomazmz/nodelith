@@ -40,14 +40,14 @@ export declare namespace CoreNullable {
   
   export type Array = undefined | null | (
     | CoreNullable.Primitive
-    | CoreNullable.Record
+    | CoreNullable.Struct
     | CoreNullable.Array
   )[]
   
-  export type Record = undefined | null | {
+  export type Struct = undefined | null | {
     readonly [key: string]: (
       | CoreNullable.Primitive
-      | CoreNullable.Record
+      | CoreNullable.Struct
       | CoreNullable.Array
     )
   }

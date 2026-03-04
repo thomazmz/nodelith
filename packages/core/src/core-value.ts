@@ -1,6 +1,6 @@
 export type CoreValue = (
   | CoreValue.Primitive
-  | CoreValue.Record
+  | CoreValue.Struct
   | CoreValue.Array
 )
 
@@ -16,14 +16,14 @@ export declare namespace CoreValue {
   
   export type Array = undefined | (
     | CoreValue.Primitive 
-    | CoreValue.Record
+    | CoreValue.Struct
     | CoreValue.Array
   )[]
   
-  export type Record = undefined | {
+  export type Struct = undefined | {
     readonly [key: string]: (
       | CoreValue.Primitive
-      | CoreValue.Record
+      | CoreValue.Struct
       | CoreValue.Array
     )
   }

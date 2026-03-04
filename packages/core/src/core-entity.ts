@@ -1,7 +1,7 @@
 import { CoreValue } from './core-value'
 
 export type CoreEntity = (
-  & CoreValue.Record
+  & CoreValue.Struct
   & CoreEntity.Base
 )
 
