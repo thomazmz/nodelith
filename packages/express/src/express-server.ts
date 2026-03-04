@@ -17,20 +17,29 @@ export class ExpressServer {
   }
 
   public useConfig(initializer: ConstructorType<CoreInitializer<ExpressConfig>>): this {
-    this.module.mapClassInitializer('applicationConfig', initializer)
+    this.module.mapClassInitializer('config', initializer)
     return this
   }
 
   public useLogger(logger: ConstructorType<CoreLogger>): this {
-    this.module.mapClassRegistration('applicationLogger', logger)
+    this.module.mapClassRegistration('logger', logger)
     return this
   }
 
   public async start(): Promise<void> {
     await this.module.initialize()
   
-    const logger = this.module.resolve<CoreLogger>('applicationLogger')
-    const config = this.module.resolve<ExpressConfig>('applicationConfig')
+    const logger = this.module.resolve<CoreLogger>('logger')
+
+    if(!logger) {
+      throw new Error('Could not start express server. The server module is missing a valid logger registration.')
+    }
+
+    const config = this.module.resolve<ExpressConfig>('config')
+
+    if(!config) {
+      throw new Error('Could not start express server. The server module is missing a valid config registration.')
+    }
 
     const app = this.module.resolveApplication(config)
 
