@@ -26,8 +26,14 @@ export class $Struct<T extends CoreNullable.Struct> implements CoreContract<T> {
 
   protected readonly properties: CoreContract.Properties
 
-  protected constructor(private readonly shape: $Struct.Shape, options?: CoreContract.Options) {
+  protected readonly shape: $Struct.Shape
+
+  protected constructor(shape: $Struct.Shape, options?: CoreContract.Options) {
     this.properties = $Struct.resolveProperties(options)
+
+    this.shape = Object.freeze(Object.entries(shape).reduce((acc, [key, contract]) => {
+      return { ...acc, [key]: contract.clone() }
+    }, {}))
   }
 
   public optional(): $Struct<CoreContract.Output<T, { optional: true }>> {

@@ -97,6 +97,24 @@ describe('$Struct', () => {
       }
     })
 
+    test('shape is immune to mutations of the original shape object', () => {
+      const shape = {
+        name: $String.create({ optional: false, nullable: false }),
+      }
+
+      const c = $Struct.create(shape, { optional: false, nullable: false })
+
+      ;(shape as any).name = $Number.create({ optional: false, nullable: false })
+      ;(shape as any).age = $Number.create({ optional: false, nullable: false })
+
+      const ok = c.parse({ name: 'Ada', age: 33 })
+      expect(ok.success).toBe(true)
+      if (ok.success) expect(ok.value).toEqual({ name: 'Ada' })
+
+      const stillString = c.parse({ name: 123 })
+      expect(stillString.success).toBe(false)
+    })
+
     test('parse stays strict (does not coerce nested fields)', () => {
       const result = contract.parse({ name: 123, age: '33' })
       expect(result.success).toBe(false)
