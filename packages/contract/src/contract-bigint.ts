@@ -37,9 +37,7 @@ export class $Bigint<T extends CoreNullable.Bigint> implements CoreContract<T> {
   }
 
   public clone(): $Bigint<CoreContract.Output<T>>
-
   public clone<const P extends CoreContract.Options>(options: P): $Bigint<CoreContract.Output<T, P>>
-
   public clone<const P extends CoreContract.Options>(options?: P): $Bigint<CoreContract.Output<T, P>> {
     return $Bigint.create({ ...this.properties, ...options }) as $Bigint<CoreContract.Output<T, P>>
   }

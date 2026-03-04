@@ -41,9 +41,7 @@ export class $Enum<T extends CoreNullable.String = CoreNullable.String, V extend
   }
 
   public clone(): $Enum<CoreContract.Output<T>, V>
-
   public clone<const P extends CoreContract.Options>(options: P): $Enum<CoreContract.Output<T, P>, V>
-
   public clone<const P extends CoreContract.Options>(options?: P): $Enum<CoreContract.Output<T, P>, V> {
     return $Enum.create(this.values, { ...this.properties, ...options }) as $Enum<CoreContract.Output<T, P>, V>
   }

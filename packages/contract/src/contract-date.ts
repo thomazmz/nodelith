@@ -37,9 +37,7 @@ export class $Date<T extends CoreNullable.Date> implements CoreContract<T> {
   }
 
   public clone(): $Date<CoreContract.Output<T>>
-
   public clone<const P extends CoreContract.Options>(options: P): $Date<CoreContract.Output<T, P>>
-
   public clone<const P extends CoreContract.Options>(options?: P): $Date<CoreContract.Output<T, P>> {
     return $Date.create({ ...this.properties, ...options }) as $Date<CoreContract.Output<T, P>>
   }

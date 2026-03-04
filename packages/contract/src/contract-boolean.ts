@@ -37,9 +37,7 @@ export class $Boolean<T extends CoreNullable.Boolean> implements CoreContract<T>
   }
 
   public clone(): $Boolean<CoreContract.Output<T>>
-
   public clone<const P extends CoreContract.Options>(options: P): $Boolean<CoreContract.Output<T, P>>
-
   public clone<const P extends CoreContract.Options>(options?: P): $Boolean<CoreContract.Output<T, P>> {
     return $Boolean.create({ ...this.properties, ...options }) as $Boolean<CoreContract.Output<T, P>>
   }

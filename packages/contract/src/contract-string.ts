@@ -37,9 +37,7 @@ export class $String<T extends CoreNullable.String> implements CoreContract<T> {
   }
 
   public clone(): $String<CoreContract.Output<T>>
-
   public clone<const P extends CoreContract.Options>(options: P): $String<CoreContract.Output<T, P>>
-
   public clone<const P extends CoreContract.Options>(options?: P): $String<CoreContract.Output<T, P>> {
     return $String.create({ ...this.properties, ...options }) as $String<CoreContract.Output<T, P>>
   }
