@@ -7,29 +7,29 @@ export declare namespace $Struct {
 }
 
 export class $Struct<T extends CoreNullable.Struct> implements CoreContract<T> {
-  private static readonly DEFAULT_OPTIONAL_PROPERTY: CoreContract.DefaultProperties['optional'] = false as const
-  private static readonly DEFAULT_NULLABLE_PROPERTY: CoreContract.DefaultProperties['nullable'] = false as const
+  private static readonly DEFAULT_OPTIONAL_PROPERTY: CoreContract.DefaultAttributes['optional'] = false as const
+  private static readonly DEFAULT_NULLABLE_PROPERTY: CoreContract.DefaultAttributes['nullable'] = false as const
 
-  private static resolveProperties(options?: CoreContract.Options): CoreContract.Properties {
+  private static resolveAttributes(attributes?: Partial<CoreContract.Attributes>): CoreContract.Attributes {
     return {
-      optional: typeof options?.optional === 'boolean' ? options.optional : $Struct.DEFAULT_OPTIONAL_PROPERTY,
-      nullable: typeof options?.nullable === 'boolean' ? options.nullable : $Struct.DEFAULT_NULLABLE_PROPERTY,
+      optional: typeof attributes?.optional === 'boolean' ? attributes.optional : $Struct.DEFAULT_OPTIONAL_PROPERTY,
+      nullable: typeof attributes?.nullable === 'boolean' ? attributes.nullable : $Struct.DEFAULT_NULLABLE_PROPERTY,
     }
   }
 
-  public static create<T extends Exclude<CoreNullable.Struct, null | undefined>, const P extends CoreContract.Options>(
-    shape: $Struct.Shape,
-    options: P
-  ): $Struct<CoreContract.Output<T, P>> {
-    return new $Struct<T>(shape, options) as unknown as $Struct<CoreContract.Output<T, P>>
+  public static create<
+    T extends Exclude<CoreNullable.Struct, null | undefined>,
+    const P extends Partial<CoreContract.Attributes>
+  >(shape: $Struct.Shape, attributes: P): $Struct<CoreContract.Output<T, P>> {
+    return new $Struct<T>(shape, attributes) as unknown as $Struct<CoreContract.Output<T, P>>
   }
 
-  protected readonly properties: CoreContract.Properties
+  public readonly attributes: CoreContract.Attributes
 
   protected readonly shape: $Struct.Shape
 
-  protected constructor(shape: $Struct.Shape, options?: CoreContract.Options) {
-    this.properties = $Struct.resolveProperties(options)
+  protected constructor(shape: $Struct.Shape, attributes?: Partial<CoreContract.Attributes>) {
+    this.attributes = $Struct.resolveAttributes(attributes)
 
     this.shape = Object.freeze(Object.entries(shape).reduce((acc, [key, contract]) => {
       return { ...acc, [key]: contract.clone() }
@@ -49,17 +49,17 @@ export class $Struct<T extends CoreNullable.Struct> implements CoreContract<T> {
   }
 
   public clone(): $Struct<CoreContract.Output<T>>
-  public clone<const P extends CoreContract.Options>(options: P): $Struct<CoreContract.Output<T, P>>
-  public clone<const P extends CoreContract.Options>(options?: P): $Struct<CoreContract.Output<T, P>> {
-    return $Struct.create(this.shape, { ...this.properties, ...options }) as $Struct<CoreContract.Output<T, P>>
+  public clone<const P extends Partial<CoreContract.Attributes>>(options: P): $Struct<CoreContract.Output<T, P>>
+  public clone<const P extends Partial<CoreContract.Attributes>>(options?: P): $Struct<CoreContract.Output<T, P>> {
+    return $Struct.create(this.shape, { ...this.attributes, ...options }) as $Struct<CoreContract.Output<T, P>>
   }
 
   public coerce(input: unknown): CoreParser.Result<T> {
-    if (input === undefined) return !this.properties.optional
+    if (input === undefined) return !this.attributes.optional
       ? { success: false, issues: [CoreIssue.create(`Could not coerce input into struct type. Received "undefined" while expecting "object".`)] }
       : { success: true, value: input as T }
 
-    if (input === null) return !this.properties.nullable
+    if (input === null) return !this.attributes.nullable
       ? { success: false, issues: [CoreIssue.create(`Could not coerce input into struct type. Received "null" while expecting "object".`)] }
       : { success: true, value: input as T }
 
@@ -99,11 +99,11 @@ export class $Struct<T extends CoreNullable.Struct> implements CoreContract<T> {
   }
 
   public parse(input: unknown): CoreParser.Result<T> {
-    if (input === undefined) return !this.properties.optional
+    if (input === undefined) return !this.attributes.optional
       ? { success: false, issues: [CoreIssue.create(`Could not parse input into struct type. Received "undefined" while expecting "object".`)] }
       : { success: true, value: input as T }
 
-    if (input === null) return !this.properties.nullable
+    if (input === null) return !this.attributes.nullable
       ? { success: false, issues: [CoreIssue.create(`Could not parse input into struct type. Received "null" while expecting "object".`)] }
       : { success: true, value: input as T }
 

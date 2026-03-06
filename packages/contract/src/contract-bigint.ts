@@ -4,24 +4,24 @@ import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
 
 export class $Bigint<T extends CoreNullable.Bigint> implements CoreContract<T> {
-  private static readonly DEFAULT_OPTIONAL_PROPERTY: CoreContract.DefaultProperties['optional'] = false as const
-  private static readonly DEFAULT_NULLABLE_PROPERTY: CoreContract.DefaultProperties['nullable'] = false as const
+  private static readonly DEFAULT_OPTIONAL_PROPERTY: CoreContract.DefaultAttributes['optional'] = false as const
+  private static readonly DEFAULT_NULLABLE_PROPERTY: CoreContract.DefaultAttributes['nullable'] = false as const
 
-  private static resolveProperties(options?: CoreContract.Options): CoreContract.Properties {
+  private static resolveAttributes(attributes?: Partial<CoreContract.Attributes>): CoreContract.Attributes {
     return {
-      optional: typeof options?.optional === 'boolean' ? options.optional : $Bigint.DEFAULT_OPTIONAL_PROPERTY,
-      nullable: typeof options?.nullable === 'boolean' ? options.nullable : $Bigint.DEFAULT_NULLABLE_PROPERTY,
+      optional: typeof attributes?.optional === 'boolean' ? attributes.optional : $Bigint.DEFAULT_OPTIONAL_PROPERTY,
+      nullable: typeof attributes?.nullable === 'boolean' ? attributes.nullable : $Bigint.DEFAULT_NULLABLE_PROPERTY,
     }
   }
 
-  public static create<T extends CoreNullable.Bigint = bigint, P extends CoreContract.Options = CoreContract.DefaultProperties>(options: P): $Bigint<CoreContract.Output<NoInfer<T>, P>> {
-    return new $Bigint(options)
+  public static create<T extends CoreNullable.Bigint = bigint, P extends Partial<CoreContract.Attributes> = CoreContract.DefaultAttributes>(attributes: P): $Bigint<CoreContract.Output<NoInfer<T>, P>> {
+    return new $Bigint(attributes)
   }
 
-  protected readonly properties: CoreContract.Properties
+  public readonly attributes: CoreContract.Attributes
 
-  protected constructor(options?: CoreContract.Options) {
-    this.properties = $Bigint.resolveProperties(options)
+  protected constructor(attributes?: Partial<CoreContract.Attributes>) {
+    this.attributes = $Bigint.resolveAttributes(attributes)
   }
 
   public optional(): $Bigint<CoreContract.Output<T, { optional: true}>> {
@@ -37,9 +37,9 @@ export class $Bigint<T extends CoreNullable.Bigint> implements CoreContract<T> {
   }
 
   public clone(): $Bigint<CoreContract.Output<T>>
-  public clone<const P extends CoreContract.Options>(options: P): $Bigint<CoreContract.Output<T, P>>
-  public clone<const P extends CoreContract.Options>(options?: P): $Bigint<CoreContract.Output<T, P>> {
-    return $Bigint.create({ ...this.properties, ...options }) as $Bigint<CoreContract.Output<T, P>>
+  public clone<const P extends Partial<CoreContract.Attributes>>(attributes: P): $Bigint<CoreContract.Output<T, P>>
+  public clone<const P extends Partial<CoreContract.Attributes>>(attributes?: P): $Bigint<CoreContract.Output<T, P>> {
+    return $Bigint.create({ ...this.attributes, ...attributes }) as $Bigint<CoreContract.Output<T, P>>
   }
 
   public coerce(input: unknown): CoreParser.Result<T> {
@@ -79,11 +79,11 @@ export class $Bigint<T extends CoreNullable.Bigint> implements CoreContract<T> {
   }
 
   public parse(input: unknown): CoreParser.Result<T> {
-    if(input === undefined) return !this.properties.optional
+    if(input === undefined) return !this.attributes.optional
       ? { success: false, issues: [ CoreIssue.create(`Could not parse input into bigint type. Received "undefined" while expecting "bigint".`) ]}
       : { success: true, value: input as T }
 
-    if(input === null) return !this.properties.nullable
+    if(input === null) return !this.attributes.nullable
       ? { success: false, issues: [ CoreIssue.create(`Could not parse input into bigint type. Received "null" while expecting "bigint".`) ]}
       : { success: true, value: input as T }
 

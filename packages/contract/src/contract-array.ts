@@ -7,27 +7,27 @@ export declare namespace $Array {
 }
 
 export class $Array<T extends CoreNullable.Array> implements CoreContract<T> {
-  private static readonly DEFAULT_OPTIONAL_PROPERTY: CoreContract.DefaultProperties['optional'] = false as const
-  private static readonly DEFAULT_NULLABLE_PROPERTY: CoreContract.DefaultProperties['nullable'] = false as const
+  private static readonly DEFAULT_OPTIONAL_PROPERTY: CoreContract.DefaultAttributes['optional'] = false as const
+  private static readonly DEFAULT_NULLABLE_PROPERTY: CoreContract.DefaultAttributes['nullable'] = false as const
 
-  private static resolveProperties(options?: CoreContract.Options): CoreContract.Properties {
+  private static resolveAttributes(attributes?: Partial<CoreContract.Attributes>): CoreContract.Attributes {
     return {
-      optional: typeof options?.optional === 'boolean' ? options.optional : $Array.DEFAULT_OPTIONAL_PROPERTY,
-      nullable: typeof options?.nullable === 'boolean' ? options.nullable : $Array.DEFAULT_NULLABLE_PROPERTY,
+      optional: typeof attributes?.optional === 'boolean' ? attributes.optional : $Array.DEFAULT_OPTIONAL_PROPERTY,
+      nullable: typeof attributes?.nullable === 'boolean' ? attributes.nullable : $Array.DEFAULT_NULLABLE_PROPERTY,
     }
   }
 
-  public static create<S extends $Array.Shape, const P extends CoreContract.Options>(
+  public static create<S extends $Array.Shape, const P extends Partial<CoreContract.Attributes>>(
     shape: S,
-    options: P
+    attributes: P
   ): $Array<CoreContract.Output<CoreContract.Infer<S>[], P>> {
-    return new $Array(shape, options) as unknown as $Array<CoreContract.Output<CoreContract.Infer<S>[], P>>
+    return new $Array(shape, attributes) as unknown as $Array<CoreContract.Output<CoreContract.Infer<S>[], P>>
   }
 
-  protected readonly properties: CoreContract.Properties
+  public readonly attributes: CoreContract.Attributes
 
-  protected constructor(private readonly shape: $Array.Shape, options?: CoreContract.Options) {
-    this.properties = $Array.resolveProperties(options)
+  protected constructor(private readonly shape: $Array.Shape, attributes?: Partial<CoreContract.Attributes>) {
+    this.attributes = $Array.resolveAttributes(attributes)
   }
 
   public optional(): $Array<CoreContract.Output<T, { optional: true }>> {
@@ -43,17 +43,17 @@ export class $Array<T extends CoreNullable.Array> implements CoreContract<T> {
   }
 
   public clone(): $Array<CoreContract.Output<T>>
-  public clone<const P extends CoreContract.Options>(options: P): $Array<CoreContract.Output<T, P>>
-  public clone<const P extends CoreContract.Options>(options?: P): $Array<CoreContract.Output<T, P>> {
-    return $Array.create(this.shape, { ...this.properties, ...options }) as $Array<CoreContract.Output<T, P>>
+  public clone<const P extends Partial<CoreContract.Attributes>>(attributes: P): $Array<CoreContract.Output<T, P>>
+  public clone<const P extends Partial<CoreContract.Attributes>>(attributes?: P): $Array<CoreContract.Output<T, P>> {
+    return $Array.create(this.shape, { ...this.attributes, ...attributes }) as $Array<CoreContract.Output<T, P>>
   }
 
   public coerce(input: unknown): CoreParser.Result<T> {
-    if (input === undefined) return !this.properties.optional
+    if (input === undefined) return !this.attributes.optional
       ? { success: false, issues: [CoreIssue.create(`Could not coerce input into array type. Received "undefined" while expecting "array".`)] }
       : { success: true, value: input as T }
 
-    if (input === null) return !this.properties.nullable
+    if (input === null) return !this.attributes.nullable
       ? { success: false, issues: [CoreIssue.create(`Could not coerce input into array type. Received "null" while expecting "array".`)] }
       : { success: true, value: input as T }
 
@@ -81,11 +81,11 @@ export class $Array<T extends CoreNullable.Array> implements CoreContract<T> {
   }
 
   public parse(input: unknown): CoreParser.Result<T> {
-    if (input === undefined) return !this.properties.optional
+    if (input === undefined) return !this.attributes.optional
       ? { success: false, issues: [CoreIssue.create(`Could not parse input into array type. Received "undefined" while expecting "array".`)] }
       : { success: true, value: input as T }
 
-    if (input === null) return !this.properties.nullable
+    if (input === null) return !this.attributes.nullable
       ? { success: false, issues: [CoreIssue.create(`Could not parse input into array type. Received "null" while expecting "array".`)] }
       : { success: true, value: input as T }
 

@@ -4,24 +4,26 @@ import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
 
 export class $String<T extends CoreNullable.String> implements CoreContract<T> {
-  private static readonly DEFAULT_OPTIONAL_PROPERTY: CoreContract.DefaultProperties['optional'] = false as const
-  private static readonly DEFAULT_NULLABLE_PROPERTY: CoreContract.DefaultProperties['nullable'] = false as const
+  private static readonly DEFAULT_OPTIONAL_PROPERTY: CoreContract.DefaultAttributes['optional'] = false as const
+  private static readonly DEFAULT_NULLABLE_PROPERTY: CoreContract.DefaultAttributes['nullable'] = false as const
 
-  private static resolveProperties(options?: CoreContract.Options): CoreContract.Properties {
+  private static resolveAttributes(attributes?: Partial<CoreContract.Attributes>): CoreContract.Attributes {
     return {
-      optional: typeof options?.optional === 'boolean' ? options.optional : $String.DEFAULT_OPTIONAL_PROPERTY,
-      nullable: typeof options?.nullable === 'boolean' ? options.nullable : $String.DEFAULT_NULLABLE_PROPERTY,
+      optional: typeof attributes?.optional === 'boolean' ? attributes.optional : $String.DEFAULT_OPTIONAL_PROPERTY,
+      nullable: typeof attributes?.nullable === 'boolean' ? attributes.nullable : $String.DEFAULT_NULLABLE_PROPERTY,
     }
   }
 
-  public static create<T extends CoreNullable.String = string, P extends CoreContract.Options = CoreContract.DefaultProperties>(options: P): $String<CoreContract.Output<NoInfer<T>, P>> {
-    return new $String(options)
+  public static create<T extends CoreNullable.String = string, const P extends Partial<CoreContract.Attributes> = CoreContract.DefaultAttributes>(
+    attributes: P
+  ): $String<CoreContract.Output<NoInfer<T>, P>> {
+    return new $String(attributes) as unknown as $String<CoreContract.Output<NoInfer<T>, P>>
   }
 
-  protected readonly properties: CoreContract.Properties
+  public readonly attributes: CoreContract.Attributes
 
-  protected constructor(options?: CoreContract.Options) {
-    this.properties = $String.resolveProperties(options)
+  protected constructor(attributes?: Partial<CoreContract.Attributes>) {
+    this.attributes = $String.resolveAttributes(attributes)
   }
 
   public optional(): $String<CoreContract.Output<T, { optional: true}>> {
@@ -37,9 +39,9 @@ export class $String<T extends CoreNullable.String> implements CoreContract<T> {
   }
 
   public clone(): $String<CoreContract.Output<T>>
-  public clone<const P extends CoreContract.Options>(options: P): $String<CoreContract.Output<T, P>>
-  public clone<const P extends CoreContract.Options>(options?: P): $String<CoreContract.Output<T, P>> {
-    return $String.create({ ...this.properties, ...options }) as $String<CoreContract.Output<T, P>>
+  public clone<const P extends Partial<CoreContract.Attributes>>(attributes: P): $String<CoreContract.Output<T, P>>
+  public clone<const P extends Partial<CoreContract.Attributes>>(attributes?: P): $String<CoreContract.Output<T, P>> {
+    return $String.create({ ...this.attributes, ...attributes }) as $String<CoreContract.Output<T, P>>
   }
 
   public coerce(input: unknown): CoreParser.Result<T> {
@@ -75,11 +77,11 @@ export class $String<T extends CoreNullable.String> implements CoreContract<T> {
   }
 
   public parse(input: unknown): CoreParser.Result<T> {
-    if(input === undefined) return !this.properties.optional 
+    if(input === undefined) return !this.attributes.optional 
       ? { success: false, issues: [ CoreIssue.create(`Could not parse input into string type. Received "undefined" while expecting "string".`) ]}
       : { success: true, value: input as T }
 
-    if(input === null) return !this.properties.nullable 
+    if(input === null) return !this.attributes.nullable 
       ? { success: false, issues: [ CoreIssue.create(`Could not parse input into string type. Received "null" while expecting "string".`) ]}
       : { success: true, value: input as T }
 
