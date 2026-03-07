@@ -3,6 +3,40 @@ import { $String } from './contract-string'
 import { $Number } from './contract-number'
 
 describe('$Struct', () => {
+  describe('schema', () => {
+    test('produces a JSON schema with properties + required', () => {
+      const contract = $Struct.create(
+        {
+          name: $String.create({ optional: false, nullable: false }),
+          age: $Number.create({ optional: true, nullable: false }),
+        },
+        { optional: false, nullable: false }
+      )
+
+      expect(contract.schema).toEqual({
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          age: { type: 'number' },
+        },
+        required: ['name'],
+      })
+    })
+
+    test('nullable=true includes null in type', () => {
+      const contract = $Struct.create(
+        { name: $String.create({ optional: false, nullable: false }) },
+        { optional: false, nullable: true }
+      )
+
+      expect(contract.schema).toEqual({
+        type: ['object', 'null'],
+        properties: { name: { type: 'string' } },
+        required: ['name'],
+      })
+    })
+  })
+
   describe('parse', () => {
     const contract = $Struct.create(
       {

@@ -1,4 +1,5 @@
 import { CoreIssue } from '@nodelith/core'
+import { CoreSchema } from '@nodelith/core'
 import { CoreParser } from '@nodelith/core'
 import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
@@ -25,9 +26,15 @@ export class $Enum<T extends CoreNullable.String = CoreNullable.String, V extend
 
   protected readonly values: V
 
-  protected constructor(values: V, attributes?: Partial<CoreContract.Attributes>) {
+  private constructor(values: V, attributes?: Partial<CoreContract.Attributes>) {
     this.attributes = $Enum.resolveAttributes(attributes)
     this.values = [...values] as unknown as V
+  }
+
+  public get schema(): CoreSchema.Enum {
+    return this.attributes.nullable
+      ? { type: ['string', 'null'] as const, enum: [...this.values, null] }
+      : { type: 'string' as const, enum: [...this.values] }
   }
 
   public optional(): $Enum<CoreContract.Output<T, { optional: true }>, V> {

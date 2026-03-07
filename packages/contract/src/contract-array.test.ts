@@ -2,6 +2,27 @@ import { $Array } from './contract-array'
 import { $Number } from './contract-number'
 
 describe('$Array', () => {
+  describe('schema', () => {
+    test('produces a JSON schema with items schema embedded', () => {
+      const item = $Number.create({ optional: false, nullable: false })
+      const contract = $Array.create(item, { optional: false, nullable: false })
+      expect(contract.schema).toEqual({
+        type: 'array',
+        items: { type: 'number' },
+      })
+    })
+
+    test('nullable=true includes null in type', () => {
+      const item = $Number.create({ optional: false, nullable: false })
+      const contract = $Array.create(item, { optional: false, nullable: true })
+
+      expect(contract.schema).toEqual({
+        type: ['array', 'null'],
+        items: { type: 'number' },
+      })
+    })
+  })
+
   describe('parse', () => {
     const item = $Number.create({ optional: false, nullable: false })
     const contract = $Array.create(item, { optional: false, nullable: false })

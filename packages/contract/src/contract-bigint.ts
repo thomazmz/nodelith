@@ -1,5 +1,6 @@
-import { CoreParser } from '@nodelith/core'
 import { CoreIssue } from '@nodelith/core'
+import { CoreSchema } from '@nodelith/core'
+import { CoreParser } from '@nodelith/core'
 import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
 
@@ -20,8 +21,14 @@ export class $Bigint<T extends CoreNullable.Bigint> implements CoreContract<T> {
 
   public readonly attributes: CoreContract.Attributes
 
-  protected constructor(attributes?: Partial<CoreContract.Attributes>) {
+  private constructor(attributes?: Partial<CoreContract.Attributes>) {
     this.attributes = $Bigint.resolveAttributes(attributes)
+  }
+
+  public get schema(): CoreSchema.Bigint {
+    return this.attributes.nullable
+      ? { type: ['string', 'null'] as const, format: 'bigint' as const }
+      : { type: 'string' as const, format: 'bigint' as const }
   }
 
   public optional(): $Bigint<CoreContract.Output<T, { optional: true}>> {

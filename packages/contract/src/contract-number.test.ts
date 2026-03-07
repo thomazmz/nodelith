@@ -1,6 +1,18 @@
 import { $Number } from './contract-number'
 
 describe('$Number', () => {
+  describe('schema', () => {
+    test('produces a JSON schema', () => {
+      const contract = $Number.create({ optional: false, nullable: false })
+      expect(contract.schema).toEqual({ type: 'number' })
+    })
+
+    test('nullable=true includes null in type', () => {
+      const contract = $Number.create({ optional: false, nullable: true })
+      expect(contract.schema).toEqual({ type: ['number', 'null'] })
+    })
+  })
+
   describe('parse', () => {
     const contract = $Number.create({ optional: false, nullable: false })
 

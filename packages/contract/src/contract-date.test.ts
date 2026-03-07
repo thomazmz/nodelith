@@ -2,6 +2,18 @@
 import { $Date } from './contract-date'
 
 describe('$Date', () => {
+  describe('schema', () => {
+    test('produces a JSON schema', () => {
+      const contract = $Date.create({ optional: false, nullable: false })
+      expect(contract.schema).toEqual({ type: 'string', format: 'iso8601' })
+    })
+
+    test('nullable=true includes null in type', () => {
+      const contract = $Date.create({ optional: false, nullable: true })
+      expect(contract.schema).toEqual({ type: ['string', 'null'], format: 'iso8601' })
+    })
+  })
+
   describe('parse', () => {
     const contract = $Date.create({ optional: false, nullable: false })
 

@@ -1,6 +1,18 @@
 import { $Bigint } from './contract-bigint'
 
 describe('$Bigint', () => {
+  describe('schema', () => {
+    test('produces a JSON schema', () => {
+      const contract = $Bigint.create({ optional: false, nullable: false })
+      expect(contract.schema).toEqual({ type: 'string', format: 'bigint' })
+    })
+
+    test('nullable=true includes null in type', () => {
+      const contract = $Bigint.create({ optional: false, nullable: true })
+      expect(contract.schema).toEqual({ type: ['string', 'null'], format: 'bigint' })
+    })
+  })
+
   describe('parse', () => {
     const contract = $Bigint.create({ optional: false, nullable: false })
 

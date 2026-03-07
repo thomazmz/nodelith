@@ -1,5 +1,6 @@
-import { CoreParser } from '@nodelith/core'
 import { CoreIssue } from '@nodelith/core'
+import { CoreSchema } from '@nodelith/core'
+import { CoreParser } from '@nodelith/core'
 import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
 
@@ -22,8 +23,14 @@ export class $Date<T extends CoreNullable.Date> implements CoreContract<T> {
 
   public readonly attributes: CoreContract.Attributes
 
-  protected constructor(attributes?: Partial<CoreContract.Attributes>) {
+  private constructor(attributes?: Partial<CoreContract.Attributes>) {
     this.attributes = $Date.resolveAttributes(attributes)
+  }
+
+  public get schema(): CoreSchema.Date {
+    return this.attributes.nullable
+      ? { type: ['string', 'null'] as const, format: 'iso8601' as const }
+      : { type: 'string' as const, format: 'iso8601' as const }
   }
 
   public optional(): $Date<CoreContract.Output<T, { optional: true }>> {

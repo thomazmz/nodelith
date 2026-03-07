@@ -1,6 +1,8 @@
-import { CoreIssue, CoreNullable } from '@nodelith/core'
-import { CoreContract } from '@nodelith/core'
+import { CoreIssue } from '@nodelith/core'
+import { CoreSchema } from '@nodelith/core'
 import { CoreParser } from '@nodelith/core'
+import { CoreNullable } from '@nodelith/core'
+import { CoreContract } from '@nodelith/core'
 
 export declare namespace $Struct {
   export type Shape = Record<string, CoreContract>
@@ -28,12 +30,27 @@ export class $Struct<T extends CoreNullable.Struct> implements CoreContract<T> {
 
   protected readonly shape: $Struct.Shape
 
-  protected constructor(shape: $Struct.Shape, attributes?: Partial<CoreContract.Attributes>) {
+  private constructor(shape: $Struct.Shape, attributes?: Partial<CoreContract.Attributes>) {
     this.attributes = $Struct.resolveAttributes(attributes)
 
     this.shape = Object.freeze(Object.entries(shape).reduce((acc, [key, contract]) => {
       return { ...acc, [key]: contract.clone() }
     }, {}))
+  }
+
+  public get schema(): CoreSchema.Object {
+    const properties = Object.fromEntries(Object.entries(this.shape).map(([key, contract]) => {
+      return [key, contract.schema]
+    })
+    )
+
+    const required = Object.entries(this.shape).flatMap(([key, contract]) =>
+      !contract.attributes.optional ? [key] : []
+    )
+    
+    return this.attributes.nullable
+      ? { type: ['object', 'null'] as const, properties, required }
+      : { type: 'object' as const, properties, required }
   }
 
   public optional(): $Struct<CoreContract.Output<T, { optional: true }>> {

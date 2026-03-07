@@ -1,6 +1,8 @@
-import { CoreIssue, CoreNullable } from '@nodelith/core'
-import { CoreContract } from '@nodelith/core'
+import { CoreIssue } from '@nodelith/core'
+import { CoreSchema } from '@nodelith/core'
 import { CoreParser } from '@nodelith/core'
+import { CoreNullable } from '@nodelith/core'
+import { CoreContract } from '@nodelith/core'
 
 export declare namespace $Array {
   export type Shape<TItem extends CoreNullable = CoreNullable> = CoreContract<TItem>
@@ -26,8 +28,14 @@ export class $Array<T extends CoreNullable.Array> implements CoreContract<T> {
 
   public readonly attributes: CoreContract.Attributes
 
-  protected constructor(private readonly shape: $Array.Shape, attributes?: Partial<CoreContract.Attributes>) {
+  private constructor(private readonly shape: $Array.Shape, attributes?: Partial<CoreContract.Attributes>) {
     this.attributes = $Array.resolveAttributes(attributes)
+  }
+
+  public get schema(): CoreSchema.Array {
+    return this.attributes.nullable
+      ? { type: ['array', 'null'] as const, items: this.shape.schema }
+      : { type: 'array' as const, items: this.shape.schema }
   }
 
   public optional(): $Array<CoreContract.Output<T, { optional: true }>> {

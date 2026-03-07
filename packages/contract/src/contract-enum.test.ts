@@ -1,6 +1,18 @@
 import { $Enum } from './contract-enum'
 
 describe('$Enum', () => {
+  describe('schema', () => {
+    test('produces a JSON schema', () => {
+      const contract = $Enum.create(['a', 'b'] as const, { optional: false, nullable: false })
+      expect(contract.schema).toEqual({ type: 'string', enum: ['a', 'b'] })
+    })
+
+    test('nullable=true includes null in type', () => {
+      const contract = $Enum.create(['a', 'b'] as const, { optional: false, nullable: true })
+      expect(contract.schema).toEqual({ type: ['string', 'null'], enum: ['a', 'b'] })
+    })
+  })
+
   describe('parse', () => {
     const contract = $Enum.create(['a', 'b'] as const, { optional: false, nullable: false })
 

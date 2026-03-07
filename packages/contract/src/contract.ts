@@ -2,7 +2,7 @@
 import { CoreContract } from '@nodelith/core'
 
 ////////////////////////////////////////////////
-// Boolean Contract 
+// Boolean Contract
 import { $Boolean } from './contract-boolean'
 function createBooleanContract(): $Boolean<boolean> {
   return $Boolean.create({
@@ -12,7 +12,7 @@ function createBooleanContract(): $Boolean<boolean> {
 }
 
 ////////////////////////////////////////////////
-// Number Contract 
+// Number Contract
 import { $Number } from './contract-number'
 function createNumberContract(): $Number<number> {
   return $Number.create({
@@ -22,7 +22,7 @@ function createNumberContract(): $Number<number> {
 }
 
 ////////////////////////////////////////////////
-// Bigint Contract 
+// Bigint Contract
 import { $Bigint } from './contract-bigint'
 function createBigintContract(): $Bigint<bigint> {
   return $Bigint.create({
@@ -32,7 +32,7 @@ function createBigintContract(): $Bigint<bigint> {
 }
 
 ////////////////////////////////////////////////
-// String Contract 
+// String Contract
 import { $String } from './contract-string'
 function createStringContract(): $String<string> {
   return $String.create({
@@ -42,7 +42,7 @@ function createStringContract(): $String<string> {
 }
 
 ////////////////////////////////////////////////
-// Struct Contract 
+// Struct Contract
 import { $Struct } from './contract-struct'
 function createObjectContract<S extends $Struct.Shape>(shape: S): $Struct<{
   readonly [K in keyof S]: S[K] extends CoreContract<infer T> ? T : never
@@ -71,7 +71,7 @@ export function createEnumContract<const S extends string[]>(...values: S): $Enu
 }
 
 ////////////////////////////////////////////////
-// Date Contract 
+// Date Contract
 import { $Date } from './contract-date'
 function createDateContract(): $Date<Date> {
   return $Date.create({
@@ -79,7 +79,6 @@ function createDateContract(): $Date<Date> {
     nullable: false,
   })
 }
-
 
 ////////////////////////////////////////////////
 // Contract Methods

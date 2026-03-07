@@ -1,6 +1,18 @@
 import { $String } from './contract-string'
 
 describe('$String', () => {
+  describe('schema', () => {
+    test('produces a JSON schema', () => {
+      const contract = $String.create({ optional: false, nullable: false })
+      expect(contract.schema).toEqual({ type: 'string' })
+    })
+
+    test('nullable=true includes null in type', () => {
+      const contract = $String.create({ optional: false, nullable: true })
+      expect(contract.schema).toEqual({ type: ['string', 'null'] })
+    })
+  })
+
   describe('parse', () => {
     const contract = $String.create({ optional: false, nullable: false })
 

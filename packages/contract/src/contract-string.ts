@@ -1,4 +1,5 @@
 import { CoreIssue } from '@nodelith/core'
+import { CoreSchema } from '@nodelith/core'
 import { CoreParser } from '@nodelith/core'
 import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
@@ -22,8 +23,14 @@ export class $String<T extends CoreNullable.String> implements CoreContract<T> {
 
   public readonly attributes: CoreContract.Attributes
 
-  protected constructor(attributes?: Partial<CoreContract.Attributes>) {
+  private constructor(attributes?: Partial<CoreContract.Attributes>) {
     this.attributes = $String.resolveAttributes(attributes)
+  }
+
+  public get schema(): CoreSchema.String {
+    return this.attributes.nullable
+      ? { type: ['string', 'null'] as const }
+      : { type: 'string' as const }
   }
 
   public optional(): $String<CoreContract.Output<T, { optional: true}>> {

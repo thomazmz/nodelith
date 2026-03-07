@@ -1,5 +1,6 @@
-import { CoreParser } from '@nodelith/core'
 import { CoreIssue } from '@nodelith/core'
+import { CoreSchema } from '@nodelith/core'
+import { CoreParser } from '@nodelith/core'
 import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
 
@@ -20,8 +21,14 @@ export class $Boolean<T extends CoreNullable.Boolean> implements CoreContract<T>
 
   public readonly attributes: CoreContract.Attributes
 
-  protected constructor(attributes?: Partial<CoreContract.Attributes>) {
+  private constructor(attributes?: Partial<CoreContract.Attributes>) {
     this.attributes = $Boolean.resolveAttributes(attributes)
+  }
+
+  public get schema(): CoreSchema.Boolean {
+    return this.attributes.nullable
+      ? { type: ['boolean', 'null'] as const }
+      : { type: 'boolean' as const }
   }
 
   public optional(): $Boolean<CoreContract.Output<T, { optional: true}>> {

@@ -1,6 +1,18 @@
 import { $Boolean } from './contract-boolean'
 
 describe('$Boolean', () => {
+  describe('schema', () => {
+    test('produces a JSON schema', () => {
+      const contract = $Boolean.create({ optional: false, nullable: false })
+      expect(contract.schema).toEqual({ type: 'boolean' })
+    })
+
+    test('nullable=true includes null in type', () => {
+      const contract = $Boolean.create({ optional: false, nullable: true })
+      expect(contract.schema).toEqual({ type: ['boolean', 'null'] })
+    })
+  })
+
   describe('parse', () => {
     const contract = $Boolean.create({ optional: false, nullable: false })
 
