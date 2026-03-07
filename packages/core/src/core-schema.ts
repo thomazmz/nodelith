@@ -37,7 +37,10 @@ export declare namespace CoreSchema {
   }
 
   export type Enum = CoreSchema.String & {
-    readonly enum: readonly string[]
+    readonly enum: (
+      | readonly string[]
+      | readonly [...string[], null]
+    )
   }
 
   export type Date = CoreSchema.String & {
