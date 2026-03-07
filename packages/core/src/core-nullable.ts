@@ -1,6 +1,8 @@
+type DateType = Date
+
 export type CoreNullable = (
   | CoreNullable.Primitive
-  | CoreNullable.Record
+  | CoreNullable.Struct
   | CoreNullable.Array
 )
 
@@ -29,12 +31,19 @@ export declare namespace CoreNullable {
     | null
   )
 
+  export type Date = (
+    | undefined
+    | DateType
+    | null
+  )
+
   export type Primitive = (
     | undefined
     | boolean
     | string
     | bigint
     | number
+    | Date
     | null
   )
   
