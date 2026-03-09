@@ -49,55 +49,55 @@ export class $Bigint<T extends CoreNullable.Bigint> implements CoreContract<T> {
     return $Bigint.create({ ...this.attributes, ...attributes }) as $Bigint<CoreContract.Output<T, P>>
   }
 
-  public coerce(input: unknown): CoreParser.Result<T> {
+  public coerce(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if (input === undefined || input === null) {
-      return this.parse(input)
+      return this.parse(input, options)
     }
 
     if (typeof input === 'bigint') {
-      return this.parse(input)
+      return this.parse(input, options)
     }
 
     if (typeof input === 'boolean' && input === true) {
-      return this.parse(1n)
+      return this.parse(1n, options)
     }
 
     if (typeof input === 'boolean' && input === false) {
-      return this.parse(0n)
+      return this.parse(0n, options)
     }
 
     if (typeof input === 'string' && input.trim() !== '') {
       try {
-        return this.parse(BigInt(input))
+        return this.parse(BigInt(input), options)
       } catch {
-        return this.parse(input)
+        return this.parse(input, options)
       }
     }
 
     if (typeof input === 'number' && Number.isFinite(input) && Number.isInteger(input)) {
-      return this.parse(BigInt(input))
+      return this.parse(BigInt(input), options)
     }
 
     if (typeof input === 'number') {
-      return { success: false, issues: [CoreIssue.create(`Could not coerce number into bigint.`)] }
+      return { success: false, issues: [{ message: `Could not coerce number into bigint.`, path: options?.path ?? '' }] }
     }
 
-    return this.parse(input)
+    return this.parse(input, options)
   }
 
-  public parse(input: unknown): CoreParser.Result<T> {
+  public parse(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if(input === undefined) return !this.attributes.optional
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into bigint type. Received "undefined" while expecting "bigint".`) ]}
+      ? { success: false, issues: [{ message: `Could not parse input into bigint type. Received "undefined" while expecting "bigint".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if(input === null) return !this.attributes.nullable
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into bigint type. Received "null" while expecting "bigint".`) ]}
+      ? { success: false, issues: [{ message: `Could not parse input into bigint type. Received "null" while expecting "bigint".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if(typeof input === 'bigint') {
       return { success: true, value: input as T }
     }
 
-    return { success: false, issues: [ CoreIssue.create(`Could not parse input into bigint type. Received ${typeof input} while expecting "bigint".`) ] }
+    return { success: false, issues: [{ message: `Could not parse input into bigint type. Received ${typeof input} while expecting "bigint".`, path: options?.path ?? '' }] }
   }
 }

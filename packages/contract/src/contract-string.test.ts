@@ -16,6 +16,15 @@ describe('$String', () => {
   describe('parse', () => {
     const contract = $String.create({ optional: false, nullable: false })
 
+    test('path option sets issue path', () => {
+      const result = contract.parse(0, { path: 'name' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('name')
+      }
+    })
+
     test('accepts a string', () => {
       const result = contract.parse('hello')
       expect(result.success).toBe(true)
@@ -109,6 +118,15 @@ describe('$String', () => {
 
   describe('coerce', () => {
     const contract = $String.create({ optional: false, nullable: false })
+
+    test('path option sets issue path', () => {
+      const result = contract.coerce(NaN, { path: 'name' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('name')
+      }
+    })
 
     test('coerces finite numbers to string', () => {
       const result = contract.coerce(123.5)

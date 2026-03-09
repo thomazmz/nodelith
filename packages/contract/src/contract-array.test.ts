@@ -27,6 +27,24 @@ describe('$Array', () => {
     const item = $Number.create({ optional: false, nullable: false })
     const contract = $Array.create(item, { optional: false, nullable: false })
 
+    test('path option prefixes item issue paths', () => {
+      const r = contract.parse(['123'], { path: 'items' })
+      expect(r.success).toBe(false)
+      if (!r.success) {
+        expect(r.issues.length).toBeGreaterThan(0)
+        expect(r.issues[0]?.path).toBe('items[0]')
+      }
+    })
+
+    test('path option is used for array-level issues', () => {
+      const r = contract.parse('nope' as any, { path: 'items' })
+      expect(r.success).toBe(false)
+      if (!r.success) {
+        expect(r.issues.length).toBeGreaterThan(0)
+        expect(r.issues[0]?.path).toBe('items')
+      }
+    })
+
     test('accepts arrays when all items pass', () => {
       const a = contract.parse([123.5, 0, -10])
       expect(a.success).toBe(true)
@@ -42,8 +60,7 @@ describe('$Array', () => {
       expect(r.success).toBe(false)
       if (!r.success) {
         expect(r.issues.length).toBeGreaterThan(0)
-        const msg = String((r.issues[0] as any)?.message ?? r.issues[0])
-        expect(msg).toContain('[0]:')
+        expect(r.issues[0]?.path).toBe('[0]')
       }
     })
 
@@ -125,8 +142,7 @@ describe('$Array', () => {
       const r = contract.parse([1, 'x', 3])
       expect(r.success).toBe(false)
       if (!r.success) {
-        const messages = r.issues.map((i) => String((i as any)?.message ?? i))
-        expect(messages.some((m) => m.includes('[1]:'))).toBe(true)
+        expect(r.issues.some((i) => i.path === '[1]')).toBe(true)
       }
     })
 
@@ -140,6 +156,24 @@ describe('$Array', () => {
   describe('coerce', () => {
     const item = $Number.create({ optional: false, nullable: false })
     const contract = $Array.create(item, { optional: false, nullable: false })
+
+    test('path option prefixes item issue paths', () => {
+      const r = contract.coerce(['abc'], { path: 'items' })
+      expect(r.success).toBe(false)
+      if (!r.success) {
+        expect(r.issues.length).toBeGreaterThan(0)
+        expect(r.issues[0]?.path).toBe('items[0]')
+      }
+    })
+
+    test('path option is used for array-level issues', () => {
+      const r = contract.coerce('nope' as any, { path: 'items' })
+      expect(r.success).toBe(false)
+      if (!r.success) {
+        expect(r.issues.length).toBeGreaterThan(0)
+        expect(r.issues[0]?.path).toBe('items')
+      }
+    })
 
     test('coerces items using nested coerce', () => {
       const r = contract.coerce(['123', '  123.50  ', '-10'])
@@ -189,8 +223,7 @@ describe('$Array', () => {
       const r = contract.coerce([1, 'abc', 3])
       expect(r.success).toBe(false)
       if (!r.success) {
-        const messages = r.issues.map((i) => String((i as any)?.message ?? i))
-        expect(messages.some((m) => m.includes('[1]:'))).toBe(true)
+        expect(r.issues.some((i) => i.path === '[1]')).toBe(true)
       }
     })
 

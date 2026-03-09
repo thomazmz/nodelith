@@ -16,6 +16,15 @@ describe('$Boolean', () => {
   describe('parse', () => {
     const contract = $Boolean.create({ optional: false, nullable: false })
 
+    test('path option sets issue path', () => {
+      const result = contract.parse(1 as any, { path: 'active' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('active')
+      }
+    })
+
     test('accepts true/false', () => {
       const a = contract.parse(true)
       expect(a.success).toBe(true)
@@ -111,6 +120,15 @@ describe('$Boolean', () => {
 
   describe('coerce', () => {
     const contract = $Boolean.create({ optional: false, nullable: false })
+
+    test('path option sets issue path', () => {
+      const result = contract.coerce('yes' as any, { path: 'active' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('active')
+      }
+    })
 
     test('passes through booleans unchanged', () => {
       const a = contract.coerce(true)

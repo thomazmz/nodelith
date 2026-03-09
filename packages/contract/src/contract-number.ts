@@ -51,59 +51,59 @@ export class $Number<T extends CoreNullable.Number> implements CoreContract<T> {
     return $Number.create({ ...this.attributes, ...attributes }) as $Number<CoreContract.Output<T, P>>
   }
 
-  public coerce(input: unknown): CoreParser.Result<T> {
+  public coerce(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if (input === undefined || input === null) {
-      return this.parse(input)
+      return this.parse(input, options)
     }
 
     if (typeof input === 'number' && !Number.isNaN(input)) {
-      return this.parse(input)
+      return this.parse(input, options)
     }
 
     if (typeof input === 'boolean' && input === true) {
-      return this.parse(1)
+      return this.parse(1, options)
     }
 
     if (typeof input === 'boolean' && input === false) {
-      return this.parse(0)
+      return this.parse(0, options)
     }
 
     if (typeof input === 'string' && input.trim() !== '' && !Number.isNaN(Number(input))) {
-      return this.parse(Number(input))
+      return this.parse(Number(input), options)
     }
 
     if (typeof input === 'bigint' && input <= BigInt(Number.MAX_SAFE_INTEGER) && input >= BigInt(Number.MIN_SAFE_INTEGER)) {
-      return this.parse(Number(input))
+      return this.parse(Number(input), options)
     }
 
     if (typeof input === 'number') {
-      return { success: false, issues: [CoreIssue.create(`Could not coerce NaN into number.`)] }
+      return { success: false, issues: [{ message: `Could not coerce NaN into number.`, path: options?.path ?? '' }] }
     }
 
     if (typeof input === 'string') {
-      return { success: false, issues: [CoreIssue.create(`Could not coerce string into number.`)] }
+      return { success: false, issues: [{ message: `Could not coerce string into number.`, path: options?.path ?? '' }] }
     }
 
     if (typeof input === 'bigint') {
-      return { success: false, issues: [CoreIssue.create(`Could not coerce bigint into number. Value out of safe integer range.`)] }
+      return { success: false, issues: [{ message: `Could not coerce bigint into number. Value out of safe integer range.`, path: options?.path ?? '' }] }
     }
 
-    return this.parse(input)
+    return this.parse(input, options)
   }
 
-  public parse(input: unknown): CoreParser.Result<T> {
+  public parse(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if(input === undefined) return !this.attributes.optional 
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into number type. Received "undefined" while expecting "number".`) ]}
+      ? { success: false, issues: [{ message: `Could not parse input into number type. Received "undefined" while expecting "number".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if(input === null) return !this.attributes.nullable 
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into number type. Received "null" while expecting "number".`) ]}
+      ? { success: false, issues: [{ message: `Could not parse input into number type. Received "null" while expecting "number".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if(typeof input === 'number' && !Number.isNaN(input)) {
       return { success: true, value: input as T }
     }
 
-    return { success: false, issues: [ CoreIssue.create(`Could not parse input into number type. Received ${typeof input} while expecting "number".`) ] }
+    return { success: false, issues: [{ message: `Could not parse input into number type. Received ${typeof input} while expecting "number".`, path: options?.path ?? '' }] }
   }
 }

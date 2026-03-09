@@ -17,6 +17,15 @@ describe('$Date', () => {
   describe('parse', () => {
     const contract = $Date.create({ optional: false, nullable: false })
 
+    test('path option sets issue path', () => {
+      const result = contract.parse('2020-01-01' as any, { path: 'birthday' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('birthday')
+      }
+    })
+
     test('accepts valid Date instance', () => {
       const date = new Date()
       const result = contract.parse(date)
@@ -114,6 +123,15 @@ describe('$Date', () => {
 
   describe('coerce', () => {
     const contract = $Date.create({ optional: false, nullable: false })
+
+    test('path option sets issue path', () => {
+      const result = contract.coerce('not-a-date', { path: 'birthday' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('birthday')
+      }
+    })
 
     test('passes through valid Date unchanged', () => {
       const date = new Date()

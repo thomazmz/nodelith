@@ -1,6 +1,10 @@
 import { CoreIssue } from './core-issue'
 
 export declare namespace CoreParser {
+  export type Options = {
+    readonly path?: string
+  }
+
   export type Success<T> = {
     readonly success: true
     readonly value: T
@@ -18,6 +22,6 @@ export declare namespace CoreParser {
 }
 
 export interface CoreParser<T = any> {
-  parse(input: unknown): CoreParser.Result<T>
-  coerce(input: unknown): CoreParser.Result<T>
+  parse(input: unknown, options?: CoreParser.Options): CoreParser.Result<T>
+  coerce(input: unknown, options?: CoreParser.Options): CoreParser.Result<T>
 }

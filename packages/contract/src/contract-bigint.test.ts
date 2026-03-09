@@ -16,6 +16,15 @@ describe('$Bigint', () => {
   describe('parse', () => {
     const contract = $Bigint.create({ optional: false, nullable: false })
 
+    test('path option sets issue path', () => {
+      const result = contract.parse(1 as any, { path: 'count' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('count')
+      }
+    })
+
     test('accepts a bigint', () => {
       const a = contract.parse(0n)
       expect(a.success).toBe(true)
@@ -107,6 +116,15 @@ describe('$Bigint', () => {
 
   describe('coerce', () => {
     const contract = $Bigint.create({ optional: false, nullable: false })
+
+    test('path option sets issue path', () => {
+      const result = contract.coerce(1.5, { path: 'count' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('count')
+      }
+    })
 
     test('passes through bigint unchanged', () => {
       const a = contract.coerce(99n)

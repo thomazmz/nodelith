@@ -71,27 +71,42 @@ export class $Struct<T extends CoreNullable.Struct> implements CoreContract<T> {
     return $Struct.create(this.shape, { ...this.attributes, ...options }) as $Struct<CoreContract.Output<T, P>>
   }
 
-  public coerce(input: unknown): CoreParser.Result<T> {
+  public coerce(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if (input === undefined) return !this.attributes.optional
-      ? { success: false, issues: [CoreIssue.create(`Could not coerce input into struct type. Received "undefined" while expecting "object".`)] }
+      ? { success: false, issues: [{
+        message: `Could not coerce input into struct type. Received "undefined" while expecting "object".`,
+        path: options?.path ?? '',
+      }]}
       : { success: true, value: input as T }
 
     if (input === null) return !this.attributes.nullable
-      ? { success: false, issues: [CoreIssue.create(`Could not coerce input into struct type. Received "null" while expecting "object".`)] }
+      ? { success: false, issues: [{
+        message: `Could not coerce input into struct type. Received "null" while expecting "object".`,
+        path: options?.path ?? '',
+      }]}
       : { success: true, value: input as T }
 
     if (Array.isArray(input)) {
-      return { success: false, issues: [CoreIssue.create(`Could not coerce input into struct type. Received "array" while expecting "object".`)] }
+      return { success: false, issues: [{
+        message: `Could not coerce input into struct type. Received "array" while expecting "object".`,
+        path: options?.path ?? '',
+      }]}
     }
 
     if (typeof input !== 'object') {
-      return { success: false, issues: [CoreIssue.create(`Could not coerce input into struct type. Received ${typeof input} while expecting "object".`)] }
+      return { success: false, issues: [{
+        message: `Could not coerce input into struct type. Received ${typeof input} while expecting "object".`,
+        path: options?.path ?? '',
+      }]}
     }
 
     const proto = Object.getPrototypeOf(input)
 
     if (proto !== Object.prototype && proto !== null) {
-      return { success: false, issues: [CoreIssue.create(`Could not coerce input into struct type. Received ${typeof input} while expecting "object".`)] }
+      return { success: false, issues: [{
+        message: `Could not coerce input into struct type. Received ${typeof input} while expecting "object".`,
+        path: options?.path ?? '',
+      }]}
     }
 
     const issues: CoreIssue[] = []
@@ -101,10 +116,12 @@ export class $Struct<T extends CoreNullable.Struct> implements CoreContract<T> {
       const nestedContract = this.shape[key]
       const nestedInput = (input as Record<string, unknown>)[key]
 
-      const nestedResult = nestedContract.coerce(nestedInput)
+      const basePath = options?.path ?? ''
+      const nestedPath = basePath ? `${basePath}.${key}` : key
+      const nestedResult = nestedContract.coerce(nestedInput, { path: nestedPath })
 
       if (!nestedResult.success) {
-        issues.push(...this.prefixIssues(key, nestedResult.issues))
+        issues.push(...nestedResult.issues)
       } else {
         result[key] = nestedResult.value
       }
@@ -115,27 +132,41 @@ export class $Struct<T extends CoreNullable.Struct> implements CoreContract<T> {
     return { success: true, value: result as T }
   }
 
-  public parse(input: unknown): CoreParser.Result<T> {
+  public parse(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if (input === undefined) return !this.attributes.optional
-      ? { success: false, issues: [CoreIssue.create(`Could not parse input into struct type. Received "undefined" while expecting "object".`)] }
+      ? { success: false, issues: [{
+        message: `Could not parse input into struct type. Received "undefined" while expecting "object".`,
+        path: options?.path ?? '',
+      }]}
       : { success: true, value: input as T }
 
     if (input === null) return !this.attributes.nullable
-      ? { success: false, issues: [CoreIssue.create(`Could not parse input into struct type. Received "null" while expecting "object".`)] }
+      ? { success: false, issues: [{
+        message: `Could not parse input into struct type. Received "null" while expecting "object".`,
+        path: options?.path ?? '',
+      }]}
       : { success: true, value: input as T }
 
     if (Array.isArray(input)) {
-      return { success: false, issues: [CoreIssue.create(`Could not parse input into struct type. Received "array" while expecting "object".`)] }
+      return { success: false, issues: [{
+        message: `Could not parse input into struct type. Received "array" while expecting "object".`,
+        path: options?.path ?? '',
+      }]}
     }
 
     if (typeof input !== 'object') {
-      return { success: false, issues: [CoreIssue.create(`Could not parse input into struct type. Received ${typeof input} while expecting "object".`)] }
+      return { success: false, issues: [{
+        message: `Could not parse input into struct type. Received ${typeof input} while expecting "object".`,
+        path: options?.path ?? '',
+      }]}
     }
 
-    const proto = Object.getPrototypeOf(input)
-
-    if (proto !== Object.prototype && proto !== null) {
-      return { success: false, issues: [CoreIssue.create(`Could not parse input into struct type. Received ${typeof input} while expecting "object".`)] }
+    const prototype = Object.getPrototypeOf(input)
+    if (prototype !== Object.prototype && prototype !== null) {
+      return { success: false, issues: [{
+        message: `Could not parse input into struct type. Received ${typeof input} while expecting "object".`,
+        path: options?.path ?? '',
+      }]}
     }
 
     const issues: CoreIssue[] = []
@@ -145,10 +176,12 @@ export class $Struct<T extends CoreNullable.Struct> implements CoreContract<T> {
       const nestedContract = this.shape[key]
       const nestedInput = (input as Record<string, unknown>)[key]
 
-      const nestedResult = nestedContract.parse(nestedInput)
+      const basePath = options?.path ?? ''
+      const nestedPath = basePath ? `${basePath}.${key}` : key
+      const nestedResult = nestedContract.parse(nestedInput, { path: nestedPath })
 
       if (!nestedResult.success) {
-        issues.push(...this.prefixIssues(key, nestedResult.issues))
+        issues.push(...nestedResult.issues)
       } else {
         result[key] = nestedResult.value
       }
@@ -159,10 +192,4 @@ export class $Struct<T extends CoreNullable.Struct> implements CoreContract<T> {
     return { success: true, value: result as T }
   }
 
-  private prefixIssues(path: string, issues: CoreIssue[]): CoreIssue[] {
-    return issues.map((issue) => {
-      const message = (issue as any)?.message ?? String(issue)
-      return CoreIssue.create(`${path}: ${message}`)
-    })
-  }
 }

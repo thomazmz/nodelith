@@ -16,6 +16,15 @@ describe('$Number', () => {
   describe('parse', () => {
     const contract = $Number.create({ optional: false, nullable: false })
 
+    test('path option sets issue path', () => {
+      const result = contract.parse('123', { path: 'age' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('age')
+      }
+    })
+
     test('accepts finite numbers', () => {
       const a = contract.parse(123.5)
       expect(a.success).toBe(true)
@@ -127,6 +136,15 @@ describe('$Number', () => {
 
   describe('coerce', () => {
     const contract = $Number.create({ optional: false, nullable: false })
+
+    test('path option sets issue path', () => {
+      const result = contract.coerce('abc', { path: 'age' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('age')
+      }
+    })
 
     test('passes through numbers unchanged (including Infinity/-Infinity)', () => {
       const a = contract.coerce(42)

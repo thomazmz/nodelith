@@ -51,41 +51,41 @@ export class $Date<T extends CoreNullable.Date> implements CoreContract<T> {
     return $Date.create({ ...this.attributes, ...attributes }) as $Date<CoreContract.Output<T, P>>
   }
 
-  public coerce(input: unknown): CoreParser.Result<T> {
+  public coerce(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if (input === undefined || input === null) {
-      return this.parse(input)
+      return this.parse(input, options)
     }
 
     if (input instanceof Date) {
-      return this.parse(input)
+      return this.parse(input, options)
     }
 
     if (typeof input === 'string' && input.trim() !== '') {
       const date = new Date(input)
       if (!Number.isNaN(date.getTime())) {
-        return this.parse(date)
+        return this.parse(date, options)
       }
-      return this.parse(input)
+      return this.parse(input, options)
     }
 
     if (typeof input === 'number' && Number.isFinite(input)) {
       const date = new Date(input)
       if (!Number.isNaN(date.getTime())) {
-        return this.parse(date)
+        return this.parse(date, options)
       }
-      return this.parse(input)
+      return this.parse(input, options)
     }
 
-    return this.parse(input)
+    return this.parse(input, options)
   }
 
-  public parse(input: unknown): CoreParser.Result<T> {
+  public parse(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if (input === undefined) return !this.attributes.optional
-      ? { success: false, issues: [CoreIssue.create(`Could not parse input into date type. Received "undefined" while expecting "Date".`)] }
+      ? { success: false, issues: [{ message: `Could not parse input into date type. Received "undefined" while expecting "Date".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if (input === null) return !this.attributes.nullable
-      ? { success: false, issues: [CoreIssue.create(`Could not parse input into date type. Received "null" while expecting "Date".`)] }
+      ? { success: false, issues: [{ message: `Could not parse input into date type. Received "null" while expecting "Date".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if (input instanceof Date && !Number.isNaN(input.getTime())) {
@@ -95,9 +95,10 @@ export class $Date<T extends CoreNullable.Date> implements CoreContract<T> {
     return {
       success: false,
       issues: [
-        CoreIssue.create(
-          `Could not parse input into date type. Received ${typeof input} while expecting "Date".`
-        )
+        {
+          message: `Could not parse input into date type. Received ${typeof input} while expecting "Date".`,
+          path: options?.path ?? '',
+        }
       ]
     }
   }

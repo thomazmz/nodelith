@@ -46,6 +46,24 @@ describe('$Struct', () => {
       { optional: false, nullable: false }
     )
 
+    test('path option prefixes nested issue paths', () => {
+      const result = contract.parse({ name: 123, age: '33' }, { path: 'user' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.some((i) => i.path === 'user.name')).toBe(true)
+        expect(result.issues.some((i) => i.path === 'user.age')).toBe(true)
+      }
+    })
+
+    test('path option is used for struct-level issues', () => {
+      const result = contract.parse([], { path: 'user' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('user')
+      }
+    })
+
     test('accepts a plain object and strips unknown keys', () => {
       const result = contract.parse({ name: 'Ada', age: 33, extra: 'nope' })
       expect(result.success).toBe(true)
@@ -126,8 +144,7 @@ describe('$Struct', () => {
       const result = contract.parse({ name: 'Ada', age: '33' })
       expect(result.success).toBe(false)
       if (!result.success) {
-        const msgs = result.issues.map(i => (i)?.message ?? String(i))
-        expect(msgs.some(m => m.includes('age:'))).toBe(true)
+        expect(result.issues.some((i) => i.path === 'age')).toBe(true)
       }
     })
 
@@ -153,9 +170,8 @@ describe('$Struct', () => {
       const result = contract.parse({ name: 123, age: '33' })
       expect(result.success).toBe(false)
       if (!result.success) {
-        const msgs = result.issues.map(i => (i)?.message ?? String(i))
-        expect(msgs.some(m => m.includes('name:'))).toBe(true)
-        expect(msgs.some(m => m.includes('age:'))).toBe(true)
+        expect(result.issues.some((i) => i.path === 'name')).toBe(true)
+        expect(result.issues.some((i) => i.path === 'age')).toBe(true)
       }
     })
   })
@@ -168,6 +184,23 @@ describe('$Struct', () => {
       },
       { optional: false, nullable: false }
     )
+
+    test('path option prefixes nested issue paths', () => {
+      const result = contract.coerce({ name: 'Ada', age: 'nope' }, { path: 'user' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.some((i) => i.path === 'user.age')).toBe(true)
+      }
+    })
+
+    test('path option is used for struct-level issues', () => {
+      const result = contract.coerce([], { path: 'user' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('user')
+      }
+    })
 
     test('uses nested coercion for fields', () => {
       const result = contract.coerce({ name: 'Ada', age: '33' })
@@ -208,8 +241,7 @@ describe('$Struct', () => {
       const result = contract.coerce({ name: 'Ada', age: 'nope' })
       expect(result.success).toBe(false)
       if (!result.success) {
-        const msgs = result.issues.map(i => (i)?.message ?? String(i))
-        expect(msgs.some(m => m.includes('age:'))).toBe(true)
+        expect(result.issues.some((i) => i.path === 'age')).toBe(true)
       }
     })
   })

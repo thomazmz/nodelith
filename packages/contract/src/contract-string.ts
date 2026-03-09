@@ -51,51 +51,51 @@ export class $String<T extends CoreNullable.String> implements CoreContract<T> {
     return $String.create({ ...this.attributes, ...attributes }) as $String<CoreContract.Output<T, P>>
   }
 
-  public coerce(input: unknown): CoreParser.Result<T> {
+  public coerce(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if (input === undefined || input === null) {
-      return this.parse(input)
+      return this.parse(input, options)
     }
 
     if (typeof input === 'string') {
-      return this.parse(input)
+      return this.parse(input, options)
     }
 
     if (input instanceof String) {
-      return this.parse(input.valueOf())
+      return this.parse(input.valueOf(), options)
     }
 
     if(typeof input === 'boolean') {
-      return this.parse(String(input))
+      return this.parse(String(input), options)
     }
 
     if (typeof input === 'bigint') {
-      return this.parse(String(input))
+      return this.parse(String(input), options)
     }
 
     if (typeof input === 'number' && Number.isFinite(input)) {
-      return this.parse(String(input)) 
+      return this.parse(String(input), options) 
     }
 
     if (typeof input === 'number') { 
-      return { success: false, issues: [CoreIssue.create(`Could not coerce non-finite number into string.`)] }
+      return { success: false, issues: [{ message: `Could not coerce non-finite number into string.`, path: options?.path ?? '' }] }
     }  
 
-    return this.parse(input)
+    return this.parse(input, options)
   }
 
-  public parse(input: unknown): CoreParser.Result<T> {
+  public parse(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if(input === undefined) return !this.attributes.optional 
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into string type. Received "undefined" while expecting "string".`) ]}
+      ? { success: false, issues: [{ message: `Could not parse input into string type. Received "undefined" while expecting "string".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if(input === null) return !this.attributes.nullable 
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into string type. Received "null" while expecting "string".`) ]}
+      ? { success: false, issues: [{ message: `Could not parse input into string type. Received "null" while expecting "string".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if(typeof input === 'string') {
       return { success: true, value: input as T }
     }
 
-    return { success: false, issues: [ CoreIssue.create(`Could not parse input into string type. Received ${typeof input} while expecting "string".`) ] }
+    return { success: false, issues: [{ message: `Could not parse input into string type. Received ${typeof input} while expecting "string".`, path: options?.path ?? '' }] }
   }
 }

@@ -56,17 +56,17 @@ export class $Array<T extends CoreNullable.Array> implements CoreContract<T> {
     return $Array.create(this.shape, { ...this.attributes, ...attributes }) as $Array<CoreContract.Output<T, P>>
   }
 
-  public coerce(input: unknown): CoreParser.Result<T> {
+  public coerce(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if (input === undefined) return !this.attributes.optional
-      ? { success: false, issues: [CoreIssue.create(`Could not coerce input into array type. Received "undefined" while expecting "array".`)] }
+      ? { success: false, issues: [{ message: `Could not coerce input into array type. Received "undefined" while expecting "array".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if (input === null) return !this.attributes.nullable
-      ? { success: false, issues: [CoreIssue.create(`Could not coerce input into array type. Received "null" while expecting "array".`)] }
+      ? { success: false, issues: [{ message: `Could not coerce input into array type. Received "null" while expecting "array".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if (!Array.isArray(input)) {
-      return { success: false, issues: [CoreIssue.create(`Could not coerce input into array type. Received ${typeof input} while expecting "array".`)] }
+      return { success: false, issues: [{ message: `Could not coerce input into array type. Received ${typeof input} while expecting "array".`, path: options?.path ?? '' }] }
     }
 
     const issues: CoreIssue[] = []
@@ -74,10 +74,12 @@ export class $Array<T extends CoreNullable.Array> implements CoreContract<T> {
 
     for (let i = 0; i < input.length; i++) {
       const nestedInput = input[i]
-      const nestedResult = this.shape.coerce(nestedInput)
+      const basePath = options?.path ?? ''
+      const nestedPath = basePath ? `${basePath}[${i}]` : `[${i}]`
+      const nestedResult = this.shape.coerce(nestedInput, { path: nestedPath })
 
       if (!nestedResult.success) {
-        issues.push(...this.prefixIssues(i, nestedResult.issues))
+        issues.push(...nestedResult.issues)
       } else {
         result[i] = nestedResult.value
       }
@@ -88,28 +90,31 @@ export class $Array<T extends CoreNullable.Array> implements CoreContract<T> {
     return { success: true, value: result as T }
   }
 
-  public parse(input: unknown): CoreParser.Result<T> {
+  public parse(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if (input === undefined) return !this.attributes.optional
-      ? { success: false, issues: [CoreIssue.create(`Could not parse input into array type. Received "undefined" while expecting "array".`)] }
+      ? { success: false, issues: [{ message: `Could not parse input into array type. Received "undefined" while expecting "array".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if (input === null) return !this.attributes.nullable
-      ? { success: false, issues: [CoreIssue.create(`Could not parse input into array type. Received "null" while expecting "array".`)] }
+      ? { success: false, issues: [{ message: `Could not parse input into array type. Received "null" while expecting "array".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if (!Array.isArray(input)) {
-      return { success: false, issues: [CoreIssue.create(`Could not parse input into array type. Received ${typeof input} while expecting "array".`)] }
+      return { success: false, issues: [{ message: `Could not parse input into array type. Received ${typeof input} while expecting "array".`, path: options?.path ?? '' }] }
     }
 
     const issues: CoreIssue[] = []
     const result: unknown[] = []
 
+    const basePath = options?.path ?? ''
+
     for (let i = 0; i < input.length; i++) {
       const nestedInput = input[i]
-      const nestedResult = this.shape.parse(nestedInput)
+      const nestedPath = basePath ? `${basePath}[${i}]` : `[${i}]`
+      const nestedResult = this.shape.parse(nestedInput, { path: nestedPath })
 
       if (!nestedResult.success) {
-        issues.push(...this.prefixIssues(i, nestedResult.issues))
+        issues.push(...nestedResult.issues)
       } else {
         result[i] = nestedResult.value
       }
@@ -120,10 +125,4 @@ export class $Array<T extends CoreNullable.Array> implements CoreContract<T> {
     return { success: true, value: result as T }
   }
 
-  private prefixIssues(index: number, issues: CoreIssue[]): CoreIssue[] {
-    return issues.map((issue) => {
-      const message = (issue as any)?.message ?? String(issue)
-      return CoreIssue.create(`[${index}]: ${message}`)
-    })
-  }
 }

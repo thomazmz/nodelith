@@ -9,12 +9,21 @@ describe('$Enum', () => {
 
     test('nullable=true includes null in type', () => {
       const contract = $Enum.create(['a', 'b'] as const, { optional: false, nullable: true })
-      expect(contract.schema).toEqual({ type: ['string', 'null'], enum: ['a', 'b'] })
+      expect(contract.schema).toEqual({ type: ['string', 'null'], enum: ['a', 'b', null] })
     })
   })
 
   describe('parse', () => {
     const contract = $Enum.create(['a', 'b'] as const, { optional: false, nullable: false })
+
+    test('path option sets issue path', () => {
+      const result = contract.parse(1 as any, { path: 'status' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('status')
+      }
+    })
 
     test('accepts allowed strings', () => {
       const a = contract.parse('a')
@@ -117,6 +126,15 @@ describe('$Enum', () => {
 
   describe('coerce', () => {
     const contract = $Enum.create(['a', 'b'] as const, { optional: false, nullable: false })
+
+    test('path option sets issue path', () => {
+      const result = contract.coerce(1 as any, { path: 'status' })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.issues.length).toBeGreaterThan(0)
+        expect(result.issues[0]?.path).toBe('status')
+      }
+    })
 
     test('passes through allowed strings unchanged', () => {
       const a = contract.coerce('a')

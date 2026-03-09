@@ -49,63 +49,63 @@ export class $Boolean<T extends CoreNullable.Boolean> implements CoreContract<T>
     return $Boolean.create({ ...this.attributes, ...attributes }) as $Boolean<CoreContract.Output<T, P>>
   }
 
-  public coerce(input: unknown): CoreParser.Result<T> {
+  public coerce(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if (input === undefined || input === null) {
-      return this.parse(input)
+      return this.parse(input, options)
     }
 
     if (typeof input === 'boolean') {
-      return this.parse(input)
+      return this.parse(input, options)
     }
 
     if (typeof input === 'string' && input === 'true') {
-      return this.parse(true)
+      return this.parse(true, options)
     }
 
     if (typeof input === 'string' && input === 'false') {
-      return this.parse(false)
+      return this.parse(false, options)
     }
 
     if (typeof input === 'string' && input === '1') {
-      return this.parse(true)
+      return this.parse(true, options)
     }
 
     if (typeof input === 'string' && input === '0') {
-      return this.parse(false)
+      return this.parse(false, options)
     }
 
     if (typeof input === 'number' && input === 1) {
-      return this.parse(true)
+      return this.parse(true, options)
     }
 
     if (typeof input === 'number' && input === 0) {
-      return this.parse(false)
+      return this.parse(false, options)
     }
 
     if (typeof input === 'bigint' && input === 1n) {
-      return this.parse(true)
+      return this.parse(true, options)
     }
 
     if (typeof input === 'bigint' && input === 0n) {
-      return this.parse(false)
+      return this.parse(false, options)
     }
 
-    return this.parse(input)
+    return this.parse(input, options)
   }
 
-  public parse(input: unknown): CoreParser.Result<T> {
+  public parse(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if(input === undefined) return !this.attributes.optional 
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into boolean type. Received "undefined" while expecting "boolean".`) ]}
+      ? { success: false, issues: [{ message: `Could not parse input into boolean type. Received "undefined" while expecting "boolean".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if(input === null) return !this.attributes.nullable 
-      ? { success: false, issues: [ CoreIssue.create(`Could not parse input into boolean type. Received "null" while expecting "boolean".`) ]}
+      ? { success: false, issues: [{ message: `Could not parse input into boolean type. Received "null" while expecting "boolean".`, path: options?.path ?? '' }] }
       : { success: true, value: input as T }
 
     if(typeof input === 'boolean') {
       return { success: true, value: input as T }
     }
 
-    return { success: false, issues: [ CoreIssue.create(`Could not parse input into boolean type. Received ${typeof input} while expecting "boolean".`) ] }
+    return { success: false, issues: [{ message: `Could not parse input into boolean type. Received ${typeof input} while expecting "boolean".`, path: options?.path ?? '' }] }
   }
 }

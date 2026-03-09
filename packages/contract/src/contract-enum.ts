@@ -55,29 +55,29 @@ export class $Enum<T extends CoreNullable.String = CoreNullable.String, V extend
     return $Enum.create(this.values, { ...this.attributes, ...attributes }) as $Enum<CoreContract.Output<T, P>, V>
   }
 
-  public coerce(input: unknown): CoreParser.Result<T> {
-    return this.parse(input) // enums do not coerce
+  public coerce(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
+    return this.parse(input, options) // enums do not coerce
   }
 
-  public parse(input: unknown): CoreParser.Result<T> {
+  public parse(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {
     if (input === undefined) {
       return !this.attributes.optional
-        ? { success: false, issues: [CoreIssue.create(`Could not parse input into enum type. Received "undefined" while expecting "string".`)] }
+        ? { success: false, issues: [{ message: `Could not parse input into enum type. Received "undefined" while expecting "string".`, path: options?.path ?? '' }] }
         : { success: true, value: input as T }
     }
 
     if (input === null) {
       return !this.attributes.nullable
-        ? { success: false, issues: [CoreIssue.create(`Could not parse input into enum type. Received "null" while expecting "string".`)] }
+        ? { success: false, issues: [{ message: `Could not parse input into enum type. Received "null" while expecting "string".`, path: options?.path ?? '' }] }
         : { success: true, value: input as T }
     }
 
     if (typeof input !== 'string') {
-      return { success: false, issues: [CoreIssue.create(`Could not parse input into enum type. Received ${typeof input} while expecting "string".`)]}
+      return { success: false, issues: [{ message: `Could not parse input into enum type. Received ${typeof input} while expecting "string".`, path: options?.path ?? '' }]}
     }
 
     if (!this.values.includes(input)) {
-      return { success: false, issues: [CoreIssue.create(`Could not parse input into enum type. Unexpected value.`)] }
+      return { success: false, issues: [{ message: `Could not parse input into enum type. Unexpected value.`, path: options?.path ?? '' }] }
     }
 
     return { success: true, value: input as T }
