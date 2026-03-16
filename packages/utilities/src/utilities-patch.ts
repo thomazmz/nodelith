@@ -34,8 +34,10 @@ export function merge<T>(current: Patch<T> | undefined, patch: Patch<T> | undefi
   const result: Record<PropertyKey, unknown> = { ...base }
 
   for (const [key, value] of Object.entries(patch)) {
-    const existing = (base as any)[key]
-    ;(result as any)[key] = merge(existing, value as any)
+    const baseRecord = base as Record<string, unknown>
+    const resultRecord = result as Record<string, unknown>
+    const existing = baseRecord[key] as unknown
+    resultRecord[key] = merge(existing as any, value as any)
   }
 
   return result as Patch<T>
