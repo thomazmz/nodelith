@@ -22,4 +22,4 @@ export const HttpMethod = Object.freeze({
   Delete: 'delete',
   Connect: 'connect',
   Options: 'options',
-})
+} as const)

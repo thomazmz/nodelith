@@ -2,14 +2,12 @@ import { HttpResponse } from './http-response'
 import { HttpMessage } from './http-message'
 import { HttpStatus } from './http-status'
 
-export interface HttpError<T> {
-  readonly status: HttpStatus,
-  readonly message: HttpMessage,
-  readonly result: any,
-  readonly details: T,
+export abstract class HttpError  {
+  readonly abstract status: HttpStatus
+  readonly abstract message: HttpMessage
 }
 
-export abstract class HttpClientError<T = string> extends Error implements HttpError<T> {
+export abstract class HttpClientError<T = string> extends Error implements HttpError {
 
   public readonly details: T
 
@@ -23,17 +21,9 @@ export abstract class HttpClientError<T = string> extends Error implements Http
     this.status = response.status
     this.message = response.message
   }
-
-  get result() {
-    return Object.freeze({
-      status: this.status,
-      message: this.message,
-      details: this.details,
-    })
-  }
 }
 
-export abstract class HttpServerError<T = string> extends Error implements HttpError<T> {
+export abstract class HttpServerError<T = string> extends Error implements HttpError {
   public readonly details: T
 
   public readonly status: HttpStatus
@@ -47,7 +37,7 @@ export abstract class HttpServerError<T = string> extends Error implements HttpE
     this.message = response.message
   }
 
-  get result() {
+  get plain() {
     return Object.freeze({
       status: this.status,
       message: this.message,

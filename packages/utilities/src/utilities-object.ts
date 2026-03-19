@@ -1,8 +1,8 @@
 import { FunctionType } from './utilities-function'
 
-export type ObjectUtils = object
+export type ObjectType = object
 
-export declare namespace ObjectUtils {
+export declare namespace ObjectType {
   export type FunctionMember = Member<FunctionType> & {
     value: FunctionType
   }
@@ -12,28 +12,28 @@ export declare namespace ObjectUtils {
   }
 }
 
-export function extractMember<T extends ObjectUtils>(object: T, key: keyof T): ObjectUtils.Member | undefined {
+export function extractMember<T extends ObjectType>(object: T, key: keyof T): ObjectType.Member | undefined {
   const descriptor = Object.getOwnPropertyDescriptor(object, key)
   return descriptor ? { ...descriptor, key } : undefined
 }
 
-export function extractMembers<T extends ObjectUtils>(object: T): ObjectUtils.Member[] {
+export function extractMembers<T extends ObjectType>(object: T): ObjectType.Member[] {
   const descriptors = Object.getOwnPropertyDescriptors(object)
   return Object.entries(descriptors).map(([key, descriptor]) => {
     return ({ ...descriptor, key })
   })
 }
 
-export function isConstructorMember(member: ObjectUtils.Member): boolean {
+export function isConstructorMember(member: ObjectType.Member): boolean {
   return isFunctionMember(member)
      && member.key === 'constructor'
 }
 
-export function isFunctionMember(member: ObjectUtils.Member): boolean {
+export function isFunctionMember(member: ObjectType.Member): boolean {
   return typeof member.value === 'function'
 }
 
-export const ObjectUtils = {
+export const ObjectUtilities = {
   extractMember,
   extractMembers,
   isFunctionMember,

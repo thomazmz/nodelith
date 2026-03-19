@@ -27,4 +27,4 @@ export const HttpStatus = Object.freeze({
   NotImplemented: HttpResponse['NotImplemented'].status,
   InternalServerError: HttpResponse['InternalServerError'].status,
   UnprocessableEntity: HttpResponse['UnprocessableEntity'].status,
-})
+} as const)
