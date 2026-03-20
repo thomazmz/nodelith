@@ -5,7 +5,7 @@ import {
   isFunctionMember,
 } from './utilities-object'
 
-describe('ObjectUtils', () => {
+describe('ObjectUtilities', () => {
   it('extracts a single member with its key', () => {
     const obj = {
       count: 1,
