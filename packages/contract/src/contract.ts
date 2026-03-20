@@ -54,10 +54,10 @@ function createObjectContract<S extends $Struct.Shape>(shape: S): $Struct<{
 }
 
 ////////////////////////////////////////////////
-// Array Contract
-import { $Array } from './contract-array'
-function createArrayContract<S extends $Array.Shape>(shape: S): $Array<CoreContract.Infer<S>[]> {
-  return $Array.create(shape, {
+// Sequence Contract
+import { $Sequence } from './contract-sequence'
+function createSequenceContract<S extends $Sequence.Shape>(shape: S): $Sequence<CoreContract.Infer<S>[]> {
+  return $Sequence.create(shape, {
     optional: false,
     nullable: false,
   })
@@ -83,12 +83,12 @@ function createDateContract(): $Date<Date> {
 ////////////////////////////////////////////////
 // Contract Methods
 export const Contract = Object.freeze({
+  sequence: createSequenceContract,
   boolean: createBooleanContract,
   struct: createObjectContract,
   string: createStringContract,
   number: createNumberContract,
   bigint: createBigintContract,
-  array: createArrayContract,
   enum: createEnumContract,
   date: createDateContract,
 })

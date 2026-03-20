@@ -1,7 +1,7 @@
 export type CoreValue = (
   | CoreValue.Primitive
   | CoreValue.Struct
-  | CoreValue.Array
+  | CoreValue.Sequence
 )
 
 export declare namespace CoreValue {
@@ -14,17 +14,17 @@ export declare namespace CoreValue {
     | Date
   )
   
-  export type Array = undefined | (
+  export type Sequence = undefined | (
     | CoreValue.Primitive 
     | CoreValue.Struct
-    | CoreValue.Array
+    | CoreValue.Sequence
   )[]
   
   export type Struct = undefined | {
     readonly [key: string]: (
       | CoreValue.Primitive
       | CoreValue.Struct
-      | CoreValue.Array
+      | CoreValue.Sequence
     )
   }
 }

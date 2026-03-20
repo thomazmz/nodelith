@@ -1,4 +1,4 @@
-export type * from './contract-array'
+export type * from './contract-sequence'
 export type * from './contract-bigint'
 export type * from './contract-boolean'
 export type * from './contract-date'

@@ -4,32 +4,32 @@ import { CoreParser } from '@nodelith/core'
 import { CoreNullable } from '@nodelith/core'
 import { CoreContract } from '@nodelith/core'
 
-export declare namespace $Array {
+export declare namespace $Sequence {
   export type Shape<TItem extends CoreNullable = CoreNullable> = CoreContract<TItem>
 }
 
-export class $Array<T extends CoreNullable.Array> implements CoreContract<T> {
+export class $Sequence<T extends CoreNullable.Sequence> implements CoreContract<T> {
   private static readonly DEFAULT_OPTIONAL_PROPERTY: CoreContract.DefaultAttributes['optional'] = false as const
   private static readonly DEFAULT_NULLABLE_PROPERTY: CoreContract.DefaultAttributes['nullable'] = false as const
 
   private static resolveAttributes(attributes?: Partial<CoreContract.Attributes>): CoreContract.Attributes {
     return {
-      optional: typeof attributes?.optional === 'boolean' ? attributes.optional : $Array.DEFAULT_OPTIONAL_PROPERTY,
-      nullable: typeof attributes?.nullable === 'boolean' ? attributes.nullable : $Array.DEFAULT_NULLABLE_PROPERTY,
+      optional: typeof attributes?.optional === 'boolean' ? attributes.optional : $Sequence.DEFAULT_OPTIONAL_PROPERTY,
+      nullable: typeof attributes?.nullable === 'boolean' ? attributes.nullable : $Sequence.DEFAULT_NULLABLE_PROPERTY,
     }
   }
 
-  public static create<S extends $Array.Shape, const P extends Partial<CoreContract.Attributes>>(
+  public static create<S extends $Sequence.Shape, const P extends Partial<CoreContract.Attributes>>(
     shape: S,
     attributes: P
-  ): $Array<CoreContract.Output<CoreContract.Infer<S>[], P>> {
-    return new $Array(shape, attributes) as unknown as $Array<CoreContract.Output<CoreContract.Infer<S>[], P>>
+  ): $Sequence<CoreContract.Output<CoreContract.Infer<S>[], P>> {
+    return new $Sequence(shape, attributes) as unknown as $Sequence<CoreContract.Output<CoreContract.Infer<S>[], P>>
   }
 
   public readonly attributes: CoreContract.Attributes
 
-  private constructor(private readonly shape: $Array.Shape, attributes?: Partial<CoreContract.Attributes>) {
-    this.attributes = $Array.resolveAttributes(attributes)
+  private constructor(private readonly shape: $Sequence.Shape, attributes?: Partial<CoreContract.Attributes>) {
+    this.attributes = $Sequence.resolveAttributes(attributes)
   }
 
   public get schema(): CoreSchema.Array {
@@ -38,22 +38,22 @@ export class $Array<T extends CoreNullable.Array> implements CoreContract<T> {
       : { type: 'array' as const, items: this.shape.schema }
   }
 
-  public optional(): $Array<CoreContract.Output<T, { optional: true }>> {
+  public optional(): $Sequence<CoreContract.Output<T, { optional: true }>> {
     return this.clone({ optional: true })
   }
 
-  public nullable(): $Array<CoreContract.Output<T, { nullable: true }>> {
+  public nullable(): $Sequence<CoreContract.Output<T, { nullable: true }>> {
     return this.clone({ nullable: true })
   }
 
-  public required(): $Array<CoreContract.Output<T, { optional: false, nullable: false }>> {
+  public required(): $Sequence<CoreContract.Output<T, { optional: false, nullable: false }>> {
     return this.clone({ optional: false, nullable: false })
   }
 
-  public clone(): $Array<CoreContract.Output<T>>
-  public clone<const P extends Partial<CoreContract.Attributes>>(attributes: P): $Array<CoreContract.Output<T, P>>
-  public clone<const P extends Partial<CoreContract.Attributes>>(attributes?: P): $Array<CoreContract.Output<T, P>> {
-    return $Array.create(this.shape, { ...this.attributes, ...attributes }) as $Array<CoreContract.Output<T, P>>
+  public clone(): $Sequence<CoreContract.Output<T>>
+  public clone<const P extends Partial<CoreContract.Attributes>>(attributes: P): $Sequence<CoreContract.Output<T, P>>
+  public clone<const P extends Partial<CoreContract.Attributes>>(attributes?: P): $Sequence<CoreContract.Output<T, P>> {
+    return $Sequence.create(this.shape, { ...this.attributes, ...attributes }) as $Sequence<CoreContract.Output<T, P>>
   }
 
   public coerce(input: unknown, options?: CoreParser.Options): CoreParser.Result<T> {

@@ -3,7 +3,7 @@ type DateType = Date
 export type CoreNullable = (
   | CoreNullable.Primitive
   | CoreNullable.Struct
-  | CoreNullable.Array
+  | CoreNullable.Sequence
 )
 
 export declare namespace CoreNullable {
@@ -47,17 +47,17 @@ export declare namespace CoreNullable {
     | null
   )
   
-  export type Array = undefined | null | (
+  export type Sequence = undefined | null | (
     | CoreNullable.Primitive
     | CoreNullable.Struct
-    | CoreNullable.Array
+    | CoreNullable.Sequence
   )[]
   
   export type Struct = undefined | null | {
     readonly [key: string]: (
       | CoreNullable.Primitive
       | CoreNullable.Struct
-      | CoreNullable.Array
+      | CoreNullable.Sequence
     )
   }
 }

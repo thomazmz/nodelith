@@ -1,11 +1,11 @@
-import { $Array } from './contract-array'
+import { $Sequence } from './contract-sequence'
 import { $Number } from './contract-number'
 
-describe('$Array', () => {
+describe('$Sequence', () => {
   describe('schema', () => {
     test('produces a JSON schema with items schema embedded', () => {
       const item = $Number.create({ optional: false, nullable: false })
-      const contract = $Array.create(item, { optional: false, nullable: false })
+      const contract = $Sequence.create(item, { optional: false, nullable: false })
       expect(contract.schema).toEqual({
         type: 'array',
         items: { type: 'number' },
@@ -14,7 +14,7 @@ describe('$Array', () => {
 
     test('nullable=true includes null in type', () => {
       const item = $Number.create({ optional: false, nullable: false })
-      const contract = $Array.create(item, { optional: false, nullable: true })
+      const contract = $Sequence.create(item, { optional: false, nullable: true })
 
       expect(contract.schema).toEqual({
         type: ['array', 'null'],
@@ -25,7 +25,7 @@ describe('$Array', () => {
 
   describe('parse', () => {
     const item = $Number.create({ optional: false, nullable: false })
-    const contract = $Array.create(item, { optional: false, nullable: false })
+    const contract = $Sequence.create(item, { optional: false, nullable: false })
 
     test('path option prefixes item issue paths', () => {
       const r = contract.parse(['123'], { path: 'items' })
@@ -77,35 +77,35 @@ describe('$Array', () => {
     })
 
     test('optional=true allows undefined', () => {
-      const opt = $Array.create(item, { optional: true, nullable: false })
+      const opt = $Sequence.create(item, { optional: true, nullable: false })
       const r = opt.parse(undefined)
       expect(r.success).toBe(true)
       if (r.success) expect(r.value).toBe(undefined)
     })
 
     test('nullable=true allows null', () => {
-      const nul = $Array.create(item, { optional: false, nullable: true })
+      const nul = $Sequence.create(item, { optional: false, nullable: true })
       const r = nul.parse(null)
       expect(r.success).toBe(true)
       if (r.success) expect(r.value).toBe(null)
     })
 
     test('optional=true does NOT allow null', () => {
-      const opt = $Array.create(item, { optional: true, nullable: false })
+      const opt = $Sequence.create(item, { optional: true, nullable: false })
       const r = opt.parse(null)
       expect(r.success).toBe(false)
       if (!r.success) expect(r.issues.length).toBeGreaterThan(0)
     })
 
     test('nullable=true does NOT allow undefined', () => {
-      const nul = $Array.create(item, { optional: false, nullable: true })
+      const nul = $Sequence.create(item, { optional: false, nullable: true })
       const r = nul.parse(undefined)
       expect(r.success).toBe(false)
       if (!r.success) expect(r.issues.length).toBeGreaterThan(0)
     })
 
     test('optional=true + nullable=true allows both undefined and null', () => {
-      const both = $Array.create(item, { optional: true, nullable: true })
+      const both = $Sequence.create(item, { optional: true, nullable: true })
 
       const a = both.parse(undefined)
       expect(a.success).toBe(true)
@@ -155,7 +155,7 @@ describe('$Array', () => {
 
   describe('coerce', () => {
     const item = $Number.create({ optional: false, nullable: false })
-    const contract = $Array.create(item, { optional: false, nullable: false })
+    const contract = $Sequence.create(item, { optional: false, nullable: false })
 
     test('path option prefixes item issue paths', () => {
       const r = contract.coerce(['abc'], { path: 'items' })
@@ -208,7 +208,7 @@ describe('$Array', () => {
       expect(baseN.success).toBe(false)
       if (!baseN.success) expect(baseN.issues.length).toBeGreaterThan(0)
 
-      const both = $Array.create(item, { optional: true, nullable: true })
+      const both = $Sequence.create(item, { optional: true, nullable: true })
 
       const u = both.coerce(undefined)
       expect(u.success).toBe(true)
@@ -238,7 +238,7 @@ describe('$Array', () => {
     const item = $Number.create({ optional: false, nullable: false })
 
     test('optional() returns a new contract that allows undefined', () => {
-      const base = $Array.create(item, { optional: false, nullable: false })
+      const base = $Sequence.create(item, { optional: false, nullable: false })
       const opt = base.optional()
 
       const a = opt.parse(undefined)
@@ -251,7 +251,7 @@ describe('$Array', () => {
     })
 
     test('nullable() returns a new contract that allows null', () => {
-      const base = $Array.create(item, { optional: false, nullable: false })
+      const base = $Sequence.create(item, { optional: false, nullable: false })
       const nul = base.nullable()
 
       const a = nul.parse(null)
@@ -264,7 +264,7 @@ describe('$Array', () => {
     })
 
     test('required() disables optional + nullable', () => {
-      const base = $Array.create(item, { optional: true, nullable: true })
+      const base = $Sequence.create(item, { optional: true, nullable: true })
       const req = base.required()
 
       expect(req.parse(undefined).success).toBe(false)
@@ -276,7 +276,7 @@ describe('$Array', () => {
     })
 
     test('clone() with no args preserves behavior', () => {
-      const base = $Array.create(item, { optional: false, nullable: false })
+      const base = $Sequence.create(item, { optional: false, nullable: false })
       const cloned = base.clone()
 
       const a = cloned.parse([1])
@@ -289,7 +289,7 @@ describe('$Array', () => {
     })
 
     test('clone() can enable optional without affecting base', () => {
-      const base = $Array.create(item, { optional: false, nullable: false })
+      const base = $Sequence.create(item, { optional: false, nullable: false })
       const cloned = base.clone({ optional: true })
 
       const a = cloned.parse(undefined)
@@ -302,7 +302,7 @@ describe('$Array', () => {
     })
 
     test('optional() + nullable() chaining allows both undefined and null', () => {
-      const base = $Array.create(item, { optional: false, nullable: false })
+      const base = $Sequence.create(item, { optional: false, nullable: false })
       const both = base.optional().nullable()
 
       const a = both.parse(undefined)
