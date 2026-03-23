@@ -117,19 +117,19 @@ describe('Identity', () => {
     expect(Identity.extract(object)).toBe(identity)
   })
 
-  test('Identity.obtain returns existing identity without generating a new one', () => {
+  test('Identity.resolv returns existing identity without generating a new one', () => {
     const identity = 'a'.repeat(22) as Identity
     const object = {}
 
     Identity.set(object, identity)
 
-    const obtainedIdentity = Identity.obtain(object)
-    expect(obtainedIdentity).toBe(identity)
+    const resolvedIdentity = Identity.resolve(object)
+    expect(resolvedIdentity).toBe(identity)
   })
 
-  test('Identity.obtain assigns a new identity when missing', () => {
+  test('Identity.resolve assigns a new identity when missing', () => {
     const object = {}
-    const identity = Identity.obtain(object)
+    const identity = Identity.resolve(object)
 
     expect(identity).toMatch(/^[0-9A-Za-z]{22}$/)
     expect(Identity.extract(object)).toBe(identity)

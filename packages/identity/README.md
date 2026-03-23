@@ -60,7 +60,7 @@ Returns the target identity if present; otherwise returns undefined.
 
 Creates a new identity and sets it on the target and returns it. Throws if target already has an identity.
 
-### `Identity.obtain(target: object): Identity`
+### `Identity.resolve(target: object): Identity`
 
 Returns the existing identity if present; otherwise creates and assigns one.
 

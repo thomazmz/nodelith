@@ -185,13 +185,13 @@ export const Identity = Object.freeze({
   },
 
   /**
-   * Obtains the identity for an object:
+   * Resolves the identity for an object:
    *
    * @param target The object to read/assign an identity from/to.
    * @throws Error under the same conditions as {@link Identity.assign}/{@link Identity.set}.
    * @returns The existing or newly assigned identity.
    */
-  obtain(target: object): Identity | never {
+  resolve(target: object): Identity | never {
     const currentIdentity = Identity.extract(target)
     return currentIdentity ?? Identity.assign(target)
   },
@@ -212,7 +212,7 @@ export const Identity = Object.freeze({
       )
     }
 
-    const sourceIdentity = Identity.obtain(source)
+    const sourceIdentity = Identity.resolve(source)
     Identity.set(target, sourceIdentity)
     return target
   },

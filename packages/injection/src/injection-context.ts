@@ -16,7 +16,7 @@ export class InjectionContext {
   private instances: Map<Identity, any> = new Map()
  
   public resolve<T>(target: (...args: any[]) => T, ...args: any[]): T {
-    const identity = Identity.obtain(target)
+    const identity = Identity.resolve(target)
 
     if (this.instances.has(identity)) {
       return this.instances.get(identity)

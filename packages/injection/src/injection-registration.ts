@@ -110,7 +110,7 @@ export class InjectionRegistration<T = any> {
   }) {
     this.resolver = resolver
     this.params = options?.params ?? []
-    this.token = options?.token ?? Identity.obtain(resolver)
+    this.token = options?.token ?? Identity.resolve(resolver)
     this.context = options?.context ?? InjectionContext.create()
     this.lifecycle = options?.lifecycle ?? InjectionRegistration.DEFAULT_LIFECYCLE_MODE
     this.visibility = options?.visibility ?? InjectionRegistration.DEFAULT_VISIBILITY_MODE
@@ -130,20 +130,18 @@ export class InjectionRegistration<T = any> {
     const context = options?.context ?? InjectionContext.create()
     const bundle = options?.bundle ?? InjectionBundle.create()
 
-    const args = this.params?.map(param => {
-      return bundle[param]
-    }) ?? []
+    const params = this.params.map(param => bundle[param])
 
     if(this.lifecycle === 'transient') {
-      return this.resolver(...args)
+      return this.resolver(...params)
     }
 
     if(this.lifecycle === 'singleton') {
-      return this.context.resolve(this.resolver, ...args)
+      return this.context.resolve(this.resolver, ...params)
     }
 
     if(this.lifecycle === 'scoped') {
-      return context.resolve(this.resolver, ...args)
+      return context.resolve(this.resolver, ...params)
     }
 
     throw new Error(`Could not resolve registration. Invalid "${this.lifecycle}" lifecycle.`)
