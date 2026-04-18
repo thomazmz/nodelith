@@ -31,12 +31,14 @@
   "peerDependencies": {
     "@nodelith/injection": "workspace:^",
     "@nodelith/utilities": "workspace:^",
+    "@nodelith/metadata": "workspace:^",
     "@nodelith/core": "workspace:^",
     "@nodelith/http": "workspace:^"
   },
   "devDependencies": {
     "@nodelith/injection": "workspace:^",
     "@nodelith/utilities": "workspace:^",
+    "@nodelith/metadata": "workspace:^",
     "@nodelith/core": "workspace:^",
     "@nodelith/http": "workspace:^",
     "@types/jest": "^30.0.0",

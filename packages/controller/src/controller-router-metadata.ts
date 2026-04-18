@@ -1,45 +1,56 @@
+import { MetadataStore } from '@nodelith/metadata'
 import { ConstructorType } from '@nodelith/utilities'
+import { ObjectUtilities } from '@nodelith/utilities'
+import { ControllerRouteMetadata } from 'controller-route-metadata'
 
-const CONTROLLER_ROUTER_METADATA_KEY = Symbol('__controller_router_metadata')
-
-export type ControllerRouterMetadata = Readonly<{
-  readonly name?: string | undefined
-  readonly path?: string | undefined
-}> 
-
-export const ControllerRouterMetadata = Object.freeze({
-  attach: attachRouterMetadata,
-  extract: extractRouterMetadata,
-})
-
-export function attachRouterMetadata(constructor: ConstructorType & {
-  [CONTROLLER_ROUTER_METADATA_KEY]?: ControllerRouterMetadata 
-}, metadata: ControllerRouterMetadata): void {
-  constructor[CONTROLLER_ROUTER_METADATA_KEY] = {
-    name: metadata.name ?? constructor[CONTROLLER_ROUTER_METADATA_KEY]?.name,
-    path: metadata.path ?? constructor[CONTROLLER_ROUTER_METADATA_KEY]?.path,
-  }
+export type ControllerRouterMetadata = {
+  readonly routes: ControllerRouteMetadata[]
+  readonly path: string
+  readonly name: string
 }
 
-export function extractRouterMetadata(constructor: ConstructorType & {
-  [CONTROLLER_ROUTER_METADATA_KEY]?: ControllerRouterMetadata 
-}): ControllerRouterMetadata {
-  return Object.freeze({
-    name: constructor[CONTROLLER_ROUTER_METADATA_KEY]?.name,
-    path: constructor[CONTROLLER_ROUTER_METADATA_KEY]?.path,
-  })
+const ControllerRouterNameStorage = MetadataStore.create<ControllerRouterMetadata['name']>('__@nodelith/controller/router/name')
+
+function resolveControllerRouterName(constructor: ConstructorType): ControllerRouterMetadata['name'] {
+  return ControllerRouterNameStorage.extract(constructor) ??  constructor.name
+}
+
+const ControllerRouterPathStorage = MetadataStore.create<ControllerRouterMetadata['path']>('__@nodelith/controller/router/path')
+
+function resolveControllerRouterPath(constructor: ConstructorType): ControllerRouterMetadata['path'] {
+  return ControllerRouterPathStorage.extract(constructor) ?? '/'
+}
+
+function resolveControllerRoutes(constructor: ConstructorType): ControllerRouterMetadata['routes'] {
+  return ObjectUtilities.extractFunctionMembers(constructor)
+    .map(member => ControllerRouteMetadata.resolve(member.value))
+    .filter(route => route.key && route.path && route.method)
+}
+
+export const ControllerRouterMetadata = Object.freeze({
+  setName(constructor: ConstructorType, name: string): void {
+    ControllerRouterNameStorage.append(constructor, name)
+  },
+  setPath(constructor: ConstructorType, path: string): void {
+    ControllerRouterPathStorage.append(constructor, path)
+  },
+  resolve(constructor: ConstructorType): ControllerRouterMetadata {
+    return Object.freeze({
+      routes: resolveControllerRoutes(constructor),
+      name: resolveControllerRouterName(constructor),
+      path: resolveControllerRouterPath(constructor),
+    })
+  }
+})
+
+export function Name(name: string) {
+  return (_: unknown, _key: string, descriptor: TypedPropertyDescriptor<ConstructorType>) => {
+    if(descriptor.value) ControllerRouterMetadata.setName(descriptor.value, name)
+  }
 }
 
 export function Router(path: string) {
-  return <C extends ConstructorType>(constructor: C): C => {
-    attachRouterMetadata(constructor, { path })
-    return constructor
-  }
-}
-
-export function Name(name: string) {
-  return <C extends ConstructorType>(constructor: C): C => {
-    attachRouterMetadata(constructor, { name })
-    return constructor
+  return (_: unknown, _key: string, descriptor: TypedPropertyDescriptor<ConstructorType>) => {
+    if(descriptor.value) ControllerRouterMetadata.setName(descriptor.value, path)
   }
 }

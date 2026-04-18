@@ -1,118 +1,76 @@
 import { FunctionType } from '@nodelith/utilities'
-import { CoreNullable } from '@nodelith/core'
-import { CoreContract } from '@nodelith/core'
-import { HttpStatus } from '@nodelith/http'
+import { MetadataStore } from '@nodelith/metadata'
 import { HttpMethod } from '@nodelith/http'
+import { ControllerRequestMetadata } from 'controller-request-metadata'
+import { ControllerSpecMetadata } from 'controller-spec-metadata'
+import { ControllerHandlerMetadata } from 'controller-handler-metadata'
 
-const CONTROLLER_ROUTE_METADATA_KEY = Symbol('__controller_method_metadata')
-
-export type ControllerRouteMetadata = Readonly<{
-  readonly description?: string | undefined
-  readonly operation?: string | undefined
-  readonly summary?: string | undefined
-  readonly success?: HttpStatus | undefined
-  readonly method?: HttpMethod | undefined
-  readonly path?: string | undefined
+export type ControllerRouteMetadata = {
   readonly key?: string | undefined
-  readonly response?: CoreContract | undefined
-  readonly header?: CoreContract | undefined
-  readonly query?: CoreContract | undefined
-  readonly body?: CoreContract | undefined
-}>
+  readonly path?: string | undefined
+  readonly method?: HttpMethod | undefined
+  readonly spec: ControllerSpecMetadata
+  readonly request: ControllerRequestMetadata
+  readonly handler: ControllerHandlerMetadata
+}
+
+const ControllerRouteKeyStorage = MetadataStore.create<ControllerRouteMetadata['key']>('__@nodelith/controller/route/key')
+
+function resolveControllerRouteKey(target: FunctionType): ControllerRouteMetadata['key'] {
+  return ControllerRouteKeyStorage.extract(target) ?? target.name
+}
+
+const ControllerRoutePathStorage = MetadataStore.create<ControllerRouteMetadata['path']>('__@nodelith/controller/route/path')
+
+function resolveControllerRoutePath(target: FunctionType): ControllerRouteMetadata['path'] {
+  return ControllerRoutePathStorage.extract(target)
+}
+
+const ControllerRouteMethodStorage = MetadataStore.create<ControllerRouteMetadata['method']>('__@nodelith/controller/route/method')
+
+function resolveControllerRouteMethod(target: FunctionType): ControllerRouteMetadata['method'] {
+  return ControllerRouteMethodStorage.extract(target)
+}
 
 export const ControllerRouteMetadata = Object.freeze({
-  attach: attachRouteMetadata,
-  extract: extractRouteMetadata,
+  setKey(target: FunctionType, key: ControllerRouteMetadata['key']): void {
+    ControllerRouteKeyStorage.append(target, key)
+  },
+
+  setPath(target: FunctionType, path: ControllerRouteMetadata['path']): void {
+    ControllerRoutePathStorage.append(target, path)
+  },
+
+  setMethod(target: FunctionType, method: ControllerRouteMetadata['method']): void {
+    ControllerRouteMethodStorage.append(target, method)
+  },
+
+  resolve(target: FunctionType): ControllerRouteMetadata {
+    return Object.freeze({
+      key: resolveControllerRouteKey(target),
+      path: resolveControllerRoutePath(target),
+      method: resolveControllerRouteMethod(target),
+      spec: ControllerSpecMetadata.resolve(target),
+      request: ControllerRequestMetadata.resolve(target),
+      handler: ControllerHandlerMetadata.resolve(target),
+    })
+  }
 })
 
-export function attachRouteMetadata(descriptor: TypedPropertyDescriptor<FunctionType & {
-  [CONTROLLER_ROUTE_METADATA_KEY]?: ControllerRouteMetadata
-}>, metadata: ControllerRouteMetadata): void {
-  if (descriptor.value) descriptor.value[CONTROLLER_ROUTE_METADATA_KEY] = { ...descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY],
-    description: metadata.description ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.description,
-    operation: metadata.operation ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.operation,
-    summary: metadata.summary ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.summary,
-    success: metadata.success ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.success,
-    method: metadata.method ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.method,
-    path: metadata.path ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.path,
-    key: metadata.key ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.key,
-    response: metadata.response ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.response,
-    header: metadata.header ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.header,
-    query: metadata.query ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.query,
-    body: metadata.body ?? descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.body,
-  }
-}
-
-export function extractRouteMetadata(descriptor: TypedPropertyDescriptor<FunctionType & {
-  [CONTROLLER_ROUTE_METADATA_KEY]?: ControllerRouteMetadata 
-}>): ControllerRouteMetadata {
-  return Object.freeze({
-    description: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.description,
-    operation: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.operation,
-    summary: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.summary,
-    success: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.success,
-    method: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.method,
-    path: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.path,
-    key: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.key,
-    response: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.response,
-    header: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.header,
-    query: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.query,
-    body: descriptor?.value?.[CONTROLLER_ROUTE_METADATA_KEY]?.body,
-  })
-}
-
-export function Summary(summary: string) {
-  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) => {
-    attachRouteMetadata({ ...descriptor }, { key, summary })
-  }
-}
-
-export function Description(description: string) {
-  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) => {
-    return attachRouteMetadata({ ...descriptor }, { key, description })
-  }
-}
-
-export function Operation(operation?: string) {
-  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) => {
-    return attachRouteMetadata({ ...descriptor }, { key, operation })
-  }
-}
-
-export function Method(method: HttpMethod) {
-  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) => {
-    attachRouteMetadata({ ...descriptor }, { key, method })
+export function Key(key: string) {
+  return (_: unknown, _key: string, descriptor: TypedPropertyDescriptor<FunctionType>) => {
+    if(descriptor.value) ControllerRouteMetadata.setKey(descriptor.value, key)
   }
 }
 
 export function Path(path: string) {
-  return (_: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) => {
-    attachRouteMetadata({ ...descriptor }, { key, path })
+  return (_: unknown, _key: string, descriptor: TypedPropertyDescriptor<FunctionType>) => {
+    if(descriptor.value) ControllerRouteMetadata.setPath(descriptor.value, path)
   }
 }
 
-export function SuccessResponse<T extends Awaited<CoreNullable>>(status: HttpStatus, contract?: CoreContract<T>) {
-  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType<Promise<T | void> | T | void>>) {
-    attachRouteMetadata({ ...descriptor }, { key, success: status, ...({
-      response: contract
-    })})
-  }
-}
-
-export function RequestBody(body: CoreContract) {
-  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
-    attachRouteMetadata({ ...descriptor }, { key, body })
-  }
-}
-
-export function RequestQuery(query: CoreContract) {
-  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
-    attachRouteMetadata({ ...descriptor }, { key, query })
-  }
-}
-
-export function RequestHeader(header: CoreContract) {
-  return function(_target: unknown, key: string, descriptor: TypedPropertyDescriptor<FunctionType>) {
-    attachRouteMetadata({ ...descriptor }, { key, header })
+export function Method(method: HttpMethod) {
+  return (_: unknown, _key: string, descriptor: TypedPropertyDescriptor<FunctionType>) => {
+    if(descriptor.value) ControllerRouteMetadata.setMethod(descriptor.value, method)
   }
 }

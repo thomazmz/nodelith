@@ -1,5 +1,1 @@
-export * as Controller from './controller'
-export { ControllerRootMetadata } from './controller-root-metadata'
-export { ControllerInputMetadata } from './controller-input-metadata'
-export { ControllerRouteMetadata } from './controller-route-metadata'
-export { ControllerRouterMetadata } from './controller-router-metadata'
+export * as Controller from "./controller"
