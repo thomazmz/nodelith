@@ -8,7 +8,6 @@
     "moduleResolution": "node16",
     "rootDir": "src",
     "outDir": "dist",
-    "baseUrl": "src",
     "types": ["node", "jest"],
     "tsBuildInfoFile": "cache/tsbuild.json",
     "declaration": true,
@@ -39,9 +38,6 @@
     "noImplicitOverride": true,
     "useUnknownInCatchVariables": true,
     "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "paths": {
-      "@nodelith/*": ["*/library.ts"]
-    }
+    "allowUnusedLabels": false
   }
 }
