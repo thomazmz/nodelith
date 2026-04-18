@@ -1,4 +1,4 @@
-import { CorePage } from 'core-page'
+import { CorePage } from './core-page'
 import { CoreEntity } from './core-entity'
 
 export interface CoreRepository<E extends CoreEntity = CoreEntity, Q extends Partial<E> = Partial<E>> {

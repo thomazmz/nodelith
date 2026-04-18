@@ -34,7 +34,7 @@ export abstract class ConfigInitializer<T extends ConfigRecord> implements CoreI
     
     const unkownValue = await this.env.load(key) ?? this.loader?.load(key) ?? value
 
-    const normalizationResult = contract.normalize(unkownValue)
+    const normalizationResult = contract.coerce(unkownValue)
 
     if(!normalizationResult.success) throw new Error(`Failed to load configuratoin for ${key}.`)
 

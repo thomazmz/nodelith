@@ -1,4 +1,4 @@
-import { CoreNullable } from '@nodelith/core'
+import { CoreNullable } from './core-nullable'
 import { CoreParser } from './core-parser'
 import { CoreSchema } from './core-schema'
 

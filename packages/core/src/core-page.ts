@@ -1,4 +1,4 @@
-import { CoreEntity } from "core-entity"
+import { CoreEntity } from "./core-entity"
 
 export declare namespace CorePage {
   export type Sort = (
