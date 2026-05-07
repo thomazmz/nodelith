@@ -1,6 +1,7 @@
 export { HttpError} from './http-error'
-export { HttpMethod } from './http-method'
+export { HttpRoute } from './http-route'
 export { HttpStatus } from './http-status'
+export { HttpMethod } from './http-method'
 export { HttpMessage } from './http-message'
 export { HttpResponse } from './http-response'
 export { HttpServerError } from './http-error'
