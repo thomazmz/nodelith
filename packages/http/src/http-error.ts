@@ -12,7 +12,7 @@ export abstract class HttpClientError<T = string> extends Error implements Http
   public readonly details: T
 
   public readonly status: HttpStatus
-
+  
   public override readonly message: HttpMessage
 
   protected constructor(details: T, response: HttpResponse.Type4xx) {
@@ -35,13 +35,6 @@ export abstract class HttpServerError<T = string> extends Error implements HttpE
     this.details = details
     this.status = response.status
     this.message = response.message
-  }
-
-  get plain() {
-    return Object.freeze({
-      status: this.status,
-      message: this.message,
-    })
   }
 }
 
